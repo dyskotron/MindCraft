@@ -45,7 +45,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3f34c2f38a443b58a8b1333c2b0239e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Size: {x: 10, y: 128, z: 10}
   MeshRenderer: {fileID: 1700657384384936547}
   MeshFilter: {fileID: 1700657384384936546}
   HorizonCurve:
@@ -53,7 +52,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.2157898
+      value: 0.23208618
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -61,8 +60,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.33334497
-      value: 0.3622713
+      time: 0.31199792
+      value: 0.30927753
       inSlope: 0.03378892
       outSlope: 0.03378892
       tangentMode: 0
@@ -70,8 +69,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.47893396
-      value: 0.5821887
+      time: 0.45934168
+      value: 0.30637848
       inSlope: -0.66357064
       outSlope: -0.66357064
       tangentMode: 0
@@ -80,7 +79,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.6040301
-      value: 0.08182186
+      value: 0.19049495
       inSlope: -0.5239519
       outSlope: -0.5239519
       tangentMode: 0
@@ -88,8 +87,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 1.0035208
-      value: 0.49736685
+      time: 0.97862
+      value: 0.3017144
       inSlope: 2
       outSlope: 2
       tangentMode: 0
