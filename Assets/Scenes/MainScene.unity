@@ -343,6 +343,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ed1a2ba4c3bf04d7986bd90c7b255585, type: 2}
   - {fileID: 11400000, guid: 6ae4ba35800804ab399fa0c254f32769, type: 2}
   - {fileID: 11400000, guid: a5cbd8396eff44d05841e40cbaeda94a, type: 2}
-  ChunkPrefab: {fileID: 1700657384384936477, guid: 128dd29f2ba974ce88ef0f0a9ca7ad78,
-    type: 3}
-  HalfWorldSize: 7
+  HalfWorldSize: 1
