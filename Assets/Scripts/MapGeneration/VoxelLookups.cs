@@ -4,9 +4,9 @@ namespace MapGeneration
 {
     public static class VoxelLookups
     {
-        public const int CHUNK_SIZE = 10;
+        public const int CHUNK_SIZE = 5;
         public const int CHUNK_HEIGHT = 128;
-        public const int VIEW_DISTANCE = 20;//100;
+        public const int VIEW_DISTANCE = 30;//100;
         public const int VIEW_DISTANCE_IN_CHUNKS = VIEW_DISTANCE / CHUNK_SIZE;
 
         public static readonly Vector3[] Vertices =

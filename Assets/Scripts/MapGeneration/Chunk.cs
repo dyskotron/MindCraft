@@ -1,11 +1,13 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
+using UnityEngine.Rendering;
+using Debug = UnityEngine.Debug;
 
 namespace MapGeneration
 {
     public class Chunk
     {
-        public const int EMPTY_VOXEL = 0;
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
@@ -42,9 +44,12 @@ namespace MapGeneration
             _gameObject.name = $"Chunk({coords.X},{coords.Y})";
             _meshRenderer = _gameObject.AddComponent<MeshRenderer>();
             _meshFilter = _gameObject.AddComponent<MeshFilter>();
+            
             _gameObject.transform.position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
 
             _meshRenderer.material = Locator.World.Material;
+            _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            _meshRenderer.receiveShadows = false;
 
             CreateMap();
             _meshFilter.mesh = CreateMesh();
@@ -86,7 +91,7 @@ namespace MapGeneration
                 {
                     for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
                     {
-                        if (GetVoxelData(new Vector3(iX, iY, iZ)) != EMPTY_VOXEL)
+                        if (GetVoxelData(new Vector3(iX, iY, iZ)) != VoxelTypeByte.AIR)
                             AddVoxel(new Vector3(iX, iY, iZ));
                     }
                 }
@@ -110,7 +115,7 @@ namespace MapGeneration
             for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
             {
                 //check neighbours
-                if (GetVoxelData(position + VoxelLookups.Neighbours[iF]) != EMPTY_VOXEL)
+                if (GetVoxelData(position + VoxelLookups.Neighbours[iF]) != VoxelTypeByte.AIR)
                     continue;
 
                 //iterate triangles
@@ -152,7 +157,7 @@ namespace MapGeneration
 
             //TODO: specific checks for each direction, so we save useless checks
             if (!IsVoxelInChunk(x, y, z))
-                return Locator.World.GetVoxel(position + _position);
+                return 0;//Locator.World.GetVoxel(position + _position);
 
             return voxelMap[x, y, z];
         }

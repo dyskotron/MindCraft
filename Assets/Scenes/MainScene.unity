@@ -337,10 +337,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e46f098a98420e8bfe9a106852e4cc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Player: {fileID: 1271622894}
   Material: {fileID: 2100000, guid: 7387af500986b4877b025a539dcba0fd, type: 2}
   voxelDefs:
   - {fileID: 11400000, guid: 5766ce66771f74a059996d5d5baa98b9, type: 2}
   - {fileID: 11400000, guid: ed1a2ba4c3bf04d7986bd90c7b255585, type: 2}
+  - {fileID: 11400000, guid: 483ad582c1dea4c2cb2e3dd8bfcb5c49, type: 2}
   - {fileID: 11400000, guid: 6ae4ba35800804ab399fa0c254f32769, type: 2}
   - {fileID: 11400000, guid: a5cbd8396eff44d05841e40cbaeda94a, type: 2}
-  HalfWorldSize: 1
+  biomeDef: {fileID: 11400000, guid: bb16966845a2a46d58c889f9190d9bbd, type: 2}
+  _seed: 85876

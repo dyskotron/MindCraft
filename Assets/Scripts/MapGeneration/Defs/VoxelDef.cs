@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace MapGeneration
+namespace MapGeneration.Defs
 {
     [CreateAssetMenu(menuName = "MapGeneration/Voxel definition")]
     public class VoxelDef : ScriptableObject

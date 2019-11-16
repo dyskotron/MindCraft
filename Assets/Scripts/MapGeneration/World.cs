@@ -1,5 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using MapGeneration.Defs;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
+using Random = UnityEngine.Random;
 
 namespace MapGeneration
 {
@@ -8,6 +13,8 @@ namespace MapGeneration
         public Transform Player;
         public Material Material;
         public VoxelDef[] voxelDefs;
+        public BiomeDef biomeDef;
+        public int _seed;
 
         private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
         private Vector3 _spawnPosition;
@@ -16,9 +23,11 @@ namespace MapGeneration
 
         private void Start()
         {
+            Random.InitState(_seed);
+            
             Locator.World = this;
             
-            _spawnPosition = new Vector3(0f,VoxelLookups.CHUNK_HEIGHT + 1,0f);
+            _spawnPosition = new Vector3(0f,biomeDef.TerrainMin + biomeDef.TerrainHeight + 1,0f);
 
             GenerateWorld();
             
@@ -34,30 +43,81 @@ namespace MapGeneration
                 UpdateView();
         }
 
+        public float GetTerainHeight(Vector3 position)
+        {
+           return Mathf.FloorToInt(biomeDef.TerrainMin + biomeDef.TerrainHeight * Noise.Get2DPerlin(new Vector2(position.x, position.z) ,0, biomeDef.TerrainScale));
+        }
+
         public byte GetVoxel(Vector3 position)
         {
-            if (position.y < 0 || position.y >= VoxelLookups.CHUNK_HEIGHT)
-                return Chunk.EMPTY_VOXEL;
+            var posY = Mathf.FloorToInt(position.y);
             
-            if (position.y == 0)
-                return 1;
+            // GLOBAL PASS
             
-            if (position.y == VoxelLookups.CHUNK_HEIGHT - 1)
-                return 3;
+            if (posY < 0 || posY >= VoxelLookups.CHUNK_HEIGHT)
+                return VoxelTypeByte.AIR;
             
-            return 2;
+            if (posY == 0)
+                return VoxelTypeByte.HARD_ROCK;
+            
+            // BASIC PASS
+
+            var terrainHeight = GetTerainHeight(position);
+                
+            byte voxelValue = 0;
+            //everything higher then terrainHeight is air
+            if (posY >= terrainHeight)
+                return VoxelTypeByte.AIR;
+            
+            //top voxels are grass
+            if (posY == terrainHeight - 1)
+                voxelValue = VoxelTypeByte.DIRT_WITH_GRASS;
+            //3 voxels under grass are dirt
+            else if (posY >= terrainHeight - 4)
+                voxelValue = VoxelTypeByte.DIRT;
+            //rest is rock
+            else
+                voxelValue = VoxelTypeByte.ROCK;
+            
+            
+            //LODES PASS
+            if (voxelValue == VoxelTypeByte.ROCK)
+            {
+                foreach (var lode  in biomeDef.Lodes)
+                {
+                    if (posY > lode.MinHeight && posY < lode.MaxHeight)
+                    {
+                        var treshold = lode.Treshold;
+                        switch (lode.ScaleTresholdByHeight)
+                        {
+                            case ScaleTresholdByHeight.HighestTop:
+                                treshold *= (posY - lode.MinHeight) / (float)lode.HeightRange;
+                                break;
+                            case ScaleTresholdByHeight.HighestBottom:
+                                treshold *= (lode.MaxHeight - posY) / (float)lode.HeightRange;
+                                break;
+                        }
+                        
+                        if (Noise.Get3DPerlin(position, lode.Offset, lode.Scale, treshold))
+                            voxelValue = lode.BlockId;
+                    }
+                }
+            }
+            
+
+            return voxelValue;
         }
         
         private void GenerateWorld()
         {
-            //create chunks
+             //create chunks
             for (var x = -VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; x < VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; x++)
             {
                 for (var y = -VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; y < VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; y++)
                 {   
                     CreateChunk(new ChunkCoord(x, y));
                 }   
-            }    
+            }
         }
 
         private void ShowChunk(int x, int y)
@@ -89,6 +149,12 @@ namespace MapGeneration
 
         private void UpdateView()
         {
+            //update player height
+            var playerPosition = Player.position;
+            playerPosition.y = GetTerainHeight(Player.position) + 3;
+            Player.position = playerPosition;
+            
+            //update chunks
             var newCoords = GetChunkCoordsByPosition(Player.position);
             
             if (newCoords == _lastPlayerCoords)
