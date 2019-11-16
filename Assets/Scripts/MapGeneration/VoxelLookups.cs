@@ -6,7 +6,7 @@ namespace MapGeneration
     {
         public const int CHUNK_SIZE = 5;
         public const int CHUNK_HEIGHT = 128;
-        public const int VIEW_DISTANCE = 30;//100;
+        public const int VIEW_DISTANCE = 100;
         public const int VIEW_DISTANCE_IN_CHUNKS = VIEW_DISTANCE / CHUNK_SIZE;
 
         public static readonly Vector3[] Vertices =

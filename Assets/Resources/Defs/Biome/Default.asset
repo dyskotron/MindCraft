@@ -14,5 +14,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
   Name: Default
   TerrainScale: 0.05
-  TerrainHeight: 110
-  TerrainGround: 15
+  TerrainMin: 40
+  TerrainMax: 120
+  Lodes:
+  - Name: 
+    MinHeight: 60
+    MaxHeight: 120
+    Scale: 0.25
+    Treshold: 0.6
+    ScaleTresholdByHeight: 2
+    Offset: 0
+    _blockId: 3
+  - Name: 
+    MinHeight: 10
+    MaxHeight: 60
+    Scale: 0.1
+    Treshold: 0.5
+    ScaleTresholdByHeight: 0
+    Offset: 0.1
+    _blockId: 0

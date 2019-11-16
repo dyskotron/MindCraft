@@ -1,10 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using MapGeneration.Defs;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
-using Random = UnityEngine.Random;
 
 namespace MapGeneration
 {
@@ -26,9 +22,9 @@ namespace MapGeneration
             Random.InitState(_seed);
             
             Locator.World = this;
-            
-            _spawnPosition = new Vector3(0f,biomeDef.TerrainMin + biomeDef.TerrainHeight + 1,0f);
 
+            _spawnPosition = new Vector3(0f,biomeDef.TerrainMin + biomeDef.TerrainHeight + 1,0f);
+            
             GenerateWorld();
             
             Player.position = _spawnPosition;
@@ -107,6 +103,20 @@ namespace MapGeneration
 
             return voxelValue;
         }
+
+        public bool CheckVoxel(float x, float y, float z)
+        {
+            var posX = Mathf.FloorToInt(x);    
+            var posY = Mathf.FloorToInt(y);    
+            var posZ = Mathf.FloorToInt(z);
+
+            int chunkX = Mathf.FloorToInt(posX / (float)VoxelLookups.CHUNK_SIZE);
+            int chunkY = Mathf.FloorToInt(posZ / (float)VoxelLookups.CHUNK_SIZE);
+
+            _chunks.TryGetValue(new ChunkCoord(chunkX, chunkY), out Chunk chunk);
+
+            return chunk != null && chunk.CheckVoxel(posX - chunkX * VoxelLookups.CHUNK_SIZE, posY, posZ - chunkY * VoxelLookups.CHUNK_SIZE);
+        }
         
         private void GenerateWorld()
         {
@@ -133,7 +143,10 @@ namespace MapGeneration
 
         private void HideChunk(int x, int y)
         {
-            _chunks[new ChunkCoord(x, y)].IsActive = false;    
+            _chunks.TryGetValue(new ChunkCoord(x, y), out Chunk chunk);
+            
+            if (chunk != null)
+                chunk.IsActive = false;    
         }
 
         private void CreateChunk(ChunkCoord coords)
@@ -150,9 +163,13 @@ namespace MapGeneration
         private void UpdateView()
         {
             //update player height
+            /*
             var playerPosition = Player.position;
-            playerPosition.y = GetTerainHeight(Player.position) + 3;
+            playerPosition.y = GetTerainHeight(Player.position);
             Player.position = playerPosition;
+            */
+            //dont update chunks atm
+            //return;
             
             //update chunks
             var newCoords = GetChunkCoordsByPosition(Player.position);

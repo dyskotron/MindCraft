@@ -1,13 +1,14 @@
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Debug = UnityEngine.Debug;
 
 namespace MapGeneration
 {
     public class Chunk
     {
+        public World World => Locator.World;
+        
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
@@ -47,7 +48,7 @@ namespace MapGeneration
             
             _gameObject.transform.position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
 
-            _meshRenderer.material = Locator.World.Material;
+            _meshRenderer.material = World.Material;
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
 
@@ -71,7 +72,7 @@ namespace MapGeneration
                 {
                     for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
                     {
-                        voxelMap[iX, iY, iZ] = Locator.World.GetVoxel(new Vector3(iX, iY, iZ) + _position);
+                        voxelMap[iX, iY, iZ] = World.GetVoxel(new Vector3(iX, iY, iZ) + _position);
                     }
                 }
             }
@@ -109,7 +110,7 @@ namespace MapGeneration
         private void AddVoxel(Vector3 position)
         {
             var voxelId = GetVoxelData(position);
-            var voxelType = Locator.World.voxelDefs[voxelId];
+            var voxelType = World.voxelDefs[voxelId];
 
             //iterate faces
             for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
@@ -157,7 +158,7 @@ namespace MapGeneration
 
             //TODO: specific checks for each direction, so we save useless checks
             if (!IsVoxelInChunk(x, y, z))
-                return 0;//Locator.World.GetVoxel(position + _position);
+                return World.GetVoxel(position + _position);
 
             return voxelMap[x, y, z];
         }
@@ -165,6 +166,20 @@ namespace MapGeneration
         private bool IsVoxelInChunk(int x, int y, int z)
         {
             return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
+        }
+
+        public bool CheckVoxel(int posX, int posY, int posZ)
+        {
+            try
+            {
+                return voxelMap[posX, posY, posZ] != 0;
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"<color=\"aqua\">Chunk.CheckVoxel() : posX:{posX} posY:{posY} posZ:{posZ}</color>");
+                throw;
+            }
+            
         }
     }
 }
