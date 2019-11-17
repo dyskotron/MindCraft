@@ -54,15 +54,9 @@ namespace MapGeneration
 
         public byte GetVoxel(Vector3 position)
         {
-            //if already generated return value from existing chunk(beside performance chunk could have been altered)!
-            //_chunks.TryGetValue(GetChunkCoordsByPosition(position), out Chunk chunk);
-            //if(chunk != null)
-            //    return chunk.GetVoxelFromGlobalVector3(position);
-                
-            
             var posY = Mathf.FloorToInt(position.y);
             
-            // GLOBAL PASS
+            // ======== STATIC RULES ========
             
             if (posY < 0 || posY >= VoxelLookups.CHUNK_HEIGHT)
                 return VoxelTypeByte.AIR;
@@ -70,7 +64,13 @@ namespace MapGeneration
             if (posY == 0)
                 return VoxelTypeByte.HARD_ROCK;
             
-            // BASIC PASS
+            // ======== RETURN CACHED VOXELS AND PLAYER MODIFIED VOXELS ========
+            
+            _chunks.TryGetValue(GetChunkCoordsByPosition(position), out Chunk chunk);
+            if(chunk != null)
+                return chunk.GetVoxelFromGlobalVector3(position);
+            
+            // ======== BASIC PASS ========
             
             var terrainHeight = GetTerainHeight(position);
                 
@@ -196,15 +196,6 @@ namespace MapGeneration
 
         private void UpdateView()
         {
-            //update player height
-            /*
-            var playerPosition = Player.position;
-            playerPosition.y = GetTerainHeight(Player.position);
-            Player.position = playerPosition;
-            */
-            //dont update chunks atm
-            //return;
-            
             //update chunks
             var newCoords = GetChunkCoordsByPosition(Player.position);
             
