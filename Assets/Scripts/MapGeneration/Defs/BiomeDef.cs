@@ -1,4 +1,5 @@
 using System;
+using MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.Serialization;
 

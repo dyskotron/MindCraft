@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
@@ -12,20 +13,17 @@ namespace MapGeneration
         public static double MAP_ELAPSED_TOTAL = 0;
         public static double MESH_ELAPSED_TOTAL = 0;
         public static double CHUNKS_TOTAL = 0;
-        
+
         public World World => Locator.World;
+        public Vector2[,,] UvLookup => Locator.TextureLookup.UvLookup;
 
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
 
         //texture consts
-        private const int BLOCKS_PER_TEXTURE = 4;
-        private const float NORMALIZED_BLOCK_SIZE = 1f / BLOCKS_PER_TEXTURE;
-
-        private const float TEXTURE_CORDS_FIX = 0.001f;
-        private static readonly Vector2 CORDS_FIX_OFFSET = new Vector2(TEXTURE_CORDS_FIX, TEXTURE_CORDS_FIX);
-        private const float FIXED_BLOCK_SIZE = NORMALIZED_BLOCK_SIZE - 2 * TEXTURE_CORDS_FIX;
+        //private const int BLOCKS_PER_TEXTURE = 4;
+        //private const float NORMALIZED_BLOCK_SIZE = 1f / BLOCKS_PER_TEXTURE;
 
         private readonly GameObject _gameObject;
         private MeshRenderer _meshRenderer;
@@ -60,17 +58,17 @@ namespace MapGeneration
 
             var mapWatch = new Stopwatch();
             mapWatch.Start();
-            
+
             CreateMap();
-            
+
             mapWatch.Stop();
             MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
-            
+
             var meshWatch = new Stopwatch();
             meshWatch.Start();
-            
+
             UpdateChunkMesh();
-            
+
             meshWatch.Stop();
             MESH_ELAPSED_TOTAL += meshWatch.Elapsed.TotalSeconds;
             CHUNKS_TOTAL++;
@@ -87,16 +85,16 @@ namespace MapGeneration
             var posX = Mathf.FloorToInt(position.x);
             var posY = Mathf.FloorToInt(position.y);
             var posZ = Mathf.FloorToInt(position.z);
-            
+
             posX -= _coords.X * VoxelLookups.CHUNK_SIZE;
             posZ -= _coords.Y * VoxelLookups.CHUNK_SIZE;
 
             _voxelMap[posX, posY, posZ] = VoxelType;
-            
+
             UpdateChunkMesh();
             UpdateSurroundings(posX, posY, posZ);
         }
-        
+
         private byte GetVoxelData(Vector3 position)
         {
             var x = Mathf.FloorToInt(position.x);
@@ -115,7 +113,7 @@ namespace MapGeneration
             var posX = Mathf.FloorToInt(position.x);
             var posY = Mathf.FloorToInt(position.y);
             var posZ = Mathf.FloorToInt(position.z);
-            
+
             posX -= _coords.X * VoxelLookups.CHUNK_SIZE;
             posZ -= _coords.Y * VoxelLookups.CHUNK_SIZE;
 
@@ -154,8 +152,7 @@ namespace MapGeneration
         private void AddVoxel(Vector3 position)
         {
             var voxelId = GetVoxelData(position);
-            var voxelType = World.VoxelDefs[voxelId];
-
+            
             //iterate faces
             for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
             {
@@ -172,26 +169,15 @@ namespace MapGeneration
                     if (iV < VERTICES_PER_FACE)
                     {
                         vertices.Add(position + VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
+                        uvs.Add(UvLookup[voxelId, iF, iV]);
                     }
 
                     //we still need 6 triangle vertices tho
                     triangles.Add(currentVertexIndex + vertexIndex);
                 }
-
-                AddTexture(voxelType.FaceTextures[iF]);
+                
                 currentVertexIndex += VERTICES_PER_FACE;
             }
-        }
-
-        private void AddTexture(int textureId)
-        {
-            float x = (textureId % BLOCKS_PER_TEXTURE) * NORMALIZED_BLOCK_SIZE;
-            float y = (int) (textureId / BLOCKS_PER_TEXTURE) * NORMALIZED_BLOCK_SIZE;
-
-            uvs.Add(CORDS_FIX_OFFSET + new Vector2(x, y));
-            uvs.Add(CORDS_FIX_OFFSET + new Vector2(x, y + FIXED_BLOCK_SIZE));
-            uvs.Add(CORDS_FIX_OFFSET + new Vector2(x + FIXED_BLOCK_SIZE, y));
-            uvs.Add(CORDS_FIX_OFFSET + new Vector2(x + FIXED_BLOCK_SIZE, y + FIXED_BLOCK_SIZE));
         }
 
         private bool IsVoxelInChunk(int x, int y, int z)
@@ -242,7 +228,7 @@ namespace MapGeneration
 
             _meshFilter.mesh = mesh;
         }
-        
+
         #endregion
     }
 }

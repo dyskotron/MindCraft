@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using MapGeneration.Defs;
+using MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -23,6 +25,9 @@ namespace MapGeneration
         private Vector3 _spawnPosition;
         private ChunkCoord _lastPlayerCoords;
         private bool _initialized;
+        
+        
+        private Stopwatch _watch;
 
         private void Start()
         {
@@ -30,8 +35,13 @@ namespace MapGeneration
             Camera.main.farClipPlane = VoxelLookups.VIEW_DISTANCE;
             
             Locator.World = this;
+            Locator.TextureLookup = new TextureLookup();
+            Locator.TextureLookup.Init();
 
+            _watch = new Stopwatch();
+            _watch.Start();
             GenerateWorld();
+            _watch.Stop();
 
             //place player few blocks above terrain
             _spawnPosition = new Vector3(0f, 0, 0f);
@@ -195,7 +205,8 @@ namespace MapGeneration
                                  $"{Chunk.MAP_ELAPSED_TOTAL: 0.0000}\n" +
                                  $"{Chunk.MESH_ELAPSED_TOTAL: 0.0000}\n" +
                                  $"{Chunk.MAP_ELAPSED_TOTAL / Chunk.CHUNKS_TOTAL: 0.00000}\n" +
-                                 $"{Chunk.MESH_ELAPSED_TOTAL / Chunk.CHUNKS_TOTAL: 0.00000}\n";
+                                 $"{Chunk.MESH_ELAPSED_TOTAL / Chunk.CHUNKS_TOTAL: 0.00000}\n" +
+                                 $"{_watch.Elapsed.TotalSeconds: 0.00000}\n";
             }
 
             if (newCoords == _lastPlayerCoords)

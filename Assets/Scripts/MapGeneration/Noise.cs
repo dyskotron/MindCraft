@@ -1,3 +1,4 @@
+using MapGeneration.Lookup;
 using UnityEngine;
 
 namespace MapGeneration

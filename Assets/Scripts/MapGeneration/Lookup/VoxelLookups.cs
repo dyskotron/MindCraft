@@ -1,7 +1,6 @@
-using System;
 using UnityEngine;
 
-namespace MapGeneration
+namespace MapGeneration.Lookup
 {
     public static class VoxelLookups
     {
