@@ -8,6 +8,7 @@ namespace MapGeneration
     {
         public Transform Player;
         public Material Material;
+        public Material DebugMaterial;
         public VoxelDef[] voxelDefs;
         public BiomeDef biomeDef;
         public int _seed;
@@ -23,9 +24,11 @@ namespace MapGeneration
             
             Locator.World = this;
 
-            _spawnPosition = new Vector3(0f,biomeDef.TerrainMin + biomeDef.TerrainHeight + 1,0f);
-            
             GenerateWorld();
+            
+            //place player few blocks above terrain
+            _spawnPosition = new Vector3(0f,0,0f);
+            _spawnPosition.y = GetTerainHeight(_spawnPosition) + 5;
             
             Player.position = _spawnPosition;
             _lastPlayerCoords = GetChunkCoordsByPosition(_spawnPosition);
@@ -46,6 +49,13 @@ namespace MapGeneration
 
         public byte GetVoxel(Vector3 position)
         {
+            //if already generated return value from existing chunk(beside performance chunk could have been altered)!
+            /*
+            _chunks.TryGetValue(GetChunkCoordsByPosition(position), out Chunk chunk);
+            if(chunk != null)
+                return chunk.GetVoxelFromGlobalVector3(position);
+                */
+            
             var posY = Mathf.FloorToInt(position.y);
             
             // GLOBAL PASS
@@ -104,6 +114,12 @@ namespace MapGeneration
             return voxelValue;
         }
 
+        public Chunk GetChunkFromVector3(Vector3 position)
+        {
+            var coords = GetChunkCoordsByPosition(position);
+            return _chunks[coords];
+        }
+
         public bool CheckVoxel(float x, float y, float z)
         {
             var posX = Mathf.FloorToInt(x);    
@@ -156,8 +172,8 @@ namespace MapGeneration
         
         private ChunkCoord GetChunkCoordsByPosition(Vector3 position)
         {
-            return new ChunkCoord(Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE), 
-                                  Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE));
+            return new ChunkCoord(Mathf.FloorToInt(position.x) / VoxelLookups.CHUNK_SIZE, 
+                                  Mathf.FloorToInt(position.z) / VoxelLookups.CHUNK_SIZE);
         }
 
         private void UpdateView()

@@ -6,6 +6,9 @@ public class Player : MonoBehaviour
     public const float PLAYER_HEIGHT = 1.8f;
 
     public World World => Locator.World;
+    
+    public GameObject AddHighlightBlock;
+    public GameObject RemoveHighlightBlock;
 
     public float WalkSpeed = 3f;
     public float RunSpeed = 10f;
@@ -22,7 +25,7 @@ public class Player : MonoBehaviour
     private float _mouseVertical;
     private float _v;
     private Vector3 _velocity;
-    private Camera _camera;
+    private Transform _camera;
 
     private float _moveSpeed = 0;
 
@@ -33,13 +36,16 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        _camera = Camera.main;
+        Cursor.lockState = CursorLockMode.Locked;
+        
+        _camera = Camera.main.transform;
         _transform = transform;
     }
 
     private void Update()
     {
         GetPLayerInputs();
+        PlaceCursorBlocks();
     }
 
     private void FixedUpdate()
@@ -59,6 +65,43 @@ public class Player : MonoBehaviour
         verticalMomentum = JumpForce;
         isGrounded = false;
         jumpRequest = false;
+    }
+
+    private void PlaceCursorBlocks()
+    {
+        float checkIncrement = 0.1f;
+        float reach = 10;
+        
+        float step = checkIncrement;
+        Vector3 lastPos = new Vector3();
+
+        while (step < reach)
+        {
+            Vector3 position = _camera.position + _camera.forward * step;
+            
+            if (World.CheckVoxel(position.x, position.y, position.z))
+            {
+                RemoveHighlightBlock.transform.position = new Vector3(Mathf.FloorToInt(position.x),
+                                                                   Mathf.FloorToInt(position.y),
+                                                                   Mathf.FloorToInt(position.z));
+
+                AddHighlightBlock.transform.position = lastPos;
+                
+                AddHighlightBlock.SetActive(true);
+                RemoveHighlightBlock.SetActive(true);
+                
+                return;
+            }
+            
+            lastPos = new Vector3(Mathf.FloorToInt(position.x),
+                                  Mathf.FloorToInt(position.y),
+                                  Mathf.FloorToInt(position.z));
+
+            step += checkIncrement;
+        }
+        
+        AddHighlightBlock.SetActive(false);
+        RemoveHighlightBlock.SetActive(false);
     }
 
     private void CalculateVelocity()
@@ -95,6 +138,15 @@ public class Player : MonoBehaviour
 
         if (isGrounded && Input.GetButtonDown("Jump"))
             jumpRequest = true;
+
+        if (RemoveHighlightBlock.activeSelf)
+        {
+            if(Input.GetMouseButtonDown(0))
+                World.GetChunkFromVector3(AddHighlightBlock.transform.position).EditVoxel(AddHighlightBlock.transform.position, 1);
+            
+            if(Input.GetMouseButtonDown(1))
+                World.GetChunkFromVector3(RemoveHighlightBlock.transform.position).EditVoxel(RemoveHighlightBlock.transform.position, 0);
+        }
     }
 
     private float CheckDownSpeed(float speed)
