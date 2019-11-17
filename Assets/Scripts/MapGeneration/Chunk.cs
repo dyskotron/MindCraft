@@ -47,7 +47,7 @@ namespace MapGeneration
 
             _gameObject.transform.position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
 
-            _meshRenderer.material = (coords.X + coords.Y) % 2 == 0 ? World.Material : World.DebugMaterial;
+            _meshRenderer.material = World.GetMaterial(coords);
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
 
@@ -133,7 +133,7 @@ namespace MapGeneration
         private void AddVoxel(Vector3 position)
         {
             var voxelId = GetVoxelData(position);
-            var voxelType = World.voxelDefs[voxelId];
+            var voxelType = World.VoxelDefs[voxelId];
 
             //iterate faces
             for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
