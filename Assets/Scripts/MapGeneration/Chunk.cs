@@ -1,12 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Debug = UnityEngine.Debug;
 
 namespace MapGeneration
 {
     public class Chunk
     {
+        public static double MAP_ELAPSED_TOTAL = 0;
+        public static double MESH_ELAPSED_TOTAL = 0;
+        public static double CHUNKS_TOTAL = 0;
+        
         public World World => Locator.World;
 
         private const int FACES_PER_VERTEX = 6;
@@ -51,8 +57,23 @@ namespace MapGeneration
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
 
+
+            var mapWatch = new Stopwatch();
+            mapWatch.Start();
+            
             CreateMap();
+            
+            mapWatch.Stop();
+            MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
+            
+            var meshWatch = new Stopwatch();
+            meshWatch.Start();
+            
             UpdateChunkMesh();
+            
+            meshWatch.Stop();
+            MESH_ELAPSED_TOTAL += meshWatch.Elapsed.TotalSeconds;
+            CHUNKS_TOTAL++;
         }
 
         public bool IsActive
