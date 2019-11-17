@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using MapGeneration.Defs;
 using UnityEngine;
+using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace MapGeneration
 {
@@ -12,6 +15,8 @@ namespace MapGeneration
         public VoxelDef[] voxelDefs;
         public BiomeDef biomeDef;
         public int _seed;
+        
+        public Text DebugText;
 
         private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
         private Vector3 _spawnPosition;
@@ -50,11 +55,10 @@ namespace MapGeneration
         public byte GetVoxel(Vector3 position)
         {
             //if already generated return value from existing chunk(beside performance chunk could have been altered)!
-            /*
-            _chunks.TryGetValue(GetChunkCoordsByPosition(position), out Chunk chunk);
-            if(chunk != null)
-                return chunk.GetVoxelFromGlobalVector3(position);
-                */
+            //_chunks.TryGetValue(GetChunkCoordsByPosition(position), out Chunk chunk);
+            //if(chunk != null)
+            //    return chunk.GetVoxelFromGlobalVector3(position);
+                
             
             var posY = Mathf.FloorToInt(position.y);
             
@@ -67,7 +71,7 @@ namespace MapGeneration
                 return VoxelTypeByte.HARD_ROCK;
             
             // BASIC PASS
-
+            
             var terrainHeight = GetTerainHeight(position);
                 
             byte voxelValue = 0;
@@ -116,6 +120,20 @@ namespace MapGeneration
 
         public Chunk GetChunkFromVector3(Vector3 position)
         {
+            var truncCords = new ChunkCoord((int)Math.Truncate(position.x / VoxelLookups.CHUNK_SIZE), 
+                                  (int)Math.Truncate(position.z / VoxelLookups.CHUNK_SIZE));
+            
+            
+            var floorCords = new ChunkCoord(Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE) , 
+                                  Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE) );
+            
+            var ceilCords = new ChunkCoord(Mathf.CeilToInt(position.x / VoxelLookups.CHUNK_SIZE) , 
+                                            Mathf.CeilToInt(position.z / VoxelLookups.CHUNK_SIZE) );
+            
+            var simpleCords = new ChunkCoord((int)position.x / VoxelLookups.CHUNK_SIZE , 
+                                             (int)position.z / VoxelLookups.CHUNK_SIZE );
+            
+            
             var coords = GetChunkCoordsByPosition(position);
             return _chunks[coords];
         }
@@ -172,8 +190,8 @@ namespace MapGeneration
         
         private ChunkCoord GetChunkCoordsByPosition(Vector3 position)
         {
-            return new ChunkCoord(Mathf.FloorToInt(position.x) / VoxelLookups.CHUNK_SIZE, 
-                                  Mathf.FloorToInt(position.z) / VoxelLookups.CHUNK_SIZE);
+            return new ChunkCoord(Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE) , 
+                                  Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE) );
         }
 
         private void UpdateView()
@@ -189,6 +207,10 @@ namespace MapGeneration
             
             //update chunks
             var newCoords = GetChunkCoordsByPosition(Player.position);
+            
+            //debug
+            DebugText.text = $"X:{newCoords.X} Y:{Mathf.FloorToInt(Player.position.y)} Z:{newCoords.Y}\n" +
+                             Player.position;
             
             if (newCoords == _lastPlayerCoords)
                 return;
