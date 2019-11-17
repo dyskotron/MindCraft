@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace MapGeneration
 {
@@ -11,6 +12,12 @@ namespace MapGeneration
         {
             X = x;
             Y = y;
+        }
+        
+        public ChunkCoord(Vector3 position)
+        {
+            X = Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE);
+            Y = Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE);
         }
         
         public static bool operator == (ChunkCoord lhs, ChunkCoord rhs)

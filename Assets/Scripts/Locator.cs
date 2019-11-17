@@ -1,4 +1,5 @@
 using MapGeneration;
+using UnityEngine;
 
 public static class Locator
 {

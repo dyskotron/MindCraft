@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
 using MapGeneration.Defs;
 using UnityEngine;
+using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 namespace MapGeneration
 {
@@ -8,9 +11,14 @@ namespace MapGeneration
     {
         public Transform Player;
         public Material Material;
-        public VoxelDef[] voxelDefs;
-        public BiomeDef biomeDef;
-        public int _seed;
+        public VoxelDef[] VoxelDefs;
+        public BiomeDef BiomeDef;
+        public int Seed;
+        
+        [Header("Debug Params")]
+        public bool DebugChunksMaterisl;
+        public Material DebugMaterial;
+        public Text DebugText;
 
         private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
         private Vector3 _spawnPosition;
@@ -19,13 +27,15 @@ namespace MapGeneration
 
         private void Start()
         {
-            Random.InitState(_seed);
+            Random.InitState(Seed);
             
             Locator.World = this;
 
-            _spawnPosition = new Vector3(0f,biomeDef.TerrainMin + biomeDef.TerrainHeight + 1,0f);
-            
             GenerateWorld();
+            
+            //place player few blocks above terrain
+            _spawnPosition = new Vector3(0f,0,0f);
+            _spawnPosition.y = GetTerainHeight(_spawnPosition) + 5;
             
             Player.position = _spawnPosition;
             _lastPlayerCoords = GetChunkCoordsByPosition(_spawnPosition);
@@ -41,14 +51,14 @@ namespace MapGeneration
 
         public float GetTerainHeight(Vector3 position)
         {
-           return Mathf.FloorToInt(biomeDef.TerrainMin + biomeDef.TerrainHeight * Noise.Get2DPerlin(new Vector2(position.x, position.z) ,0, biomeDef.TerrainScale));
+           return Mathf.FloorToInt(BiomeDef.TerrainMin + BiomeDef.TerrainHeight * Noise.Get2DPerlin(new Vector2(position.x, position.z) ,0, BiomeDef.TerrainScale));
         }
 
         public byte GetVoxel(Vector3 position)
         {
             var posY = Mathf.FloorToInt(position.y);
             
-            // GLOBAL PASS
+            // ======== STATIC RULES ========
             
             if (posY < 0 || posY >= VoxelLookups.CHUNK_HEIGHT)
                 return VoxelTypeByte.AIR;
@@ -56,8 +66,14 @@ namespace MapGeneration
             if (posY == 0)
                 return VoxelTypeByte.HARD_ROCK;
             
-            // BASIC PASS
-
+            // ======== RETURN CACHED VOXELS AND PLAYER MODIFIED VOXELS ========
+            
+            _chunks.TryGetValue(GetChunkCoordsByPosition(position), out Chunk chunk);
+            if(chunk != null)
+                return chunk.GetVoxelFromGlobalVector3(position);
+            
+            // ======== BASIC PASS ========
+            
             var terrainHeight = GetTerainHeight(position);
                 
             byte voxelValue = 0;
@@ -79,7 +95,7 @@ namespace MapGeneration
             //LODES PASS
             if (voxelValue == VoxelTypeByte.ROCK)
             {
-                foreach (var lode  in biomeDef.Lodes)
+                foreach (var lode  in BiomeDef.Lodes)
                 {
                     if (posY > lode.MinHeight && posY < lode.MaxHeight)
                     {
@@ -102,6 +118,26 @@ namespace MapGeneration
             
 
             return voxelValue;
+        }
+
+        public Chunk GetChunkFromVector3(Vector3 position)
+        {
+            var truncCords = new ChunkCoord((int)Math.Truncate(position.x / VoxelLookups.CHUNK_SIZE), 
+                                  (int)Math.Truncate(position.z / VoxelLookups.CHUNK_SIZE));
+            
+            
+            var floorCords = new ChunkCoord(Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE) , 
+                                  Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE) );
+            
+            var ceilCords = new ChunkCoord(Mathf.CeilToInt(position.x / VoxelLookups.CHUNK_SIZE) , 
+                                            Mathf.CeilToInt(position.z / VoxelLookups.CHUNK_SIZE) );
+            
+            var simpleCords = new ChunkCoord((int)position.x / VoxelLookups.CHUNK_SIZE , 
+                                             (int)position.z / VoxelLookups.CHUNK_SIZE );
+            
+            
+            var coords = GetChunkCoordsByPosition(position);
+            return _chunks[coords];
         }
 
         public bool CheckVoxel(float x, float y, float z)
@@ -156,23 +192,18 @@ namespace MapGeneration
         
         private ChunkCoord GetChunkCoordsByPosition(Vector3 position)
         {
-            return new ChunkCoord(Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE), 
-                                  Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE));
+            return new ChunkCoord(Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE) , 
+                                  Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE) );
         }
 
         private void UpdateView()
         {
-            //update player height
-            /*
-            var playerPosition = Player.position;
-            playerPosition.y = GetTerainHeight(Player.position);
-            Player.position = playerPosition;
-            */
-            //dont update chunks atm
-            //return;
-            
             //update chunks
             var newCoords = GetChunkCoordsByPosition(Player.position);
+            
+            //debug
+            DebugText.text = $"X:{newCoords.X} Y:{Mathf.FloorToInt(Player.position.y)} Z:{newCoords.Y}\n" +
+                             Player.position;
             
             if (newCoords == _lastPlayerCoords)
                 return;
@@ -216,6 +247,14 @@ namespace MapGeneration
             } 
 
             _lastPlayerCoords = newCoords;
+        }
+
+        public Material GetMaterial(ChunkCoord coords)
+        {
+            if (!DebugChunksMaterisl)
+                return Material;
+            
+            return (coords.X + coords.Y) % 2 == 0 ? Material : DebugMaterial;
         }
     }
 }
