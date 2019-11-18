@@ -82,7 +82,7 @@ public class Player : MonoBehaviour
         {
             Vector3 position = _camera.position + _camera.forward * step;
 
-            if (World.CheckVoxel(position.x, position.y, position.z))
+            if (WorldModel.CheckVoxelOnGlobalXyz(position.x, position.y, position.z))
             {
                 RemoveHighlightBlock.transform.position = new Vector3(Mathf.FloorToInt(position.x),
                                                                       Mathf.FloorToInt(position.y),
@@ -156,10 +156,10 @@ public class Player : MonoBehaviour
 
     private float CheckDownSpeed(float speed)
     {
-        if (World.CheckVoxel(_transform.position.x - playerSize, transform.position.y + speed, transform.position.z - playerSize) ||
-            World.CheckVoxel(_transform.position.x - playerSize, transform.position.y + speed, transform.position.z + playerSize) ||
-            World.CheckVoxel(_transform.position.x + playerSize, transform.position.y + speed, transform.position.z - playerSize) ||
-            World.CheckVoxel(_transform.position.x + playerSize, transform.position.y + speed, transform.position.z + playerSize))
+        if (WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x - playerSize, transform.position.y + speed, transform.position.z - playerSize) ||
+            WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x - playerSize, transform.position.y + speed, transform.position.z + playerSize) ||
+            WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x + playerSize, transform.position.y + speed, transform.position.z - playerSize) ||
+            WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x + playerSize, transform.position.y + speed, transform.position.z + playerSize))
         {
             isGrounded = true;
 
@@ -174,10 +174,10 @@ public class Player : MonoBehaviour
     private float CheckUpSpeed(float speed)
     {
         if (
-            World.CheckVoxel(_transform.position.x - playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z - playerSize) ||
-            World.CheckVoxel(_transform.position.x - playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z + playerSize) ||
-            World.CheckVoxel(_transform.position.x + playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z - playerSize) ||
-            World.CheckVoxel(_transform.position.x + playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z + playerSize)
+            WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x - playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z - playerSize) ||
+            WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x - playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z + playerSize) ||
+            WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x + playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z - playerSize) ||
+            WorldModel.CheckVoxelOnGlobalXyz(_transform.position.x + playerSize, transform.position.y + PLAYER_HEIGHT + speed, transform.position.z + playerSize)
         )
             return 0;
 
@@ -186,26 +186,26 @@ public class Player : MonoBehaviour
 
     private bool CheckFront()
     {
-        return World.CheckVoxel(transform.position.x, transform.position.y, transform.position.z + playerSize) ||
-               World.CheckVoxel(transform.position.x, transform.position.y, transform.position.z + playerSize);
+        return WorldModel.CheckVoxelOnGlobalXyz(transform.position.x, transform.position.y, transform.position.z + playerSize) ||
+               WorldModel.CheckVoxelOnGlobalXyz(transform.position.x, transform.position.y, transform.position.z + playerSize);
     }
 
     private bool CheckBack()
     {
-        return World.CheckVoxel(transform.position.x, transform.position.y, transform.position.z - playerSize) ||
-               World.CheckVoxel(transform.position.x, transform.position.y, transform.position.z - playerSize);
+        return WorldModel.CheckVoxelOnGlobalXyz(transform.position.x, transform.position.y, transform.position.z - playerSize) ||
+               WorldModel.CheckVoxelOnGlobalXyz(transform.position.x, transform.position.y, transform.position.z - playerSize);
     }
 
     private bool CheckLeft()
     {
-        return World.CheckVoxel(transform.position.x - playerSize, transform.position.y, transform.position.z) ||
-               World.CheckVoxel(transform.position.x - playerSize, transform.position.y, transform.position.z);
+        return WorldModel.CheckVoxelOnGlobalXyz(transform.position.x - playerSize, transform.position.y, transform.position.z) ||
+               WorldModel.CheckVoxelOnGlobalXyz(transform.position.x - playerSize, transform.position.y, transform.position.z);
     }
 
     private bool CheckRight()
     {
-        return World.CheckVoxel(transform.position.x + playerSize, transform.position.y, transform.position.z) ||
-               World.CheckVoxel(transform.position.x + playerSize, transform.position.y, transform.position.z);
+        return WorldModel.CheckVoxelOnGlobalXyz(transform.position.x + playerSize, transform.position.y, transform.position.z) ||
+               WorldModel.CheckVoxelOnGlobalXyz(transform.position.x + playerSize, transform.position.y, transform.position.z);
     }
 
     #endregion

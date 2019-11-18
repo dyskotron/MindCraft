@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using MapGeneration;
@@ -20,38 +19,34 @@ namespace Model
 
         #region Getters / Helper methods
 
-        public static ChunkCoord GetChunkCoordsFromWorldPosition(Vector3 position)
-        {
-            return new ChunkCoord(Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE),
-                                  Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE));
-        }
-
-        public static ChunkCoord GetChunkCoordsFromWorldXyz(int x, int y)
-        {
-            return new ChunkCoord(Mathf.FloorToInt(x / (float) VoxelLookups.CHUNK_SIZE),
-                                  Mathf.FloorToInt(y / (float) VoxelLookups.CHUNK_SIZE));
-        }
-
-        public static void GetLocalXyzFromWorldPosition(Vector3 position, out int x, out int y, out int z)
-        {
-            //always positive modulo hacky solution
-            x = (Mathf.FloorToInt(position.x) % VoxelLookups.CHUNK_SIZE + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
-            y = Mathf.FloorToInt(position.y);
-            z = (Mathf.FloorToInt(position.z) % VoxelLookups.CHUNK_SIZE + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
-        }
-
         public byte[,,] TryGetMapByChunkCoords(ChunkCoord coords)
         {
             _chunkMaps.TryGetValue(coords, out byte[,,] chunkMap);
             return chunkMap;
+        }
+        
+        public bool CheckVoxelOnGlobalXyz(float x, float y, float z)
+        {
+            var coords = WorldModelHelper.GetChunkCoordsFromWorldXy(x, z);
+            var chunkMap = TryGetMapByChunkCoords(coords);
+
+            //consider returning true at this point
+            //method is used for collision checking so if we get to hypothetical situation where chunk map is still not generated,
+            //we should not allow player to move out of generated world.
+            if (chunkMap == null)
+                return false;
+            
+            WorldModelHelper.GetLocalXyzFromWorldPosition(x, y, z, out int xOut, out int yOut, out int zOut);
+
+            return chunkMap[xOut, yOut, zOut] != VoxelTypeByte.AIR;
         }
 
         #endregion
 
         public void EditVoxel(Vector3 position, byte VoxelType)
         {   
-            GetLocalXyzFromWorldPosition(position, out int x, out int y, out int z);
-            var coords = GetChunkCoordsFromWorldPosition(position);
+            WorldModelHelper.GetLocalXyzFromWorldPosition(position, out int x, out int y, out int z);
+            var coords = WorldModelHelper.GetChunkCoordsFromWorldPosition(position);
             
             //update voxel in chunk map
             _chunkMaps[coords][x, y, z] = VoxelType;
@@ -147,7 +142,7 @@ namespace Model
 
             // ======== RETURN CACHED VOXELS OR PLAYER MODIFIED VOXELS ========
 
-            var coords = GetChunkCoordsFromWorldXyz(x, z);
+            var coords = WorldModelHelper.GetChunkCoordsFromWorldXy(x, z);
             var map = TryGetMapByChunkCoords(coords);
             if (map != null)
                 return map[x - coords.X * VoxelLookups.CHUNK_SIZE, y, z - coords.Y * VoxelLookups.CHUNK_SIZE];

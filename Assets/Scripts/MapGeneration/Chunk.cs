@@ -105,20 +105,6 @@ namespace MapGeneration
             return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
         }
 
-        public bool CheckVoxel(int x, int y, int z)
-        {
-            try
-            {
-                return WorldModel.TryGetMapByChunkCoords(_coords)[x, y, z] != VoxelTypeByte.AIR;
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"<color=\"aqua\">Chunk.CheckVoxel() : posX:{x} posY:{y} posZ:{z}</color>");
-                throw;
-            }
-        }
-
-
         #region Mesh Generation
 
         public void UpdateChunkMesh(byte[,,] map)

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using MapGeneration.Defs;
@@ -51,7 +50,7 @@ namespace MapGeneration
             _spawnPosition = new Vector3(0f, WorldModel.GetTerainHeight(0,0) + 5, 0f);
 
             Player.position = _spawnPosition;
-            _lastPlayerCoords = WorldModel.GetChunkCoordsFromWorldPosition(_spawnPosition);
+            _lastPlayerCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(_spawnPosition);
 
             _initialized = true;
         }
@@ -65,20 +64,6 @@ namespace MapGeneration
         public Chunk GetChunk(ChunkCoord coords)
         {
             return _chunks[coords];
-        }
-
-        public bool CheckVoxel(float x, float y, float z)
-        {
-            var posX = Mathf.FloorToInt(x);
-            var posY = Mathf.FloorToInt(y);
-            var posZ = Mathf.FloorToInt(z);
-
-            int chunkX = Mathf.FloorToInt(posX / (float) VoxelLookups.CHUNK_SIZE);
-            int chunkY = Mathf.FloorToInt(posZ / (float) VoxelLookups.CHUNK_SIZE);
-
-            _chunks.TryGetValue(new ChunkCoord(chunkX, chunkY), out Chunk chunk);
-
-            return chunk != null && chunk.CheckVoxel(posX - chunkX * VoxelLookups.CHUNK_SIZE, posY, posZ - chunkY * VoxelLookups.CHUNK_SIZE);
         }
 
         private void GenerateWorld()
@@ -122,7 +107,7 @@ namespace MapGeneration
         private void UpdateView()
         {
             //update chunks
-            var newCoords = WorldModel.GetChunkCoordsFromWorldPosition(Player.position);
+            var newCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(Player.position);
 
             //debug text
             if (Time.time > 1)
