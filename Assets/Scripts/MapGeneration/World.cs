@@ -15,6 +15,7 @@ namespace MapGeneration
         
         public Transform Player;
         public Material Material;
+        public Material PlaceVoxelMaterial;
         public VoxelDef[] VoxelDefs;
         public BiomeDef BiomeDef;
         public int Seed;
@@ -33,7 +34,10 @@ namespace MapGeneration
 
         private void Start()
         {
+            Cursor.lockState = CursorLockMode.Locked;
             Random.InitState(Seed);
+            
+            Camera.main.nearClipPlane = 0.05f;
             Camera.main.farClipPlane = VoxelLookups.VIEW_DISTANCE;
             
             Locator.World = this;
@@ -53,6 +57,9 @@ namespace MapGeneration
             _lastPlayerCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(_spawnPosition);
 
             _initialized = true;
+
+            var playerScript = Player.GetComponent<Player>();
+            playerScript.Init();
         }
 
         private void Update()

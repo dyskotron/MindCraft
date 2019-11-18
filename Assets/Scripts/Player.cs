@@ -6,6 +6,9 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public const float PLAYER_HEIGHT = 1.8f;
+    
+    //We'll get this from inventory later on
+    public const float NUM_USABLE_BLOCK_TYPES = 4;
 
     public World World => Locator.World;
     public WorldModel WorldModel => Locator.WorldModel;
@@ -36,23 +39,37 @@ public class Player : MonoBehaviour
     private bool jumpRequest; 
     private bool isGrounded; 
     private Transform _transform;
+    private EditCube _editCube;
+    private bool _inited;
 
-    private void Start()
+    private byte _placeBlockType = 0;
+
+    public void Init()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-
         _camera = Camera.main.transform;
         _transform = transform;
+        
+        _editCube = new EditCube();
+        _editCube.SetVoxelType(_placeBlockType);
+        AddHighlightBlock = _editCube.GameObject;
+
+        _inited = true;
     }
 
     private void Update()
     {
+        if(!_inited)
+            return;
+        
         GetPLayerInputs();
         PlaceCursorBlocks();
     }
 
     private void FixedUpdate()
     {
+        if(!_inited)
+            return;
+        
         CalculateVelocity();
         if (jumpRequest)
             Jump();
@@ -84,11 +101,10 @@ public class Player : MonoBehaviour
 
             if (WorldModel.CheckVoxelOnGlobalXyz(position.x, position.y, position.z))
             {
+                AddHighlightBlock.transform.position = lastPos;
                 RemoveHighlightBlock.transform.position = new Vector3(Mathf.FloorToInt(position.x),
                                                                       Mathf.FloorToInt(position.y),
                                                                       Mathf.FloorToInt(position.z));
-
-                AddHighlightBlock.transform.position = lastPos;
 
                 AddHighlightBlock.SetActive(true);
                 RemoveHighlightBlock.SetActive(true);
@@ -124,8 +140,20 @@ public class Player : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
                 WorldModel.EditVoxel(RemoveHighlightBlock.transform.position, VoxelTypeByte.AIR);
             else if (Input.GetMouseButtonDown(1))
-                WorldModel.EditVoxel(AddHighlightBlock.transform.position, VoxelTypeByte.HARD_ROCK);
+                WorldModel.EditVoxel(AddHighlightBlock.transform.position, _placeBlockType);
             
+        }
+
+        if (Mathf.Abs(Input.mouseScrollDelta.y) > 0)
+        {
+            //temp hack to avoid empty + air blocks (1, 2)
+            _placeBlockType -= 2;
+            
+            var dir = Mathf.Sign(Input.mouseScrollDelta.y);
+            _placeBlockType = (byte)((_placeBlockType + NUM_USABLE_BLOCK_TYPES + dir) % NUM_USABLE_BLOCK_TYPES);
+            
+            _placeBlockType += 2;
+            _editCube.SetVoxelType(_placeBlockType);
         }
     }
 
