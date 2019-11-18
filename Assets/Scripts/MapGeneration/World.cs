@@ -114,7 +114,9 @@ namespace MapGeneration
 
         private void CreateChunk(ChunkCoord coords)
         {
+            var map = WorldModel.CreateChunkMap(coords);
             _chunks[coords] = new Chunk(coords);
+            _chunks[coords].UpdateChunkMesh(map);
         }
 
         private void UpdateView()

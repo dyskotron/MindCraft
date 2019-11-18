@@ -50,21 +50,6 @@ namespace MapGeneration
             _meshRenderer.material = World.GetMaterial(coords);
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
-
-            var mapWatch = new Stopwatch();
-            mapWatch.Start();
-            WorldModel.CreateChunkMap(_coords);
-            mapWatch.Stop();
-            MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
-
-            var meshWatch = new Stopwatch();
-            meshWatch.Start();
-
-            UpdateChunkMesh();
-
-            meshWatch.Stop();
-            MESH_ELAPSED_TOTAL += meshWatch.Elapsed.TotalSeconds;
-            CHUNKS_TOTAL++;
         }
 
         public bool IsActive
@@ -135,9 +120,12 @@ namespace MapGeneration
 
         #region Mesh Generation
 
-        public void UpdateChunkMesh()
+        public void UpdateChunkMesh(byte[,,] map)
         {
-            _map = WorldModel.TryGetMapByChunkCoords(_coords);
+            _map = map;
+            
+            var meshWatch = new Stopwatch();
+            meshWatch.Start();
             
             currentVertexIndex = 0;
             vertices.Clear();
@@ -164,6 +152,10 @@ namespace MapGeneration
             mesh.RecalculateNormals();
 
             _meshFilter.mesh = mesh;
+            
+            meshWatch.Stop();
+            MESH_ELAPSED_TOTAL += meshWatch.Elapsed.TotalSeconds;
+            CHUNKS_TOTAL++;
         }
 
         #endregion

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using MapGeneration;
 using MapGeneration.Defs;
 using MapGeneration.Lookup;
@@ -57,23 +58,47 @@ namespace Model
             _chunkMaps[coords][posX, posY, posZ] = VoxelType;
             
             //TODO: chunks update should not be called from model!!!
-            World.GetChunk(coords).UpdateChunkMesh();
+            World.GetChunk(coords).UpdateChunkMesh(_chunkMaps[coords]);
+            
+            ChunkCoord neighbourCoords;
             
             if (posX <= 0) // Update left neighbour
-                World.GetChunk(coords + ChunkCoord.Left).UpdateChunkMesh();    
+            {
+                neighbourCoords = coords + ChunkCoord.Left;
+                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+            }
             else if (posX >= VoxelLookups.CHUNK_SIZE - 1) // Update right neighbour
-                World.GetChunk(coords + ChunkCoord.Right).UpdateChunkMesh();  
+            {
+                neighbourCoords = coords + ChunkCoord.Right;
+                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                
+            }  
             
-            if (posZ <= 0) // Update left neighbour
-                World.GetChunk(coords + ChunkCoord.Back).UpdateChunkMesh();    
-            else if (posZ >= VoxelLookups.CHUNK_SIZE - 1) // Update right neighbour
-                World.GetChunk(coords + ChunkCoord.Forward).UpdateChunkMesh();
+            if (posZ <= 0) // Update back neighbour
+            {
+                neighbourCoords = coords + ChunkCoord.Back;
+                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                
+            }
+            else if (posZ >= VoxelLookups.CHUNK_SIZE - 1) // Update forward neighbour
+            {
+                neighbourCoords = coords + ChunkCoord.Forward;
+                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+            }
         }
         
         #region Terrain Generation
 
-        public void CreateChunkMap(ChunkCoord coords)
+        /// <summary>
+        /// Generates Chunk Map based only on seed and generation algorithm
+        /// </summary>
+        /// <param name="coords"></param>
+        /// <returns></returns>
+        public byte[,,] CreateChunkMap(ChunkCoord coords)
         {
+            var mapWatch = new Stopwatch();
+            mapWatch.Start();
+            
             var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
 
             for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
@@ -82,14 +107,26 @@ namespace Model
                 {
                     for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
                     {
-                        map[iX, iY, iZ] = GetVoxel(iX + coords.X * VoxelLookups.CHUNK_SIZE, iY, iZ+ coords.Y * VoxelLookups.CHUNK_SIZE);
+                        map[iX, iY, iZ] = GenerateVoxel(iX + coords.X * VoxelLookups.CHUNK_SIZE, iY, iZ+ coords.Y * VoxelLookups.CHUNK_SIZE);
                     }
                 }
             }
 
             _chunkMaps[coords] = map;
+            
+            mapWatch.Stop();
+            Chunk.MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
+
+            return map;
         }
 
+        /// <summary>
+        /// Returns voxel on world coordinates - decides if we need to generate the voxel or we can retrieve that from already generated data
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
         public byte GetVoxel(int x, int y, int z)
         {
             // ======== STATIC RULES ========
@@ -109,6 +146,31 @@ namespace Model
 
             // ======== BASIC PASS ========
 
+            return GenerateVoxel(x, y, z);
+        }
+        
+        public int GetTerainHeight(int x, int y)
+        {
+            return Mathf.FloorToInt(World.BiomeDef.TerrainMin + World.BiomeDef.TerrainHeight * Noise.Get2DPerlin(x, y, 0, World.BiomeDef.TerrainScale));
+        }
+        
+        /// <summary>
+        /// Generates single voxel on world coordinates - called only by WorldModel when we truly want to generate
+        /// and know that coordinates are valid
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
+        private byte GenerateVoxel(int x, int y, int z)
+        {
+            // ======== STATIC RULES ========
+
+            if (y == 0)
+                return VoxelTypeByte.HARD_ROCK;
+
+            // ======== BASIC PASS ========
+
             var terrainHeight = GetTerainHeight(x, z);
 
             byte voxelValue = 0;
@@ -125,7 +187,6 @@ namespace Model
             //rest is rock
             else
                 voxelValue = VoxelTypeByte.ROCK;
-
 
             //LODES PASS
             if (voxelValue == VoxelTypeByte.ROCK)
@@ -151,13 +212,7 @@ namespace Model
                 }
             }
 
-
             return voxelValue;
-        }
-        
-        public int GetTerainHeight(int x, int y)
-        {
-            return Mathf.FloorToInt(World.BiomeDef.TerrainMin + World.BiomeDef.TerrainHeight * Noise.Get2DPerlin(x, y, 0, World.BiomeDef.TerrainScale));
         }
 
         #endregion
