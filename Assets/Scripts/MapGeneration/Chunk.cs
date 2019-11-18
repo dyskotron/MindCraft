@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using MapGeneration.Lookup;
+using Model;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
@@ -15,15 +16,12 @@ namespace MapGeneration
         public static double CHUNKS_TOTAL = 0;
 
         public World World => Locator.World;
+        public WorldModel WorldModel => Locator.WorldModel;
         public Vector2[,,] UvLookup => Locator.TextureLookup.UvLookup;
 
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
-
-        //texture consts
-        //private const int BLOCKS_PER_TEXTURE = 4;
-        //private const float NORMALIZED_BLOCK_SIZE = 1f / BLOCKS_PER_TEXTURE;
 
         private readonly GameObject _gameObject;
         private MeshRenderer _meshRenderer;
@@ -34,16 +32,14 @@ namespace MapGeneration
         private List<Vector3> vertices = new List<Vector3>();
         private List<int> triangles = new List<int>();
         private List<Vector2> uvs = new List<Vector2>();
-        private byte[,,] _voxelMap;
 
         private ChunkCoord _coords;
-        private Vector3 _position;
+        private byte[,,] _map;
 
         public Chunk(ChunkCoord coords)
         {
             _coords = coords;
-            _position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
-
+            
             _gameObject = new GameObject();
             _gameObject.name = $"Chunk({coords.X},{coords.Y})";
             _meshRenderer = _gameObject.AddComponent<MeshRenderer>();
@@ -55,12 +51,9 @@ namespace MapGeneration
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
 
-
             var mapWatch = new Stopwatch();
             mapWatch.Start();
-
-            CreateMap();
-
+            WorldModel.CreateChunkMap(_coords);
             mapWatch.Stop();
             MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
 
@@ -80,84 +73,25 @@ namespace MapGeneration
             set { _gameObject.SetActive(value); }
         }
 
-        public void EditVoxel(Vector3 position, byte VoxelType)
+        private byte GetVoxelData(int x , int y, int z)
         {
-            var posX = Mathf.FloorToInt(position.x);
-            var posY = Mathf.FloorToInt(position.y);
-            var posZ = Mathf.FloorToInt(position.z);
-
-            posX -= _coords.X * VoxelLookups.CHUNK_SIZE;
-            posZ -= _coords.Y * VoxelLookups.CHUNK_SIZE;
-
-            _voxelMap[posX, posY, posZ] = VoxelType;
-
-            UpdateChunkMesh();
-            UpdateSurroundings(posX, posY, posZ);
-        }
-
-        private byte GetVoxelData(Vector3 position)
-        {
-            var x = Mathf.FloorToInt(position.x);
-            var y = Mathf.FloorToInt(position.y);
-            var z = Mathf.FloorToInt(position.z);
-
-            //TODO: specific checks for each direction when using by face checks, so we save useless checks
-            if (!IsVoxelInChunk(x, y, z))
-                return World.GetVoxel(position + _position);
-
-            return _voxelMap[x, y, z];
-        }
-
-        public byte GetVoxelFromGlobalVector3(Vector3 position)
-        {
-            var posX = Mathf.FloorToInt(position.x);
-            var posY = Mathf.FloorToInt(position.y);
-            var posZ = Mathf.FloorToInt(position.z);
-
-            posX -= _coords.X * VoxelLookups.CHUNK_SIZE;
-            posZ -= _coords.Y * VoxelLookups.CHUNK_SIZE;
-
-            return _voxelMap[posX, posY, posZ];
-        }
-
-        private void UpdateSurroundings(int x, int y, int z)
-        {
-            Vector3 thisvoxel = new Vector3(x, y, z);
-
-            for (int i = 0; i < 6; i++)
-            {
-                Vector3 currentVoxel = thisvoxel + VoxelLookups.Neighbours[i];
-
-                if (!IsVoxelInChunk((int) currentVoxel.x, (int) currentVoxel.y, (int) currentVoxel.z))
-                    World.GetChunkFromVector3(currentVoxel + _position).UpdateChunkMesh();
-            }
-        }
-
-        private void CreateMap()
-        {
-            _voxelMap = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
-
-            for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
-            {
-                for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
-                {
-                    for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
-                    {
-                        _voxelMap[iX, iY, iZ] = World.GetVoxel(new Vector3(iX, iY, iZ) + _position);
-                    }
-                }
-            }
-        }
-
-        private void AddVoxel(Vector3 position)
-        {
-            var voxelId = GetVoxelData(position);
+            //TODO: specific checks for each direction when using by face checks, dont test in rest of cases at all
+            if (IsVoxelInChunk(x, y, z))
+                return _map[x, y, z];
             
+            return WorldModel.GetVoxel(x + _coords.X * VoxelLookups.CHUNK_SIZE, y, z + _coords.Y * VoxelLookups.CHUNK_SIZE);
+        }
+
+        private void AddVoxel(byte voxelId, int x, int y, int z)
+        {
+            var position = new Vector3(x, y, z);
             //iterate faces
             for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
             {
-                //check neighbours
-                if (GetVoxelData(position + VoxelLookups.Neighbours[iF]) != VoxelTypeByte.AIR)
+                var neighbour = VoxelLookups.Neighbours[iF];
+                
+                //check neighbours - TODO: Call this method only when sure we're out of chunk - otherwise get from map!
+                if (GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z) != VoxelTypeByte.AIR)
                     continue;
 
                 //iterate triangles
@@ -185,15 +119,15 @@ namespace MapGeneration
             return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
         }
 
-        public bool CheckVoxel(int posX, int posY, int posZ)
+        public bool CheckVoxel(int x, int y, int z)
         {
             try
             {
-                return _voxelMap[posX, posY, posZ] != 0;
+                return WorldModel.TryGetMapByChunkCoords(_coords)[x, y, z] != 0;
             }
             catch (Exception e)
             {
-                Debug.LogWarning($"<color=\"aqua\">Chunk.CheckVoxel() : posX:{posX} posY:{posY} posZ:{posZ}</color>");
+                Debug.LogWarning($"<color=\"aqua\">Chunk.CheckVoxel() : posX:{x} posY:{y} posZ:{z}</color>");
                 throw;
             }
         }
@@ -201,8 +135,10 @@ namespace MapGeneration
 
         #region Mesh Generation
 
-        private void UpdateChunkMesh()
+        public void UpdateChunkMesh()
         {
+            _map = WorldModel.TryGetMapByChunkCoords(_coords);
+            
             currentVertexIndex = 0;
             vertices.Clear();
             triangles.Clear();
@@ -214,8 +150,9 @@ namespace MapGeneration
                 {
                     for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
                     {
-                        if (GetVoxelData(new Vector3(iX, iY, iZ)) != VoxelTypeByte.AIR)
-                            AddVoxel(new Vector3(iX, iY, iZ));
+                        var type = _map[iX, iY, iZ];
+                        if (type != VoxelTypeByte.AIR)
+                            AddVoxel(type, iX, iY, iZ);
                     }
                 }
             }

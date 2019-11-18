@@ -9,18 +9,18 @@ namespace MapGeneration.Lookup
         public const int CHUNK_SIZE = 6; 
         public const int CHUNK_HEIGHT = 128;
         public const int VIEW_DISTANCE = 30;//100;
-        public static int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
+        public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
 
-        public static readonly Vector3[] Vertices =
+        public static readonly Vector3Int[] Vertices =
         {
-            new Vector3(0, 0, 0),
-            new Vector3(1, 0, 0),
-            new Vector3(1, 1, 0),
-            new Vector3(0, 1, 0),
-            new Vector3(0, 0, 1),
-            new Vector3(1, 0, 1),
-            new Vector3(1, 1, 1),
-            new Vector3(0, 1, 1),
+            new Vector3Int(0, 0, 0),
+            new Vector3Int(1, 0, 0),
+            new Vector3Int(1, 1, 0),
+            new Vector3Int(0, 1, 0),
+            new Vector3Int(0, 0, 1),
+            new Vector3Int(1, 0, 1),
+            new Vector3Int(1, 1, 1),
+            new Vector3Int(0, 1, 1),
         };
 
         public static readonly int[,] Triangles =
@@ -33,14 +33,14 @@ namespace MapGeneration.Lookup
             {1, 2, 5, 6}, // Right
         };
 
-        public static readonly Vector3[] Neighbours =
+        public static readonly Vector3Int[] Neighbours =
         {
-            Vector3.back,
-            Vector3.forward,
-            Vector3.up,
-            Vector3.down,
-            Vector3.left,
-            Vector3.right,
+            new Vector3Int(0,0, -1), // Back
+            new Vector3Int(0,0, 1), // Front
+            new Vector3Int(0,1,0), // Top
+            new Vector3Int(0,-1,0), // Bottom
+            new Vector3Int(-1,0,0), // Left
+            new Vector3Int(1,0,0), // Right
         };
 
         public static readonly int[] indexToVertex = {0, 1, 2, 2, 1, 3};

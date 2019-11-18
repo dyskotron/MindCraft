@@ -1,4 +1,5 @@
 using MapGeneration;
+using Model;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -6,6 +7,7 @@ public class Player : MonoBehaviour
     public const float PLAYER_HEIGHT = 1.8f;
 
     public World World => Locator.World;
+    public WorldModel WorldModel => Locator.WorldModel;
     
     public GameObject AddHighlightBlock;
     public GameObject RemoveHighlightBlock;
@@ -69,7 +71,7 @@ public class Player : MonoBehaviour
 
     private void PlaceCursorBlocks()
     {
-        float checkIncrement = 0.1f;
+        float checkIncrement = 0.01f;
         float reach = 10;
         
         float step = checkIncrement;
@@ -142,10 +144,10 @@ public class Player : MonoBehaviour
         if (RemoveHighlightBlock.activeSelf)
         {
             if(Input.GetMouseButtonDown(0))
-                World.GetChunkFromVector3(AddHighlightBlock.transform.position).EditVoxel(AddHighlightBlock.transform.position, 1);
+                WorldModel.EditVoxel(AddHighlightBlock.transform.position, 1);
             
             if(Input.GetMouseButtonDown(1))
-                World.GetChunkFromVector3(RemoveHighlightBlock.transform.position).EditVoxel(RemoveHighlightBlock.transform.position, 0);
+                WorldModel.EditVoxel(RemoveHighlightBlock.transform.position, 0);
         }
     }
 
