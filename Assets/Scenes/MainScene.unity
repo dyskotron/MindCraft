@@ -730,6 +730,7 @@ MonoBehaviour:
   Player: {fileID: 1436716595}
   Material: {fileID: 2100000, guid: 7387af500986b4877b025a539dcba0fd, type: 2}
   VoxelDefs:
+  - {fileID: 0}
   - {fileID: 11400000, guid: 5766ce66771f74a059996d5d5baa98b9, type: 2}
   - {fileID: 11400000, guid: ed1a2ba4c3bf04d7986bd90c7b255585, type: 2}
   - {fileID: 11400000, guid: 483ad582c1dea4c2cb2e3dd8bfcb5c49, type: 2}

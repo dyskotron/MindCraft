@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using MapGeneration.Defs;
 using MapGeneration.Lookup;
 using Model;
 using UnityEngine;
@@ -108,7 +109,7 @@ namespace MapGeneration
         {
             try
             {
-                return WorldModel.TryGetMapByChunkCoords(_coords)[x, y, z] != 0;
+                return WorldModel.TryGetMapByChunkCoords(_coords)[x, y, z] != VoxelTypeByte.AIR;
             }
             catch (Exception e)
             {

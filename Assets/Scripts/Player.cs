@@ -1,4 +1,5 @@
 using MapGeneration;
+using MapGeneration.Defs;
 using Model;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ public class Player : MonoBehaviour
 
     public World World => Locator.World;
     public WorldModel WorldModel => Locator.WorldModel;
-    
+
     public GameObject AddHighlightBlock;
     public GameObject RemoveHighlightBlock;
 
@@ -31,15 +32,15 @@ public class Player : MonoBehaviour
 
     private float _moveSpeed = 0;
 
-    private float verticalMomentum; //?? 
-    private bool jumpRequest; //?? 
-    private bool isGrounded; //?? 
+    private float verticalMomentum; 
+    private bool jumpRequest; 
+    private bool isGrounded; 
     private Transform _transform;
 
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
-        
+
         _camera = Camera.main.transform;
         _transform = transform;
     }
@@ -73,38 +74,62 @@ public class Player : MonoBehaviour
     {
         float checkIncrement = 0.01f;
         float reach = 10;
-        
+
         float step = checkIncrement;
         Vector3 lastPos = new Vector3();
 
         while (step < reach)
         {
             Vector3 position = _camera.position + _camera.forward * step;
-            
+
             if (World.CheckVoxel(position.x, position.y, position.z))
             {
                 RemoveHighlightBlock.transform.position = new Vector3(Mathf.FloorToInt(position.x),
-                                                                   Mathf.FloorToInt(position.y),
-                                                                   Mathf.FloorToInt(position.z));
+                                                                      Mathf.FloorToInt(position.y),
+                                                                      Mathf.FloorToInt(position.z));
 
                 AddHighlightBlock.transform.position = lastPos;
-                
+
                 AddHighlightBlock.SetActive(true);
                 RemoveHighlightBlock.SetActive(true);
-                
+
                 return;
             }
-            
+
             lastPos = new Vector3(Mathf.FloorToInt(position.x),
                                   Mathf.FloorToInt(position.y),
                                   Mathf.FloorToInt(position.z));
 
             step += checkIncrement;
         }
-        
+
         AddHighlightBlock.SetActive(false);
         RemoveHighlightBlock.SetActive(false);
     }
+
+    private void GetPLayerInputs()
+    {
+        _horizontal = Input.GetAxis("Horizontal");
+        _vertical = Input.GetAxis("Vertical");
+        _mouseHorizontal = Input.GetAxis("Mouse X");
+        _mouseVertical = Input.GetAxis("Mouse Y");
+
+        _moveSpeed = Input.GetButton("Sprint") ? RunSpeed : WalkSpeed;
+
+        if (isGrounded && Input.GetButtonDown("Jump"))
+            jumpRequest = true;
+
+        if (RemoveHighlightBlock.activeSelf)
+        {
+            if (Input.GetMouseButtonDown(0))
+                WorldModel.EditVoxel(RemoveHighlightBlock.transform.position, VoxelTypeByte.AIR);
+            else if (Input.GetMouseButtonDown(1))
+                WorldModel.EditVoxel(AddHighlightBlock.transform.position, VoxelTypeByte.HARD_ROCK);
+            
+        }
+    }
+
+    #region Physics
 
     private void CalculateVelocity()
     {
@@ -127,28 +152,6 @@ public class Player : MonoBehaviour
             _velocity.y = CheckDownSpeed(_velocity.y);
         if (_velocity.y > 0)
             _velocity.y = CheckUpSpeed(_velocity.y);
-    }
-
-    private void GetPLayerInputs()
-    {
-        _horizontal = Input.GetAxis("Horizontal");
-        _vertical = Input.GetAxis("Vertical");
-        _mouseHorizontal = Input.GetAxis("Mouse X");
-        _mouseVertical = Input.GetAxis("Mouse Y");
-
-        _moveSpeed = Input.GetButton("Sprint") ? RunSpeed : WalkSpeed;
-
-        if (isGrounded && Input.GetButtonDown("Jump"))
-            jumpRequest = true;
-
-        if (RemoveHighlightBlock.activeSelf)
-        {
-            if(Input.GetMouseButtonDown(0))
-                WorldModel.EditVoxel(AddHighlightBlock.transform.position, 1);
-            
-            if(Input.GetMouseButtonDown(1))
-                WorldModel.EditVoxel(RemoveHighlightBlock.transform.position, 0);
-        }
     }
 
     private float CheckDownSpeed(float speed)
@@ -204,4 +207,6 @@ public class Player : MonoBehaviour
         return World.CheckVoxel(transform.position.x + playerSize, transform.position.y, transform.position.z) ||
                World.CheckVoxel(transform.position.x + playerSize, transform.position.y, transform.position.z);
     }
+
+    #endregion
 }

@@ -17,7 +17,10 @@ namespace MapGeneration.Lookup
         {
             UvLookup = new Vector2[VoxelDefs.Length, 6, 4];
             
-            for(var iVoxelType = 0; iVoxelType < VoxelDefs.Length; iVoxelType++)
+            //TODO fix voxel type determination so we rely on actual enum in the voxel def not array index
+            //zero is only marker for no data so we dont need to generate uv lookup
+            //(we actually also don't need to do that for Air)
+            for(var iVoxelType = 1; iVoxelType < VoxelDefs.Length; iVoxelType++)
             {
                 var voxelDef = VoxelDefs[iVoxelType];
                 
@@ -25,7 +28,7 @@ namespace MapGeneration.Lookup
                 {
                     var textureId = voxelDef.FaceTextures[iFace];
                     
-                    float x = (textureId % BLOCKS_PER_TEXTURE_DIMENSION) * NORMALIZED_BLOCK_SIZE;
+                    float x = textureId % BLOCKS_PER_TEXTURE_DIMENSION * NORMALIZED_BLOCK_SIZE;
                     float y = (int) (textureId / BLOCKS_PER_TEXTURE_DIMENSION) * NORMALIZED_BLOCK_SIZE;
 
                     UvLookup[iVoxelType, iFace, 0] = new Vector2(x, y);
