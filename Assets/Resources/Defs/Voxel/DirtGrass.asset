@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Dirt with Grass
   IsSolid: 1
+  Hardness: 2
   FaceTextures: 08080b0f0808

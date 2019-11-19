@@ -4,6 +4,7 @@ using MapGeneration.Defs;
 using MapGeneration.Lookup;
 using Model;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -15,7 +16,8 @@ namespace MapGeneration
         
         public Transform Player;
         public Material Material;
-        public Material PlaceVoxelMaterial;
+        [FormerlySerializedAs("PlaceVoxelMaterial")] public Material PlaceBlockMaterial;
+        [FormerlySerializedAs("UtilMaterial")] public Material MineMaterial;
         public VoxelDef[] VoxelDefs;
         public BiomeDef BiomeDef;
         public int Seed;
@@ -37,7 +39,7 @@ namespace MapGeneration
             Cursor.lockState = CursorLockMode.Locked;
             Random.InitState(Seed);
             
-            Camera.main.nearClipPlane = 0.05f;
+            Camera.main.nearClipPlane = 0.01f;
             Camera.main.farClipPlane = VoxelLookups.VIEW_DISTANCE;
             
             Locator.World = this;
@@ -51,7 +53,7 @@ namespace MapGeneration
             _watch.Stop();
 
             //place player few blocks above terrain
-            _spawnPosition = new Vector3(0f, WorldModel.GetTerainHeight(0,0) + 5, 0f);
+            _spawnPosition = new Vector3(0f, WorldModel.GetTerrainHeight(0,0) + 5, 0f);
 
             Player.position = _spawnPosition;
             _lastPlayerCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(_spawnPosition);

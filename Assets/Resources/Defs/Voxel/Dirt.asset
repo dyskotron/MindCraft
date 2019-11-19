@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: Dirt
   IsSolid: 1
+  Hardness: 3
   FaceTextures: 0f0f0f0f0f0f

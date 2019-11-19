@@ -9,10 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
-  m_Name: Default
+  m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
+  m_Name: BasicBiome
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
-  Name: Default
+  Name: BasicBiome
   TerrainScale: 0.05
   TerrainMin: 40
   TerrainMax: 120
@@ -20,16 +20,16 @@ MonoBehaviour:
   - Name: 
     MinHeight: 60
     MaxHeight: 120
-    Scale: 0.25
-    Treshold: 0.6
+    Scale: 0.248
+    Treshold: 0.587
     ScaleTresholdByHeight: 2
     Offset: 0
     _blockId: 3
-  - Name: 
-    MinHeight: 10
-    MaxHeight: 60
+  - Name: Caves
+    MinHeight: 12
+    MaxHeight: 52
     Scale: 0.1
-    Treshold: 0.5
+    Treshold: 0.522
     ScaleTresholdByHeight: 0
     Offset: 0.1
-    _blockId: 0
+    _blockId: 1

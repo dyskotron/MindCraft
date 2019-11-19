@@ -18,7 +18,7 @@ namespace MapGeneration
 
         public World World => Locator.World;
         public WorldModel WorldModel => Locator.WorldModel;
-        public Vector2[,,] UvLookup => Locator.TextureLookup.UvLookup;
+        public Vector2[,,] WorldUvLookup => Locator.TextureLookup.WorldUvLookup;
 
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
@@ -89,7 +89,7 @@ namespace MapGeneration
                     if (iV < VERTICES_PER_FACE)
                     {
                         vertices.Add(position + VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
-                        uvs.Add(UvLookup[voxelId, iF, iV]);
+                        uvs.Add(WorldUvLookup[voxelId, iF, iV]);
                     }
 
                     //we still need 6 triangle vertices tho

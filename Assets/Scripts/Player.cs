@@ -12,10 +12,9 @@ public class Player : MonoBehaviour
 
     public World World => Locator.World;
     public WorldModel WorldModel => Locator.WorldModel;
+    
 
-    public GameObject AddHighlightBlock;
-    public GameObject RemoveHighlightBlock;
-
+    public float MiningInterval = 0.8f; // Hits / s
     public float WalkSpeed = 3f;
     public float RunSpeed = 10f;
     public float LookSpeed = 3f;
@@ -24,7 +23,12 @@ public class Player : MonoBehaviour
     public float JumpForce = 5f;
 
     public float playerSize = 0.3f;
+    public Transform Pick;
 
+    public AnimationCurve PickMovementCurve;
+
+    private bool _inited;
+    
     private float _horizontal;
     private float _vertical;
     private float _mouseHorizontal;
@@ -39,19 +43,35 @@ public class Player : MonoBehaviour
     private bool jumpRequest; 
     private bool isGrounded; 
     private Transform _transform;
-    private EditCube _editCube;
-    private bool _inited;
+    
+    private EditCube _placeBlockMarker;
+    private Transform _placeBlockMarkerTransform;
+    
+    private EditCube _mineBlockMarker;
+    private Transform _mineBlockMarkerTransform;
 
-    private byte _placeBlockType = 0;
+    private byte _placeBlockType = 3;
+    
+    private Vector3Int _lastMinePosition;
+    private bool _validMiningPosition;
+    private bool _isMining;
+    private float _miningStartedTime;
+    private VoxelDef _minedBlockType;
 
     public void Init()
     {
         _camera = Camera.main.transform;
         _transform = transform;
         
-        _editCube = new EditCube();
-        _editCube.SetVoxelType(_placeBlockType);
-        AddHighlightBlock = _editCube.GameObject;
+        _placeBlockMarker = new EditCube();
+        _placeBlockMarker.Init(World.PlaceBlockMaterial);
+        _placeBlockMarker.SetVoxelType(_placeBlockType);
+        _placeBlockMarkerTransform = _placeBlockMarker.GameObject.transform;
+        
+        _mineBlockMarker = new EditCube();
+        _mineBlockMarker.Init(World.MineMaterial, 1.01f);
+        _mineBlockMarker.SetMiningProgress(_placeBlockType);
+        _mineBlockMarkerTransform = _mineBlockMarker.GameObject.transform;
 
         _inited = true;
     }
@@ -62,6 +82,7 @@ public class Player : MonoBehaviour
             return;
         
         GetPLayerInputs();
+        UpdateMining();
         PlaceCursorBlocks();
     }
 
@@ -101,13 +122,16 @@ public class Player : MonoBehaviour
 
             if (WorldModel.CheckVoxelOnGlobalXyz(position.x, position.y, position.z))
             {
-                AddHighlightBlock.transform.position = lastPos;
-                RemoveHighlightBlock.transform.position = new Vector3(Mathf.FloorToInt(position.x),
-                                                                      Mathf.FloorToInt(position.y),
-                                                                      Mathf.FloorToInt(position.z));
+                _placeBlockMarkerTransform.position = lastPos;
+                _placeBlockMarkerTransform.gameObject.SetActive(true);
 
-                AddHighlightBlock.SetActive(true);
-                RemoveHighlightBlock.SetActive(true);
+                _validMiningPosition = true;
+                SetMiningPosition(new Vector3Int(Mathf.FloorToInt(position.x),
+                                                 Mathf.FloorToInt(position.y),
+                                                 Mathf.FloorToInt(position.z)));
+
+                
+                
 
                 return;
             }
@@ -119,8 +143,70 @@ public class Player : MonoBehaviour
             step += checkIncrement;
         }
 
-        AddHighlightBlock.SetActive(false);
-        RemoveHighlightBlock.SetActive(false);
+        _placeBlockMarkerTransform.gameObject.SetActive(false);
+        _mineBlockMarkerTransform.gameObject.SetActive(false);
+        _validMiningPosition = false;
+    }
+
+    private void UpdateMining()
+    {
+        if (!_isMining)
+        {
+            //check if we could start mining
+            if (_validMiningPosition && Input.GetMouseButton(0))
+            {
+                //START MINING
+                _isMining = true;
+                _miningStartedTime = Time.time;
+            }   
+        }
+        else
+        {
+            if (!_validMiningPosition || !Input.GetMouseButton(0))
+            {
+                //STOP MINING
+                _isMining = false;
+                _mineBlockMarker.SetMiningProgress(0);
+                Pick.transform.localRotation = Quaternion.identity;
+                return;
+            }
+            
+            //block can't be mined (bedrock)
+            if(_minedBlockType.Hardness == 0)
+                return;
+            
+            var miningLength = Time.time - _miningStartedTime;
+            var hits = Mathf.FloorToInt(miningLength / MiningInterval);
+            
+            var animProgress = PickMovementCurve.Evaluate((miningLength % MiningInterval) / MiningInterval);
+
+            Pick.transform.localRotation = Quaternion.Euler(new Vector3(-45 * animProgress, 0 ,0));
+            
+            _mineBlockMarker.SetMiningProgress(hits);
+            
+            //finish mining (remove block)
+            if (hits >= _minedBlockType.Hardness)
+                WorldModel.EditVoxel(_lastMinePosition, VoxelTypeByte.AIR);
+        }
+    }
+
+    private void SetMiningPosition(Vector3Int position)
+    {
+        if(position == _lastMinePosition)
+            return;
+        
+        _mineBlockMarkerTransform.position = position;
+        _mineBlockMarkerTransform.gameObject.SetActive(true);
+        _validMiningPosition = true;
+        
+        //position changed =>> reset mining timer
+        _miningStartedTime = Time.time;
+        
+        _minedBlockType = World.VoxelDefs[WorldModel.GetVoxel(position.x, position.y, position.z)];
+
+        Debug.LogWarning($"<color=\"aqua\">Player.SetMiningPosition() : WE ARE GOING TO MINE {_minedBlockType.Name}</color>");
+        
+        _lastMinePosition = position;
     }
 
     private void GetPLayerInputs()
@@ -135,12 +221,10 @@ public class Player : MonoBehaviour
         if (isGrounded && Input.GetButtonDown("Jump"))
             jumpRequest = true;
 
-        if (RemoveHighlightBlock.activeSelf)
+        if (_mineBlockMarkerTransform.gameObject.activeSelf)
         {
-            if (Input.GetMouseButtonDown(0))
-                WorldModel.EditVoxel(RemoveHighlightBlock.transform.position, VoxelTypeByte.AIR);
-            else if (Input.GetMouseButtonDown(1))
-                WorldModel.EditVoxel(AddHighlightBlock.transform.position, _placeBlockType);
+            if (Input.GetMouseButtonDown(1))
+                WorldModel.EditVoxel(_placeBlockMarkerTransform.position, _placeBlockType);
             
         }
 
@@ -153,8 +237,9 @@ public class Player : MonoBehaviour
             _placeBlockType = (byte)((_placeBlockType + NUM_USABLE_BLOCK_TYPES + dir) % NUM_USABLE_BLOCK_TYPES);
             
             _placeBlockType += 2;
-            _editCube.SetVoxelType(_placeBlockType);
+            _placeBlockMarker.SetVoxelType(_placeBlockType);
         }
+
     }
 
     #region Physics

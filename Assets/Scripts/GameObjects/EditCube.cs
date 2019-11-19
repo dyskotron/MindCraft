@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using MapGeneration.Lookup;
 using UnityEngine;
@@ -8,54 +9,40 @@ namespace MapGeneration
     public class EditCube
     {
         public World World => Locator.World;
-        public Vector2[,,] UvLookup => Locator.TextureLookup.UvLookup;
+        public Vector2[,,] WorldUvLookup => Locator.TextureLookup.WorldUvLookup;
+        public Vector2[,] UtilsUvLookup => Locator.TextureLookup.UtilsUvLookup;
+        public int[] UtilsTextureIndexes => Locator.TextureLookup.UtilsTextureIndexes;
         public GameObject GameObject => _gameObject;
 
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
 
-        private readonly GameObject _gameObject;
+        private GameObject _gameObject;
         private MeshRenderer _meshRenderer;
         private MeshFilter _meshFilter;
+        private float _scale;
 
-        //Chunk Generation
+        //mesh generation
         private int currentVertexIndex;
         private List<Vector3> vertices = new List<Vector3>();
         private List<int> triangles = new List<int>();
         private List<Vector2> uvs = new List<Vector2>();
         private Mesh _mesh;
 
-        public EditCube()
+        public void Init(Material material, float scale = 1f)
         {
+            _scale = scale;
             _gameObject = new GameObject();
             _gameObject.name = $"EditCube";
             _meshRenderer = _gameObject.AddComponent<MeshRenderer>();
             _meshFilter = _gameObject.AddComponent<MeshFilter>();
 
-            _meshRenderer.material = World.PlaceVoxelMaterial;
+            _meshRenderer.material = material;
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
 
-            UpdateChunkMesh();
-        }
-
-        public void UpdateChunkMesh()
-        {
-            currentVertexIndex = 0;
-            vertices.Clear();
-            triangles.Clear();
-            uvs.Clear();
-
-            AddVoxel(3);
-
-            _mesh = new Mesh();
-            _mesh.vertices = vertices.ToArray();
-            _mesh.triangles = triangles.ToArray();
-            _mesh.uv = uvs.ToArray();
-            _mesh.RecalculateNormals();
-
-            _meshFilter.mesh = _mesh;
+            UpdateChunkMesh();    
         }
 
         public void SetVoxelType(int voxelId)
@@ -69,7 +56,7 @@ namespace MapGeneration
                 //iterate triangles
                 for (int iV = 0; iV < VERTICES_PER_FACE; iV++)
                 {
-                    uvs.Add(UvLookup[voxelId, iF, iV]);
+                    uvs.Add(WorldUvLookup[voxelId, iF, iV]);
                 }
                 
                 currentVertexIndex += VERTICES_PER_FACE;
@@ -78,9 +65,53 @@ namespace MapGeneration
             _mesh.uv = uvs.ToArray();
             _meshFilter.mesh = _mesh;
         }
-
-        private void AddVoxel(byte voxelId)
+        
+        public void SetMiningProgress(int progress) //0 = select >1 = damage ratio
         {
+            progress = Math.Min(progress, 6); // max brick animation atm
+            var textureId = UtilsTextureIndexes[progress];
+            
+            currentVertexIndex = 0;
+            uvs.Clear();
+            
+            //iterate faces
+            for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
+            {
+                //iterate triangles
+                for (int iV = 0; iV < VERTICES_PER_FACE; iV++)
+                {
+                    uvs.Add(UtilsUvLookup[textureId, iV]);
+                }
+                
+                currentVertexIndex += VERTICES_PER_FACE;
+            }
+            
+            _mesh.uv = uvs.ToArray();
+            _meshFilter.mesh = _mesh;
+        }
+        
+        private void UpdateChunkMesh()
+        {
+            currentVertexIndex = 0;
+            vertices.Clear();
+            triangles.Clear();
+            uvs.Clear();
+
+            CreateCubeMesh(3);
+
+            _mesh = new Mesh();
+            _mesh.vertices = vertices.ToArray();
+            _mesh.triangles = triangles.ToArray();
+            _mesh.uv = uvs.ToArray();
+            _mesh.RecalculateNormals();
+
+            _meshFilter.mesh = _mesh;
+        }
+
+        private void CreateCubeMesh(byte voxelId)
+        {
+            var zeroOffset = -0.5f * (_scale - 1) * Vector3.one;
+            
             //iterate faces
             for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
             {
@@ -92,8 +123,8 @@ namespace MapGeneration
                     // each face needs just 4 vertices & UVs
                     if (iV < VERTICES_PER_FACE)
                     {
-                        vertices.Add(VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
-                        uvs.Add(UvLookup[voxelId, iF, iV]);
+                        vertices.Add(  zeroOffset + _scale * (Vector3)VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
+                        uvs.Add(WorldUvLookup[voxelId, iF, iV]);
                     }
 
                     //we still need 6 triangle vertices tho
