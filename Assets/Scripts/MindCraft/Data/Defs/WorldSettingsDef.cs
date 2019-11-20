@@ -10,9 +10,7 @@ namespace MindCraft.Data.Defs
         public Material MineMaterial;
         public Material PlacingMaterial;
 
-        [Header("Player")] 
-        public float PlayerRadius = 0.3f;
-        public float PlayerHeight = 1f;
+        public PlayerSettings PlayerSettings;
 
         [Header("Debug Params")] 
         public bool DebugChunksMaterialEnabled;

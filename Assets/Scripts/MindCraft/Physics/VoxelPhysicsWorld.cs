@@ -26,8 +26,9 @@ namespace MindCraft.Physics
     public interface IVoxelPhysicsWorld
     {
         void AddRigidBody(VoxelRigidBody body);
-        void Start();
-        void Stop();
+        bool Enabled { get;}
+        void SetEnabled(bool enabled);
+        void Destroy();
     }
 
     public class VoxelPhysicsWorld : IVoxelPhysicsWorld
@@ -35,27 +36,35 @@ namespace MindCraft.Physics
         [Inject] public IUpdater Updater { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
 
+        public bool Enabled => _enabled;
+        
         private float Gravity = -9.8f;
         private List<VoxelRigidBody> _bodies = new List<VoxelRigidBody>();
 
-        private bool _running = false;
+        private bool _enabled;
 
-        public void Start()
+        [PostConstruct]
+        public void PostConstruct()
         {
-            if (_running)
-                return;
-
-            Updater.EveryFrame(UpdateBodies);
-            _running = true;
+            SetEnabled(true);
         }
 
-        public void Stop()
+        public void SetEnabled(bool value)
         {
-            if (!_running)
+            if(_enabled == value)
                 return;
+            
+            _enabled = value;  
 
-            Updater.RemoveFrameAction(UpdateBodies);
-            _running = false;
+            if(_enabled)
+                Updater.EveryStep(UpdateBodies);
+            else
+                Updater.RemoveStepAction(UpdateBodies);
+        }
+
+        public void Destroy()
+        {
+            SetEnabled(false);
         }
 
         public void AddRigidBody(VoxelRigidBody body)

@@ -49,6 +49,9 @@ namespace MindCraft
             injectionBinder.Bind<AppStateEnterSignal>().ToSingleton();
             injectionBinder.Bind<AppStateExitSignal>().ToSingleton();
             
+            //Controller
+            injectionBinder.Bind<IPlayerController>().To<PlayerController>().ToSingleton();
+            
             //World
             injectionBinder.Bind<IWorldModel>().To<WorldModel>().ToSingleton();
             injectionBinder.Bind<IVoxelPhysicsWorld>().To<VoxelPhysicsWorld>();

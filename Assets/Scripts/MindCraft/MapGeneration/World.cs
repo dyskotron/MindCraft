@@ -62,8 +62,8 @@ namespace MindCraft.MapGeneration
 
             _initialized = true;
 
-            var playerScript = Player.GetComponent<Player>();
-            playerScript.Init();
+            //var playerScript = Player.GetComponent<Player>();
+            //playerScript.Init();
         }
 
         private void Update()
