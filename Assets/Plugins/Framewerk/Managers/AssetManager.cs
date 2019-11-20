@@ -32,12 +32,21 @@ namespace Framewerk.Managers
         ///
         /// </summary>
         /// <param name="path">Absolute path to asset</param>
+        /// /// <param name="parent">Parent where the prefab should be instantiated</param>
         /// <param name="saveToCache">If Asset should be saved to cache</param>
         /// <typeparam name="T"></typeparam>
         /// <returns>Wanted asset of type T</returns>
-        T GetAsset<T>(string path, Transform instantiateParent = null, bool saveToCache = false)
-            where T : Object;
+        T GetAsset<T>(string path, Transform parent = null, bool saveToCache = false) where T : Object;
 
+        /// <summary>
+        /// Instantiate GameObject, finds and returns Monobehaviour by Type.
+        /// </summary>
+        /// <param name="path">Optional path that can be added between UI root and prefab name
+        /// UI_ROOT/[ADDED CUSTOM PATH/]prefabname</param>
+        /// <param name="parent">Parent where the GameObject should be instantiated</param>
+        /// /// <param name="saveToCache">If Asset should be saved to cache</param>
+        /// <returns></returns>
+        T GetGameObject<T>(string path = "", Transform parent = null, bool saveToCache = false) where T : MonoBehaviour;
 
         /// <summary>
         /// Get Sprite by path,
@@ -125,6 +134,17 @@ namespace Framewerk.Managers
 
             return returnObj;
         }
+        
+        public T GetGameObject<T>(string path = "", Transform parent = null, bool saveToCache = false) where T : MonoBehaviour
+        {
+            var uiObj = GetAsset<GameObject>(path, parent, saveToCache);
+            var component = uiObj.GetComponent<T>();
+
+            if (component == null)
+                Debug.LogErrorFormat("AssetManager.GetGameObject There is no {0} script attached on {1} Prefab", typeof(T), uiObj);
+
+            return component;
+        }
 
 		public Material GetMaterial(string path, bool saveToCache = false)
 		{
@@ -175,7 +195,7 @@ namespace Framewerk.Managers
                     cachedObjects[path] = loadedObject;
             }
 
-           if (loadedObject == null)
+            if (loadedObject == null)
             {
                 Debug.LogErrorFormat("AssetManager.TryGetFromCache: There is no Asset in path {0} or its not of type {1} ", path, typeof(T));
                 return null;
