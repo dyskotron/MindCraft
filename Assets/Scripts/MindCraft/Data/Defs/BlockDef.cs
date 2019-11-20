@@ -1,9 +1,9 @@
 using UnityEngine;
 
-namespace MindCraft.MapGeneration.Defs
+namespace MindCraft.Data.Defs
 {
-    [CreateAssetMenu(menuName = "MapGeneration/Voxel definition")]
-    public class VoxelDef : ScriptableObject
+    [CreateAssetMenu(menuName = "Defs/Block definition")]
+    public class BlockDef : DefinitionSO<BlockTypeId>
     {
         public string Name;
         public bool IsSolid;

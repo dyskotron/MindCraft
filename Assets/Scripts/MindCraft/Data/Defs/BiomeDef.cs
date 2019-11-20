@@ -3,9 +3,9 @@ using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace MindCraft.MapGeneration.Defs
+namespace MindCraft.Data.Defs
 {
-    [CreateAssetMenu(menuName = "MapGeneration/Biome definition")]
+    [CreateAssetMenu(menuName = "Defs/Biome definition")]
     public class BiomeDef : ScriptableObject
     {
         public string Name;
@@ -50,7 +50,7 @@ namespace MindCraft.MapGeneration.Defs
         public float Offset;
         
         [SerializeField]
-        private VoxelTypeId _blockId;
+        private BlockTypeId _blockId;
 
         public byte BlockId => (byte)_blockId;
     }

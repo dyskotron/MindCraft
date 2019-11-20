@@ -1,6 +1,7 @@
 using MindCraft.MapGeneration;
-using MindCraft.MapGeneration.Defs;
 using MindCraft;
+using MindCraft.Data;
+using MindCraft.Data.Defs;
 using MindCraft.GameObjects;
 using MindCraft.Model;
 using UnityEngine;
@@ -58,7 +59,7 @@ public class Player : MonoBehaviour
     private bool _validMiningPosition;
     private bool _isMining;
     private float _miningStartedTime;
-    private VoxelDef _minedBlockType;
+    private BlockDef _minedBlockType;
 
     public void Init()
     {
@@ -204,7 +205,7 @@ public class Player : MonoBehaviour
         //position changed =>> reset mining timer
         _miningStartedTime = Time.time;
         
-        _minedBlockType = World.VoxelDefs[WorldModel.GetVoxel(position.x, position.y, position.z)];
+        _minedBlockType = World.blockDefs[WorldModel.GetVoxel(position.x, position.y, position.z)];
 
         Debug.LogWarning($"<color=\"aqua\">Player.SetMiningPosition() : WE ARE GOING TO MINE {_minedBlockType.Name}</color>");
         

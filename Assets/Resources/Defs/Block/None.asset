@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 77f7575b6286417a83fba486a2efa28e, type: 3}
-  m_Name: DirtGrass
+  m_Name: None
   m_EditorClassIdentifier: 
-  Name: Dirt with Grass
-  IsSolid: 1
-  Hardness: 2
-  FaceTextures: 08080b0f0808
+  Name: None
+  IsSolid: 0
+  Hardness: 0
+  FaceTextures: 000000000000

@@ -1,5 +1,6 @@
 using MindCraft;
-using MindCraft.MapGeneration.Defs;
+using MindCraft.Data;
+using MindCraft.Data.Defs;
 using UnityEngine;
 
 namespace MindCraft.MapGeneration.Lookup
@@ -7,7 +8,7 @@ namespace MindCraft.MapGeneration.Lookup
     //Pregenerate set of 4 uvs per face per voxel type
     public class TextureLookup
     {
-        public VoxelDef[] VoxelDefs => Locator.World.VoxelDefs;
+        [Inject] public IBlockDefs BlockDefs { get; set; }
 
         //World
         private const int BLOCKS_PER_SIDE_WORLD = 4;
@@ -23,16 +24,20 @@ namespace MindCraft.MapGeneration.Lookup
         public Vector2[,] UtilsUvLookup;
         public int[] UtilsTextureIndexes = new[] {0, 6, 7, 3, 4, 8, 5, 0, 0};
 
-        public void Init()
+        [PostConstruct]
+        public void PostConstruct()
         {
-            WorldUvLookup = new Vector2[VoxelDefs.Length, 6, 4];
+            WorldUvLookup = new Vector2[BlockDefs.GetAllDefinitions().Length, 6, 4];
 
             //TODO fix voxel type determination so we rely on actual enum in the voxel def not array index
             //zero is only marker for no data so we dont need to generate uv lookup
             //(we actually also don't need to do that for Air)
-            for (var iVoxelType = 1; iVoxelType < VoxelDefs.Length; iVoxelType++)
+
+            var blockDefs = BlockDefs.GetAllDefinitions();
+            
+            for (var iVoxelType = 1; iVoxelType < blockDefs.Length; iVoxelType++)
             {
-                var voxelDef = VoxelDefs[iVoxelType];
+                var voxelDef = blockDefs[iVoxelType];
 
                 for (var iFace = 0; iFace < voxelDef.FaceTextures.Length; iFace++)
                 {

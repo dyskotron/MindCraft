@@ -1,28 +1,62 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using DefaultNamespace;
+using Framewerk.Managers;
+using MindCraft.Data;
+using MindCraft.Data.Defs;
 using MindCraft.GameObjects;
 using MindCraft.MapGeneration;
-using MindCraft.MapGeneration.Defs;
 using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 
 namespace MindCraft.Model
 {
-    public class WorldModel
+    public interface IWorldModel
     {
-        public World World;
+        byte[,,] TryGetMapByChunkCoords(ChunkCoord coords);
+        bool CheckVoxelOnGlobalXyz(float x, float y, float z);
+        void EditVoxel(Vector3 position, byte VoxelType);
 
+        /// <summary>
+        /// Generates Chunk Map based only on seed and generation algorithm
+        /// </summary>
+        /// <param name="coords"></param>
+        /// <returns></returns>
+        byte[,,] CreateChunkMap(ChunkCoord coords);
+
+        /// <summary>
+        /// Returns voxel on world coordinates - decides if we need to generate the voxel or we can retrieve that from existing chunk
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="z"></param>
+        /// <returns></returns>
+        byte GetVoxel(int x, int y, int z);
+
+        int GetTerrainHeight(int x, int y);
+    }
+
+    public class WorldModel : IWorldModel
+    {
+        [Inject] public IAssetManager AssetManager { get; set; }
+        
+        //Storing generated chunks se we can retreieve them later on by chunk coordinates
+        private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
+        
         //map for each generated chunk - only generated data which are always recreated the same
         private Dictionary<ChunkCoord, byte[,,]> _chunkMaps = new Dictionary<ChunkCoord, byte[,,]>();
 
         //Only player modified voxels stored there
         private Dictionary<ChunkCoord, byte[,,]> _playerModifiedMaps = new Dictionary<ChunkCoord, byte[,,]>();
 
+        private BiomeDef _biomeDef;
+
         #region Getters / Helper methods
 
-        public WorldModel()
+        [PostConstruct]
+        public void PostConstruct()
         {
-            World = Locator.World;
+            _biomeDef = AssetManager.GetAsset<BiomeDef>(ResourcePath.BIOME_DEF);
         }
 
         public byte[,,] TryGetMapByChunkCoords(ChunkCoord coords)
@@ -65,7 +99,7 @@ namespace MindCraft.Model
             _playerModifiedMaps[coords][x, y, z] = VoxelType;
 
             //TODO: chunks update should not be called directly from model!
-            World.GetChunk(coords).UpdateChunkMesh(_chunkMaps[coords]);
+            _chunks[coords].UpdateChunkMesh(_chunkMaps[coords]);
 
             ChunkCoord neighbourCoords;
 
@@ -73,26 +107,26 @@ namespace MindCraft.Model
             {
                 // Update left neighbour
                 neighbourCoords = coords + ChunkCoord.Left;
-                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
             }
             else if (x >= VoxelLookups.CHUNK_SIZE - 1)
             {
                 // Update right neighbour
                 neighbourCoords = coords + ChunkCoord.Right;
-                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
             }
 
             if (z <= 0)
             {
                 // Update back neighbour
                 neighbourCoords = coords + ChunkCoord.Back;
-                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+               _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
             }
             else if (z >= VoxelLookups.CHUNK_SIZE - 1)
             {
                 // Update forward neighbour
                 neighbourCoords = coords + ChunkCoord.Forward;
-                World.GetChunk(neighbourCoords).UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+               _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
             }
         }
 
@@ -160,7 +194,7 @@ namespace MindCraft.Model
 
         public int GetTerrainHeight(int x, int y)
         {
-            return Mathf.FloorToInt(World.BiomeDef.TerrainMin + World.BiomeDef.TerrainHeight * Noise.Get2DPerlin(x, y, 0, World.BiomeDef.TerrainScale));
+            return Mathf.FloorToInt(_biomeDef.TerrainMin + _biomeDef.TerrainHeight * Noise.Get2DPerlin(x, y, 0, _biomeDef.TerrainScale));
         }
 
         /// <summary>
@@ -200,7 +234,7 @@ namespace MindCraft.Model
             //LODES PASS
             if (voxelValue == VoxelTypeByte.ROCK)
             {
-                foreach (var lode in World.BiomeDef.Lodes)
+                foreach (var lode in _biomeDef.Lodes)
                 {
                     if (y > lode.MinHeight && y < lode.MaxHeight)
                     {

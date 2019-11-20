@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using MindCraft.Data;
 using MindCraft.MapGeneration;
-using MindCraft.MapGeneration.Defs;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.Model;
 using UnityEngine;
@@ -11,19 +11,21 @@ namespace MindCraft.GameObjects
 {
     public class Chunk
     {
+        [Inject] public IWorldSettingsProvider WorldSettings { get; set; }
+        [Inject] public IWorldModel WorldModel { get; set; }
+        [Inject] public TextureLookup TextureLookup { get; set; }
+        
         public static double MAP_ELAPSED_TOTAL = 0;
         public static double MESH_ELAPSED_TOTAL = 0;
         public static double CHUNKS_TOTAL = 0;
 
-        public World World => Locator.World;
-        public WorldModel WorldModel => Locator.WorldModel;
-        public Vector2[,,] WorldUvLookup => Locator.TextureLookup.WorldUvLookup;
-
+        //public Vector2[,,] WorldUvLookup => Locator.TextureLookup.WorldUvLookup;
+        
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
 
-        private readonly GameObject _gameObject;
+        private GameObject _gameObject;
         private MeshRenderer _meshRenderer;
         private MeshFilter _meshFilter;
 
@@ -36,7 +38,7 @@ namespace MindCraft.GameObjects
         private ChunkCoord _coords;
         private byte[,,] _map;
 
-        public Chunk(ChunkCoord coords)
+        public void Init(ChunkCoord coords)
         {
             _coords = coords;
             
@@ -47,7 +49,7 @@ namespace MindCraft.GameObjects
 
             _gameObject.transform.position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
 
-            _meshRenderer.material = World.GetMaterial(coords);
+            _meshRenderer.material = WorldSettings.GetMaterial(coords);
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
         }
@@ -88,7 +90,7 @@ namespace MindCraft.GameObjects
                     if (iV < VERTICES_PER_FACE)
                     {
                         vertices.Add(position + VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
-                        uvs.Add(WorldUvLookup[voxelId, iF, iV]);
+                        uvs.Add(TextureLookup.WorldUvLookup[voxelId, iF, iV]);
                     }
 
                     //we still need 6 triangle vertices tho

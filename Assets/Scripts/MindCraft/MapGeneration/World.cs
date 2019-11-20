@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using MindCraft;
+using MindCraft.Data.Defs;
 using MindCraft.GameObjects;
-using MindCraft.MapGeneration.Defs;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.Model;
 using UnityEngine;
@@ -20,7 +20,7 @@ namespace MindCraft.MapGeneration
         public Material Material;
         [FormerlySerializedAs("PlaceVoxelMaterial")] public Material PlaceBlockMaterial;
         [FormerlySerializedAs("UtilMaterial")] public Material MineMaterial;
-        public VoxelDef[] VoxelDefs;
+        [FormerlySerializedAs("VoxelDefs")] public BlockDef[] blockDefs;
         public BiomeDef BiomeDef;
         public int Seed;
 
@@ -47,7 +47,7 @@ namespace MindCraft.MapGeneration
             Locator.World = this;
             Locator.WorldModel = WorldModel = new WorldModel();
             Locator.TextureLookup = new TextureLookup();
-            Locator.TextureLookup.Init();
+            Locator.TextureLookup.PostConstruct();
 
             _watch = new Stopwatch();
             _watch.Start();
@@ -111,7 +111,8 @@ namespace MindCraft.MapGeneration
         private void CreateChunk(ChunkCoord coords)
         {
             var map = WorldModel.CreateChunkMap(coords);
-            _chunks[coords] = new Chunk(coords);
+            _chunks[coords] = new Chunk();
+            _chunks[coords].Init(coords);
             _chunks[coords].UpdateChunkMesh(map);
         }
 
