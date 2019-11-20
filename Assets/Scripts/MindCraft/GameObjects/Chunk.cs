@@ -11,7 +11,7 @@ namespace MindCraft.GameObjects
 {
     public class Chunk
     {
-        [Inject] public IWorldSettingsProvider WorldSettings { get; set; }
+        [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public TextureLookup TextureLookup { get; set; }
         

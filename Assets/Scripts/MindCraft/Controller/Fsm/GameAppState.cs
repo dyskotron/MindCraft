@@ -1,10 +1,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using DefaultNamespace;
 using Framewerk.AppStateMachine;
+using Framewerk.Managers;
+using MindCraft.Data;
 using MindCraft.GameObjects;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.Model;
+using MindCraft.Physics;
 using MindCraft.View.Screen;
 using strange.framework.api;
 using UnityEngine;
@@ -15,17 +19,23 @@ namespace MindCraft.Controller.Fsm
     {
         public static float GENERATION_TIME_TOTAL = 0;
         
-        [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public IInstanceProvider InstanceProvider { get; set; }
+        [Inject] public IVoxelPhysicsWorld Physics { get; set; }
+        [Inject] public IWorldModel WorldModel { get; set; }
+        [Inject] public IWorldSettings WorldSettings { get; set; }
+        [Inject] public IAssetManager AssetManager { get; set; }
 
 
         private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
+        private Player _player;
 
         protected override void Enter()
         {
             base.Enter();
 
             Cursor.lockState = CursorLockMode.Locked;
+            
+            Random.InitState(WorldSettings.Seed);
 
 //            Random.InitState(Seed);
 //            
@@ -38,8 +48,19 @@ namespace MindCraft.Controller.Fsm
             watch.Stop();
 
             GENERATION_TIME_TOTAL = (float)watch.Elapsed.TotalSeconds;
+            
+            
+            //create player
+            _player = AssetManager.GetGameObject<Player>(ResourcePath.PLAYER_PREFAB);
+            _player.transform.position = new Vector3(0f, WorldModel.GetTerrainHeight(0,0) + 5, 0f);
+            
+            //Start Physics
+            Physics.AddRigidBody(new VoxelRigidBody(WorldSettings.PlayerRadius, WorldSettings.PlayerHeight, _player.transform));
+            Physics.Start();
         }
-
+        
+        //MOVE TO MODEL
+        
         private void GenerateWorld()
         {
             //create chunks

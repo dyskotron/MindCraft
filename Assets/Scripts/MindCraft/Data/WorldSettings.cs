@@ -6,21 +6,27 @@ using UnityEngine;
 
 namespace MindCraft.Data
 {
-    public interface IWorldSettingsProvider
+    public interface IWorldSettings
     {
+        int Seed { get; }
         IAssetManager AssetManager { get; set; }
         Material MineMaterial { get; }
-        int Seed { get; }
         Material GetMaterial(ChunkCoord coords);
+        
+        float PlayerRadius { get; }
+        float PlayerHeight { get; }
     }
     
-    public class WorldSettingsProvider : IWorldSettingsProvider
+    public class WorldSettings : IWorldSettings
     {
         [Inject] public IAssetManager AssetManager { get; set; }
 
+        public int Seed { get; private set; }
         public Material MineMaterial { get; private set; }
         public Material PlacingMaterial { get; private set; }
-        public int Seed { get; private set; }
+        
+        public float PlayerRadius { get; private set; }
+        public float PlayerHeight { get; private set; }
 
         private WorldSettingsDef _settings;
 
@@ -31,6 +37,8 @@ namespace MindCraft.Data
             Seed = _settings.Seed;
             MineMaterial = _settings.MineMaterial;
             PlacingMaterial = _settings.PlacingMaterial;
+            PlayerRadius = _settings.PlayerRadius;
+            PlayerHeight = _settings.PlayerHeight;
         }
 
         public Material GetMaterial(ChunkCoord coords)

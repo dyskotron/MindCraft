@@ -8,6 +8,7 @@ using MindCraft.Data;
 using MindCraft.GameObjects;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.Model;
+using MindCraft.Physics;
 using MindCraft.View.Screen;
 using strange.extensions.injector.api;
 using Temari.Common;
@@ -28,14 +29,15 @@ namespace MindCraft
         {
             base.mapBindings();
 
+            injectionBinder.Bind<IInjector>().To(injectionBinder.injector);
+            
             //Framewerk core
             injectionBinder.Bind<ViewConfig>().ToValue(_viewConfig);
             injectionBinder.Bind<ICoroutineManager>().ToValue(CoroutineManager.Instance);
+            injectionBinder.Bind<IUpdater>().ToValue(Updater.Instance);
+            injectionBinder.Bind<IAppMonitor>().ToValue(AppMonitor.Instance);
             injectionBinder.Bind<IAssetManager>().To<AssetManager>().ToSingleton();
             injectionBinder.Bind<IUiManager>().To<UiManager>().ToSingleton();
-            injectionBinder.Bind<IAppMonitor>().ToValue(AppMonitor.Instance);
-            
-            injectionBinder.Bind<IInjector>().To(injectionBinder.injector);
             
             //Popups
             injectionBinder.Bind<IPopupManager>().To<PopupManager>().ToSingleton();
@@ -46,21 +48,19 @@ namespace MindCraft
             injectionBinder.Bind<IAppFsm>().To<AppFsm>().ToSingleton();
             injectionBinder.Bind<AppStateEnterSignal>().ToSingleton();
             injectionBinder.Bind<AppStateExitSignal>().ToSingleton();
-
-
+            
+            //World
+            injectionBinder.Bind<IWorldModel>().To<WorldModel>().ToSingleton();
+            injectionBinder.Bind<IVoxelPhysicsWorld>().To<VoxelPhysicsWorld>();
             injectionBinder.Bind<Chunk>().To<Chunk>();
             
-            //Model
-            injectionBinder.Bind<IWorldModel>().To<WorldModel>().ToSingleton();
-            
             //Data
-            injectionBinder.Bind<IWorldSettingsProvider>().To<WorldSettingsProvider>().ToSingleton();
+            injectionBinder.Bind<IWorldSettings>().To<WorldSettings>().ToSingleton();
             injectionBinder.Bind<IBlockDefs>().To<BlockDefs>().ToSingleton();
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
             
             //View
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
-            
             
             commandBinder.Bind<ContextStartSignal>().To<InitAppCommand>();
         }

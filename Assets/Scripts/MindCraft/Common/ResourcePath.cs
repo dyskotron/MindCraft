@@ -6,5 +6,8 @@ namespace DefaultNamespace
         public const string BLOCK_DEFS = DEFS_ROOT + "Block/";
         public const string BIOME_DEF = DEFS_ROOT + "Biome/BasicBiome";
         public const string WORLD_SETTINGS = DEFS_ROOT + "WorldSettings";
+        
+        public const string PREFABS_ROOT = "Prefabs/";
+        public const string PLAYER_PREFAB = PREFABS_ROOT + "Player";
     }
 }
