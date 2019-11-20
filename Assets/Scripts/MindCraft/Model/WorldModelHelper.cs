@@ -1,8 +1,8 @@
-using MapGeneration;
-using MapGeneration.Lookup;
+using MindCraft.MapGeneration;
+using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 
-namespace Model
+namespace MindCraft.Model
 {
     public static class WorldModelHelper
     {

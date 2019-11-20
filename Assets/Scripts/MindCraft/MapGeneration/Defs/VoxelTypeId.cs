@@ -1,4 +1,4 @@
-namespace MapGeneration.Defs
+namespace MindCraft.MapGeneration.Defs
 {
     public enum VoxelTypeId
     {   

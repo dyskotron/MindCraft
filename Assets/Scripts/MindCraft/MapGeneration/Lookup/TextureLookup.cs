@@ -1,7 +1,8 @@
-using MapGeneration.Defs;
+using MindCraft;
+using MindCraft.MapGeneration.Defs;
 using UnityEngine;
 
-namespace MapGeneration.Lookup
+namespace MindCraft.MapGeneration.Lookup
 {
     //Pregenerate set of 4 uvs per face per voxel type
     public class TextureLookup

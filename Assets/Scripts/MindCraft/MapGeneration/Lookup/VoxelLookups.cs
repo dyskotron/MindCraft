@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MapGeneration.Lookup
+namespace MindCraft.MapGeneration.Lookup
 {
     public static class VoxelLookups
     {

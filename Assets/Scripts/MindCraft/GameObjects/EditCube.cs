@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
-using MapGeneration.Lookup;
+using MindCraft.MapGeneration;
+using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace MapGeneration
+namespace MindCraft.GameObjects
 {
     public class EditCube
     {

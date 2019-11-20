@@ -1,6 +1,8 @@
-using MapGeneration;
-using MapGeneration.Defs;
-using Model;
+using MindCraft.MapGeneration;
+using MindCraft.MapGeneration.Defs;
+using MindCraft;
+using MindCraft.GameObjects;
+using MindCraft.Model;
 using UnityEngine;
 
 public class Player : MonoBehaviour

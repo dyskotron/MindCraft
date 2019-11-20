@@ -1,9 +1,9 @@
 using System;
-using MapGeneration.Lookup;
+using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace MapGeneration.Defs
+namespace MindCraft.MapGeneration.Defs
 {
     [CreateAssetMenu(menuName = "MapGeneration/Biome definition")]
     public class BiomeDef : ScriptableObject

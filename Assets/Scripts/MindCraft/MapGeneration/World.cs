@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using MapGeneration.Defs;
-using MapGeneration.Lookup;
-using Model;
+using MindCraft;
+using MindCraft.GameObjects;
+using MindCraft.MapGeneration.Defs;
+using MindCraft.MapGeneration.Lookup;
+using MindCraft.Model;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
-namespace MapGeneration
+namespace MindCraft.MapGeneration
 {
     public class World : MonoBehaviour
     {

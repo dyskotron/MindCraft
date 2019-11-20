@@ -1,14 +1,13 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using MapGeneration.Defs;
-using MapGeneration.Lookup;
-using Model;
+using MindCraft.MapGeneration;
+using MindCraft.MapGeneration.Defs;
+using MindCraft.MapGeneration.Lookup;
+using MindCraft.Model;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Debug = UnityEngine.Debug;
 
-namespace MapGeneration
+namespace MindCraft.GameObjects
 {
     public class Chunk
     {

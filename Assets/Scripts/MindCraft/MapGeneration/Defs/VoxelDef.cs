@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace MapGeneration.Defs
+namespace MindCraft.MapGeneration.Defs
 {
     [CreateAssetMenu(menuName = "MapGeneration/Voxel definition")]
     public class VoxelDef : ScriptableObject

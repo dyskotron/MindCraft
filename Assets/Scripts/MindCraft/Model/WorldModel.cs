@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using MapGeneration;
-using MapGeneration.Defs;
-using MapGeneration.Lookup;
+using MindCraft.GameObjects;
+using MindCraft.MapGeneration;
+using MindCraft.MapGeneration.Defs;
+using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 
-namespace Model
+namespace MindCraft.Model
 {
     public class WorldModel
     {

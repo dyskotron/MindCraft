@@ -1,8 +1,8 @@
 using System;
-using MapGeneration.Lookup;
+using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 
-namespace MapGeneration
+namespace MindCraft.MapGeneration
 {
     public struct ChunkCoord : IEquatable<ChunkCoord>
     {
