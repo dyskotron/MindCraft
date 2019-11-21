@@ -38,6 +38,13 @@ namespace MindCraft.Model
             x = (Mathf.FloorToInt(xIn) % VoxelLookups.CHUNK_SIZE + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
             y = Mathf.FloorToInt(yIn);
             z = (Mathf.FloorToInt(zIn) % VoxelLookups.CHUNK_SIZE + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
-        }    
+        }
+
+        public static Vector3Int FloorPositionToVector3Int(Vector3 position)
+        {
+            return new Vector3Int(Mathf.FloorToInt(position.x),
+                                  Mathf.FloorToInt(position.y),
+                                  Mathf.FloorToInt(position.z));
+        }
     }
 }

@@ -26,7 +26,6 @@ namespace MindCraft.Controller
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldRaycaster WorldRaycaster { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
-        [Inject] public ViewConfig ViewConfig { get; set; }
 
         public bool Enabled => _enabled;
         private bool _enabled;
@@ -118,8 +117,6 @@ namespace MindCraft.Controller
 
 
         /// separate controller just for block build / erase blocks?
-        private bool _validMiningPosition;
-
         private bool _isMining;
         private float _miningStartedTime;
         private Vector3Int _lastMinePosition;
@@ -137,31 +134,64 @@ namespace MindCraft.Controller
             _placeBlockCursor.Init("BuildCursor", WorldSettings.BuildMaterial);
             _placeBlockCursor.SetBlockId((byte)BlockTypeId.Rock);
             
-            
             _mineBlockCursor = InstanceProvider.GetInstance<BlockMarker>();
             _mineBlockCursor.Init("MineCursor", WorldSettings.MineMaterial);
             _mineBlockCursor.SetMiningProgress(0);
             
-            Updater.EveryFrame(PlaceCursorBlocks);
+            Updater.EveryFrame(UpdateCursorBlocks);
             Updater.EveryFrame(UpdateMining);
         }
 
-        private void PlaceCursorBlocks()
+        private void UpdateCursorBlocks()
         {
             var isHit = WorldRaycaster.Raycast(_camera.position, _camera.forward);
-            
-            _mineBlockCursor.Transform.position = WorldRaycaster.HitPosition;
-            _placeBlockCursor.Transform.position = WorldRaycaster.LastPosition;
-            
-            _placeBlockCursor.SetActive(isHit);
-            _mineBlockCursor.SetActive(isHit);
-            
-            if(isHit)
-                SetMiningPosition(WorldRaycaster.HitPosition);
+
+            if (isHit)
+            {
+                // ====== Update Place Block cursor ======
+
+                // don't show place block cursor if it collides with the player
+                var playerPosition = WorldModelHelper.FloorPositionToVector3Int(_playerBody.Transform.position);
+                var collidesWithPlayer = WorldRaycaster.LastPosition == playerPosition || WorldRaycaster.LastPosition == playerPosition + Vector3Int.up;
+                if (!collidesWithPlayer)
+                    _placeBlockCursor.Transform.position = WorldRaycaster.LastPosition;
+                
+                _placeBlockCursor.SetActive(!collidesWithPlayer);
+
+                // ====== Update Mining cursor / position / time ======
+                
+                var hitPosition = WorldRaycaster.HitPosition;
+                if (WorldRaycaster.HitPosition != _lastMinePosition)
+                {
+
+                    _mineBlockCursor.Transform.position = WorldRaycaster.HitPosition;
+                    _mineBlockCursor.SetActive(true);
+
+                    //position changed => reset mining timer
+                    _miningStartedTime = Time.time;
+
+                    _minedBlockType = BlockDefs.GetDefinitionById((BlockTypeId) WorldModel.GetVoxel(hitPosition.x, hitPosition.y, hitPosition.z));
+                    _lastMinePosition = hitPosition;
+                }
+            }
+            else
+            {
+                _mineBlockCursor.SetActive(isHit);
+                _placeBlockCursor.SetActive(isHit);
+            }
         }
 
         private void UpdateMining()
         {
+            if (WorldRaycaster.IsHit && Input.GetMouseButtonDown(1))
+            {
+                var playerPosition = WorldModelHelper.FloorPositionToVector3Int(_playerBody.Transform.position);
+                if (WorldRaycaster.LastPosition != playerPosition && WorldRaycaster.LastPosition != playerPosition + Vector3Int.up)
+                {
+                    WorldModel.EditVoxel(WorldRaycaster.LastPosition, (byte) (_placeBlockType + 2));
+                }
+            }
+            
             if (!_isMining)
             {
                 //check if we could start mining
@@ -201,13 +231,6 @@ namespace MindCraft.Controller
                     WorldModel.EditVoxel(_lastMinePosition, VoxelTypeByte.AIR);
             }
             
-            if (WorldRaycaster.IsHit)
-            {
-                if (Input.GetMouseButtonDown(1))
-                    WorldModel.EditVoxel(WorldRaycaster.LastPosition, (byte)(_placeBlockType + 2));
-            
-            }
-
             if (Mathf.Abs(Input.mouseScrollDelta.y) > 0)
             {
                 //temp hack to avoid empty + air blocks (1, 2)
@@ -220,25 +243,6 @@ namespace MindCraft.Controller
                 _placeBlockType = (byte) ((_placeBlockType + numBlocks + dir) % numBlocks);
                 _placeBlockCursor.SetBlockId(_placeBlockType + 2);
             }  
-        }
-
-        private void SetMiningPosition(Vector3Int position)
-        {
-            if (position == _lastMinePosition)
-                return;
-
-            _mineBlockCursor.Transform.position = position;
-            _mineBlockCursor.SetActive(true);
-            _validMiningPosition = true;
-
-            //position changed => reset mining timer
-            _miningStartedTime = Time.time;
-
-            _minedBlockType = BlockDefs.GetDefinitionById((BlockTypeId) WorldModel.GetVoxel(position.x, position.y, position.z));
-
-            Debug.LogWarning($"<color=\"aqua\">Player.SetMiningPosition() : WE ARE GOING TO MINE {_minedBlockType.Name}</color>");
-
-            _lastMinePosition = position;
         }
     }
 }
