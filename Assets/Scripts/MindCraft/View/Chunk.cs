@@ -7,7 +7,7 @@ using MindCraft.Model;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace MindCraft.GameObjects
+namespace MindCraft.View
 {
     public class Chunk
     {
@@ -19,8 +19,6 @@ namespace MindCraft.GameObjects
         public static double MESH_ELAPSED_TOTAL = 0;
         public static double CHUNKS_TOTAL = 0;
 
-        //public Vector2[,,] WorldUvLookup => Locator.TextureLookup.WorldUvLookup;
-        
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;

@@ -2,7 +2,6 @@ using System;
 using Framewerk;
 using MindCraft.Data;
 using MindCraft.Data.Defs;
-using MindCraft.GameObjects;
 using MindCraft.Model;
 using MindCraft.Physics;
 using MindCraft.View;

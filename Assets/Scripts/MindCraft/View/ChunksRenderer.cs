@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using MindCraft.GameObjects;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.Model;

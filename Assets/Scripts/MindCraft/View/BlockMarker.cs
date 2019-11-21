@@ -4,7 +4,7 @@ using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-namespace MindCraft.GameObjects
+namespace MindCraft.View
 {
     public class BlockMarker
     {
