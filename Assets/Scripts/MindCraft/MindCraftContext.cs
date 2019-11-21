@@ -9,6 +9,7 @@ using MindCraft.GameObjects;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.Model;
 using MindCraft.Physics;
+using MindCraft.View;
 using MindCraft.View.Screen;
 using strange.extensions.injector.api;
 using Temari.Common;
@@ -51,21 +52,27 @@ namespace MindCraft
             
             //Controller
             injectionBinder.Bind<IPlayerController>().To<PlayerController>().ToSingleton();
+            injectionBinder.Bind<IWorldRaycaster>().To<WorldRaycaster>().ToSingleton();
             
             //World
             injectionBinder.Bind<IWorldModel>().To<WorldModel>().ToSingleton();
             injectionBinder.Bind<IVoxelPhysicsWorld>().To<VoxelPhysicsWorld>();
             injectionBinder.Bind<Chunk>().To<Chunk>();
+            injectionBinder.Bind<BlockMarker>().To<BlockMarker>();
             
             //Data
             injectionBinder.Bind<IWorldSettings>().To<WorldSettings>().ToSingleton();
+            injectionBinder.Bind<ChunksRenderer>().To<ChunksRenderer>().ToSingleton();
             injectionBinder.Bind<IBlockDefs>().To<BlockDefs>().ToSingleton();
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
             
             //View
+            mediationBinder.Bind<PlayerView>().To<PlayerMediator>();
+            
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
             
             commandBinder.Bind<ContextStartSignal>().To<InitAppCommand>();
+            
         }
     }
 }

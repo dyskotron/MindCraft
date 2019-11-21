@@ -1,14 +1,16 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace MindCraft.Data.Defs
 {
     [CreateAssetMenu(menuName = "Defs/World Settings")]
     public class WorldSettingsDef : ScriptableObject
     {
+        public float Gravity = -9.8f;
         public int Seed;
         public Material WorldMaterial;
         public Material MineMaterial;
-        public Material PlacingMaterial;
+        public Material BuildMaterial;
 
         public PlayerSettings PlayerSettings;
 

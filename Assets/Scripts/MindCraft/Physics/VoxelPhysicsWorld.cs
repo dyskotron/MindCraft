@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Framewerk;
+using MindCraft.Data;
 using MindCraft.Model;
 using UnityEngine;
 
@@ -35,10 +36,11 @@ namespace MindCraft.Physics
     {
         [Inject] public IUpdater Updater { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
+        [Inject] public IWorldSettings WorldSettings { get; set; }
 
         public bool Enabled => _enabled;
         
-        private float Gravity = -9.8f;
+        private float _gravity = -9.8f;
         private List<VoxelRigidBody> _bodies = new List<VoxelRigidBody>();
 
         private bool _enabled;
@@ -46,6 +48,7 @@ namespace MindCraft.Physics
         [PostConstruct]
         public void PostConstruct()
         {
+            _gravity = WorldSettings.Gravity;
             SetEnabled(true);
         }
 
@@ -77,13 +80,8 @@ namespace MindCraft.Physics
             foreach (var body in _bodies)
             {
                 //apply gravity
-                if (body.VerticalMomentum > Gravity)
-                    body.VerticalMomentum += Time.fixedDeltaTime * Gravity;
-
-                /* TODO: MOVE TO CHARACTER CONTROLLER
-                //walk / sprint
-                _body._velocity = ((_body.transform.forward * _vertical) + (_body.transform.right * _horizontal)) * Time.deltaTime * _moveSpeed;
-                */
+                if (body.VerticalMomentum > _gravity)
+                    body.VerticalMomentum += Time.fixedDeltaTime * _gravity;
 
                 //apply vertical momentum
                 body.Velocity += body.VerticalMomentum * Time.fixedDeltaTime * Vector3.up;
@@ -97,7 +95,7 @@ namespace MindCraft.Physics
                     body.Velocity.y = CheckDownSpeed(body);
                 if (body.Velocity.y > 0)
                     body.Velocity.y = CheckUpSpeed(body);
-                
+
                 body.Transform.Translate(body.Velocity, Space.World);
             }
         }

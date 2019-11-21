@@ -1,18 +1,16 @@
 using System;
 using System.Collections.Generic;
-using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Lookup;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace MindCraft.GameObjects
 {
-    public class EditCube
+    public class BlockMarker
     {
-        public World World => Locator.World;
-        public Vector2[,,] WorldUvLookup => Locator.TextureLookup.WorldUvLookup;
-        public Vector2[,] UtilsUvLookup => Locator.TextureLookup.UtilsUvLookup;
-        public int[] UtilsTextureIndexes => Locator.TextureLookup.UtilsTextureIndexes;
+        [Inject] public TextureLookup TextureLookup { get; set; }
+        
+        public Transform Transform => _transform;
         public GameObject GameObject => _gameObject;
 
         private const int FACES_PER_VERTEX = 6;
@@ -30,12 +28,13 @@ namespace MindCraft.GameObjects
         private List<int> triangles = new List<int>();
         private List<Vector2> uvs = new List<Vector2>();
         private Mesh _mesh;
+        private Transform _transform;
 
-        public void Init(Material material, float scale = 1f)
+        public void Init(string name, Material material, float scale = 1f)
         {
             _scale = scale;
             _gameObject = new GameObject();
-            _gameObject.name = $"EditCube";
+            _gameObject.name = name;
             _meshRenderer = _gameObject.AddComponent<MeshRenderer>();
             _meshFilter = _gameObject.AddComponent<MeshFilter>();
 
@@ -43,10 +42,17 @@ namespace MindCraft.GameObjects
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
 
-            UpdateChunkMesh();    
+            _transform = _gameObject.transform;
+
+            CreateMesh();    
+        }
+        
+        public void SetActive(bool active)
+        {
+            _gameObject.SetActive(active);
         }
 
-        public void SetVoxelType(int voxelId)
+        public void SetBlockId(int blockId)
         {
             currentVertexIndex = 0;
             uvs.Clear();
@@ -57,7 +63,7 @@ namespace MindCraft.GameObjects
                 //iterate triangles
                 for (int iV = 0; iV < VERTICES_PER_FACE; iV++)
                 {
-                    uvs.Add(WorldUvLookup[voxelId, iF, iV]);
+                    uvs.Add(TextureLookup.WorldUvLookup[blockId, iF, iV]);
                 }
                 
                 currentVertexIndex += VERTICES_PER_FACE;
@@ -70,7 +76,7 @@ namespace MindCraft.GameObjects
         public void SetMiningProgress(int progress) //0 = select >1 = damage ratio
         {
             progress = Math.Min(progress, 6); // max brick animation atm
-            var textureId = UtilsTextureIndexes[progress];
+            var textureId = TextureLookup.UtilsTextureIndexes[progress];
             
             currentVertexIndex = 0;
             uvs.Clear();
@@ -81,7 +87,7 @@ namespace MindCraft.GameObjects
                 //iterate triangles
                 for (int iV = 0; iV < VERTICES_PER_FACE; iV++)
                 {
-                    uvs.Add(UtilsUvLookup[textureId, iV]);
+                    uvs.Add(TextureLookup.UtilsUvLookup[textureId, iV]);
                 }
                 
                 currentVertexIndex += VERTICES_PER_FACE;
@@ -91,7 +97,7 @@ namespace MindCraft.GameObjects
             _meshFilter.mesh = _mesh;
         }
         
-        private void UpdateChunkMesh()
+        private void CreateMesh()
         {
             currentVertexIndex = 0;
             vertices.Clear();
@@ -125,7 +131,7 @@ namespace MindCraft.GameObjects
                     if (iV < VERTICES_PER_FACE)
                     {
                         vertices.Add(  zeroOffset + _scale * (Vector3)VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
-                        uvs.Add(WorldUvLookup[voxelId, iF, iV]);
+                        uvs.Add(TextureLookup.WorldUvLookup[voxelId, iF, iV]);
                     }
 
                     //we still need 6 triangle vertices tho

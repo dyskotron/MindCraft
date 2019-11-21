@@ -7,6 +7,7 @@ using MindCraft.Data.Defs;
 using MindCraft.GameObjects;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Lookup;
+using MindCraft.View;
 using UnityEngine;
 
 namespace MindCraft.Model
@@ -39,9 +40,7 @@ namespace MindCraft.Model
     public class WorldModel : IWorldModel
     {
         [Inject] public IAssetManager AssetManager { get; set; }
-        
-        //Storing generated chunks se we can retreieve them later on by chunk coordinates
-        private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
+        [Inject] public ChunksRenderer ChunksRenderer { get; set; }
         
         //map for each generated chunk - only generated data which are always recreated the same
         private Dictionary<ChunkCoord, byte[,,]> _chunkMaps = new Dictionary<ChunkCoord, byte[,,]>();
@@ -99,7 +98,7 @@ namespace MindCraft.Model
             _playerModifiedMaps[coords][x, y, z] = VoxelType;
 
             //TODO: chunks update should not be called directly from model!
-            _chunks[coords].UpdateChunkMesh(_chunkMaps[coords]);
+            ChunksRenderer.UpdateChunkMesh(coords, _chunkMaps[coords]);
 
             ChunkCoord neighbourCoords;
 
@@ -107,26 +106,26 @@ namespace MindCraft.Model
             {
                 // Update left neighbour
                 neighbourCoords = coords + ChunkCoord.Left;
-                _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
             else if (x >= VoxelLookups.CHUNK_SIZE - 1)
             {
                 // Update right neighbour
                 neighbourCoords = coords + ChunkCoord.Right;
-                _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
 
             if (z <= 0)
             {
                 // Update back neighbour
                 neighbourCoords = coords + ChunkCoord.Back;
-               _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
             else if (z >= VoxelLookups.CHUNK_SIZE - 1)
             {
                 // Update forward neighbour
                 neighbourCoords = coords + ChunkCoord.Forward;
-               _chunks[neighbourCoords].UpdateChunkMesh(_chunkMaps[neighbourCoords]);
+                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
         }
 

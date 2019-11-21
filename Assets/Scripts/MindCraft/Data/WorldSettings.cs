@@ -4,15 +4,15 @@ using Framewerk.Managers;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace MindCraft.Data
 {
     public interface IWorldSettings
     {
+        float Gravity { get; }
         int Seed { get; }
-        IAssetManager AssetManager { get; set; }
         Material MineMaterial { get; }
+        Material BuildMaterial { get; }
         Material GetMaterial(ChunkCoord coords);
         
         PlayerSettings PlayerSettings { get; }
@@ -28,15 +28,19 @@ namespace MindCraft.Data
         public float WalkSpeed = 3;
         public float RunSpeed = 10;
         public float JumpForce = 5;
+        public float MiningInterval = 0.4f;
+        
+        public AnimationCurve PickMovementCurve;
     }
     
     public class WorldSettings : IWorldSettings
     {
         [Inject] public IAssetManager AssetManager { get; set; }
 
+        public float Gravity { get; private set; }
         public int Seed { get; private set; }
         public Material MineMaterial { get; private set; }
-        public Material PlacingMaterial { get; private set; }
+        public Material BuildMaterial { get; private set; }
 
         public PlayerSettings PlayerSettings => _settings.PlayerSettings;
 
@@ -48,7 +52,8 @@ namespace MindCraft.Data
             _settings = AssetManager.GetAsset<WorldSettingsDef>(ResourcePath.WORLD_SETTINGS);
             Seed = _settings.Seed;
             MineMaterial = _settings.MineMaterial;
-            PlacingMaterial = _settings.PlacingMaterial;
+            BuildMaterial = _settings.BuildMaterial;
+            Gravity = _settings.Gravity;
         }
 
         public Material GetMaterial(ChunkCoord coords)
