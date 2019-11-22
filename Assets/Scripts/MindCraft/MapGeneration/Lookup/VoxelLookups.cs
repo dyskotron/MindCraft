@@ -9,7 +9,7 @@ namespace MindCraft.MapGeneration.Lookup
         public const int CHUNK_SIZE = 6; 
         public const int CHUNK_HEIGHT = 128;
         public const int VOXELS_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT;
-        public const int VIEW_DISTANCE = 100;
+        public const int VIEW_DISTANCE = 30;
         public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
 
         public static readonly Vector3Int[] Vertices =

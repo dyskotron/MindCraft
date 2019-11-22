@@ -3,7 +3,6 @@ using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.Model;
 using strange.framework.api;
-using UnityEngine;
 
 namespace MindCraft.View
 {
@@ -14,17 +13,32 @@ namespace MindCraft.View
         
         private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
         private ChunkCoord _lastPlayerCoords;
+        private List<Chunk> _chunkPool = new List<Chunk>();
         
         public void UpdateChunkMesh(ChunkCoord coords, byte[,,] chunkMap)
         {
             _chunks[coords].UpdateChunkMesh(chunkMap);
         }
-
-        public void UpdateChunks(Vector3 playerPosition)
+        
+        public void RenderChunksAroundPlayer(ChunkCoord coords)
         {
-            //update chunks
-            var newCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(playerPosition);
+            var xMin = coords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
+            var xMax = coords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
+            var yMin = coords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
+            var yMax = coords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
+            
+            //create map data
+            for (var x = xMin; x < xMax; x++)
+            {
+                for (var y = yMin; y < yMax; y++)
+                {
+                    CreateChunk(new ChunkCoord(x, y));
+                }
+            }
+        }
 
+        public void UpdateChunksAroundPlayer(ChunkCoord newCoords)
+        {
             if (newCoords == _lastPlayerCoords)
                 return;
 
@@ -38,7 +52,7 @@ namespace MindCraft.View
             var newMaxX = newCoords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
             var newMaxY = newCoords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
 
-            //TODO: merged loops so everything is checked in one iteration
+            //TODO: merge loops so everything is checked in one iteration
 
             //show new chunks
             for (var x = newMinX; x < newMaxX; x++)
@@ -72,7 +86,18 @@ namespace MindCraft.View
         public void CreateChunk(ChunkCoord coords)
         {
             var map = WorldModel.TryGetMapByChunkCoords(coords);
-            var chunk = InstanceProvider.GetInstance<Chunk>();
+
+            Chunk chunk;
+            if (_chunkPool.Count > 0)
+            {
+                chunk = _chunkPool[0];
+                _chunkPool.RemoveAt(0);
+            }
+            else
+            {
+                chunk = InstanceProvider.GetInstance<Chunk>();    
+            }
+            
             chunk.Init(coords);
             chunk.UpdateChunkMesh(map);
 
@@ -92,10 +117,14 @@ namespace MindCraft.View
         
         private void HideChunk(int x, int y)
         {
-            _chunks.TryGetValue(new ChunkCoord(x, y), out Chunk chunk);
+            var coords = new ChunkCoord(x, y);
+            _chunks.TryGetValue(coords, out Chunk chunk);
 
             if (chunk != null)
-                chunk.IsActive = false;
+            {
+                _chunkPool.Add(_chunks[coords]);
+                _chunks.Remove(coords);
+            }
         }
     }
 }

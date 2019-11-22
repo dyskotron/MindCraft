@@ -16,6 +16,8 @@ namespace MindCraft.Model
 {
     public interface IWorldModel
     {
+        void GenerateWorldAroundPlayer(ChunkCoord coords);
+        
         byte[,,] TryGetMapByChunkCoords(ChunkCoord coords);
         bool CheckVoxelOnGlobalXyz(float x, float y, float z);
         void EditVoxel(Vector3 position, byte VoxelType);
@@ -132,6 +134,42 @@ namespace MindCraft.Model
         }
 
         #region Terrain Generation
+
+        public void GenerateWorldAroundPlayer(ChunkCoord coords)
+        {
+            var xMin = coords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var xMax = coords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+            var yMin = coords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var yMax = coords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+            
+            //create map data
+            for (var x = xMin; x < xMax; x++)
+            {
+                for (var y = yMin; y < yMax; y++)
+                {
+                    CreateChunkMap(new ChunkCoord(x, y));
+                }
+            }
+        }
+        
+        public void UpdateWorldAroundPlayer(ChunkCoord oldCoords, ChunkCoord newCoords)
+        {
+            /*
+            var xMin = coords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var xMax = coords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+            var yMin = coords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var yMax = coords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+            
+            //create map data
+            for (var x = xMin; x < xMax; x++)
+            {
+                for (var y = yMin; y < yMax; y++)
+                {
+                    CreateChunkMap(new ChunkCoord(x, y));
+                }
+            }*/
+        }
+
 
         /// <summary>
         /// Generates Chunk Map based only on seed and generation algorithm

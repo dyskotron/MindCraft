@@ -37,20 +37,26 @@ namespace MindCraft.View
         private ChunkCoord _coords;
         private byte[,,] _map;
 
+        [PostConstruct]
+        public void PostConstruct()
+        {
+            _gameObject = new GameObject(); 
+            _meshRenderer = _gameObject.AddComponent<MeshRenderer>();
+            _meshFilter = _gameObject.AddComponent<MeshFilter>();
+            
+            _meshRenderer.material = WorldSettings.WorldMaterial;
+            _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+            _meshRenderer.receiveShadows = false;
+        }
+
         public void Init(ChunkCoord coords)
         {
             _coords = coords;
             
-            _gameObject = new GameObject();
             _gameObject.name = $"Chunk({coords.X},{coords.Y})";
-            _meshRenderer = _gameObject.AddComponent<MeshRenderer>();
-            _meshFilter = _gameObject.AddComponent<MeshFilter>();
-
             _gameObject.transform.position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
 
-            _meshRenderer.material = WorldSettings.GetMaterial(coords);
-            _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
-            _meshRenderer.receiveShadows = false;
+            //Debug _meshRenderer.material = WorldSettings.GetMaterial(coords);
         }
 
         public bool IsActive
