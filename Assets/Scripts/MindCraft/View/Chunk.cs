@@ -133,7 +133,7 @@ namespace MindCraft.View
                     for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
                     {
                         var type = _map[iX, iY, iZ];
-                        if (type != VoxelTypeByte.AIR)
+                        if (type != BlockTypeByte.AIR)
                             AddVoxel(type, iX, iY, iZ);
                     }
                 }

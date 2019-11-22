@@ -81,7 +81,7 @@ namespace MindCraft.Model
 
             WorldModelHelper.GetLocalXyzFromWorldPosition(x, y, z, out int xOut, out int yOut, out int zOut);
 
-            return chunkMap[xOut, yOut, zOut] != VoxelTypeByte.AIR;
+            return chunkMap[xOut, yOut, zOut] != BlockTypeByte.AIR;
         }
 
         #endregion
@@ -181,12 +181,14 @@ namespace MindCraft.Model
             var mapWatch = new Stopwatch();
             mapWatch.Start();
             
-            
             var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
             var nativeArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
             
             var mapJob = CreateMapJob(coords.X, coords.Y, _biomeDef, nativeArray);
             mapJob.Complete();
+
+            _playerModifiedMaps.TryGetValue(coords, out var playerData);
+            var mergeWithPlayerData = playerData != null;
             
             for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
             {
@@ -194,6 +196,16 @@ namespace MindCraft.Model
                 {
                     for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
                     {
+                        if (mergeWithPlayerData)
+                        {
+                            var modifiedBlock = playerData[iX, iY, iZ];
+                            if (modifiedBlock != BlockTypeByte.NONE)
+                            {
+                                map[iX, iY, iZ] = modifiedBlock;  
+                                continue;
+                            }
+                        }
+                        
                         var index = ArrayHelper.To1D(iX, iY, iZ);
                         map[iX, iY, iZ] = nativeArray[index];
                     }
@@ -254,10 +266,10 @@ namespace MindCraft.Model
             // ======== STATIC RULES ========
 
             if (y < 0 || y >= VoxelLookups.CHUNK_HEIGHT)
-                return VoxelTypeByte.AIR;
+                return BlockTypeByte.AIR;
 
             if (y == 0)
-                return VoxelTypeByte.GREY_STONE;
+                return BlockTypeByte.GREY_STONE;
 
             // ======== RETURN CACHED VOXELS OR PLAYER MODIFIED VOXELS ========
 
@@ -295,7 +307,7 @@ namespace MindCraft.Model
             // ======== STATIC RULES ========
 
             if (y == 0)
-                return VoxelTypeByte.GREY_STONE;
+                return BlockTypeByte.GREY_STONE;
 
             // ======== BASIC PASS ========
 
@@ -304,20 +316,20 @@ namespace MindCraft.Model
             byte voxelValue = 0;
             //everything higher then terrainHeight is air
             if (y >= terrainHeight)
-                return VoxelTypeByte.AIR;
+                return BlockTypeByte.AIR;
 
             //top voxels are grass
             if (y == terrainHeight - 1)
-                voxelValue = VoxelTypeByte.DIRT_WITH_GRASS;
+                voxelValue = BlockTypeByte.DIRT_WITH_GRASS;
             //3 voxels under grass are dirt
             else if (y >= terrainHeight - 4)
-                voxelValue = VoxelTypeByte.DIRT;
+                voxelValue = BlockTypeByte.DIRT;
             //rest is rock
             else
-                voxelValue = VoxelTypeByte.STONE;
+                voxelValue = BlockTypeByte.STONE;
 
             //LODES PASS
-            if (voxelValue == VoxelTypeByte.STONE)
+            if (voxelValue == BlockTypeByte.STONE)
             {
                 var lodesCount = biomeDef.Lodes.Length;
                 for (var i = 0; i < lodesCount; i++)

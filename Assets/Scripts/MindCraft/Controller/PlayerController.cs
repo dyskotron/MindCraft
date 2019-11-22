@@ -240,7 +240,7 @@ namespace MindCraft.Controller
 
                 //finish mining (remove block)
                 if (hits >= _minedBlockType.Hardness)
-                    WorldModel.EditVoxel(_lastMinePosition, VoxelTypeByte.AIR);
+                    WorldModel.EditVoxel(_lastMinePosition, BlockTypeByte.AIR);
             }
         }
     }

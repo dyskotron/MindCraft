@@ -31,7 +31,7 @@ namespace MindCraft.Data
         Leaves,
     }
 
-    public static class VoxelTypeByte
+    public static class BlockTypeByte
     {
         public const byte NONE = (byte)BlockTypeId.None;
         public const byte AIR = (byte)BlockTypeId.Air;
