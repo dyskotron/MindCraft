@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: UiMain
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+    variantMultiplier: 1
+    packables:
+    - {fileID: 102900000, guid: 4439f73325a4e432193815f9b5a7986f, type: 3}
+    - {fileID: 102900000, guid: c42900b33e7734268a07adc3c8989762, type: 3}
+    totalSpriteSurfaceArea: 168642
+    bindAsDefault: 1
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: f852f4018df684c73b9f5aa853465bab, type: 3}
+  - {fileID: 21300000, guid: 4cc057a31678349648fc1ca5aaa2072f, type: 3}
+  - {fileID: 21300000, guid: 18c36cc73cc244f928ae4da33de5ac32, type: 3}
+  - {fileID: 21300000, guid: 0d6b24091835a4747ab580701ef90639, type: 3}
+  - {fileID: 21300000, guid: cf68c10a137674e2d9c31d8624f1ee5d, type: 3}
+  - {fileID: 21300000, guid: f0cfcd3af5ebb463aac7d012db2c0f0c, type: 3}
+  - {fileID: 21300000, guid: 80ad334aa5b234c27a971dc8f02f7072, type: 3}
+  - {fileID: 21300000, guid: 5b217f6c887e94fb88b63fc8f885344a, type: 3}
+  - {fileID: 21300000, guid: eb6dac7ca1a024157901a614efd4d2f5, type: 3}
+  - {fileID: 21300000, guid: 3223bd1db95e740aca54c7d7e7d1041b, type: 3}
+  - {fileID: 21300000, guid: 6410c48d6dd7c47a6825c3e66e6d23e3, type: 3}
+  - {fileID: 21300000, guid: e75f8dafb1c894f8db1bcf9ea38e2c03, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - Dirt
+  - Leaves
+  - pick_iron
+  - Sand
+  - grey_button10
+  - red_button03
+  - Trunk
+  - DirtWithSand
+  - Wood
+  - DirtWithGrass
+  - Glass
+  - Stone
+  m_Tag: UiMain
+  m_IsVariant: 0

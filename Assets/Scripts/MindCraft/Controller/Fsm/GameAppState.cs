@@ -1,8 +1,8 @@
 using System.Diagnostics;
-using DefaultNamespace;
 using Framewerk;
 using Framewerk.AppStateMachine;
 using Framewerk.Managers;
+using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Lookup;

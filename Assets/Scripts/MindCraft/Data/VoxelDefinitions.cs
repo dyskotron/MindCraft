@@ -1,4 +1,4 @@
-using DefaultNamespace;
+using MindCraft.Common;
 using MindCraft.Data.Defs;
 
 namespace MindCraft.Data
@@ -20,9 +20,11 @@ namespace MindCraft.Data
         Redstone,
         RedstoneWithSand,
         Wood,
-        Water,
+        Glass,
+        Sand,
         Snow,
         Ice,
+        Water,
         Lava,
         Trunk,
         TrunkWhite,

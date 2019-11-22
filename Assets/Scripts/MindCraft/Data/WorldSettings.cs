@@ -1,6 +1,6 @@
 using System;
-using DefaultNamespace;
 using Framewerk.Managers;
+using MindCraft.Common;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
 using UnityEngine;

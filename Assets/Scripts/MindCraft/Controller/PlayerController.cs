@@ -26,6 +26,8 @@ namespace MindCraft.Controller
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldRaycaster WorldRaycaster { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
+        
+        [Inject] public BlockTypeSelectedSignal BlockTypeSelectedSignal { get; set; }
 
         public bool Enabled => _enabled;
         private bool _enabled;
@@ -80,6 +82,7 @@ namespace MindCraft.Controller
         public void Destroy()
         {
             SetEnabled(false);
+            BlockTypeSelectedSignal.RemoveListener(BlockTypeSelectedHandler);  
         }
 
         private void UpdateInput()
@@ -116,7 +119,10 @@ namespace MindCraft.Controller
         }
 
 
-        /// separate controller just for block build / erase blocks?
+        /// TODO: separate controller just for block build / erase blocks
+        
+        [Inject] public IInventoryModel InventoryModel { get; set; }
+        
         private bool _isMining;
         private float _miningStartedTime;
         private Vector3Int _lastMinePosition;
@@ -125,14 +131,13 @@ namespace MindCraft.Controller
         private BlockMarker _placeBlockCursor;
         private BlockMarker _mineBlockCursor;
         private Transform _pick;
-        private byte _placeBlockType;
-
+        
         [PostConstruct]
         public void DiggingPostConstructor()
         {
             _placeBlockCursor = InstanceProvider.GetInstance<BlockMarker>();
             _placeBlockCursor.Init("BuildCursor", WorldSettings.BuildMaterial);
-            _placeBlockCursor.SetBlockId((byte)BlockTypeId.Dirt);
+            _placeBlockCursor.SetBlockId((byte)InventoryModel.SelectedBlockType);
             
             _mineBlockCursor = InstanceProvider.GetInstance<BlockMarker>();
             _mineBlockCursor.Init("MineCursor", WorldSettings.MineMaterial);
@@ -140,6 +145,13 @@ namespace MindCraft.Controller
             
             Updater.EveryFrame(UpdateCursorBlocks);
             Updater.EveryFrame(UpdateMining);
+            
+            BlockTypeSelectedSignal.AddListener(BlockTypeSelectedHandler);
+        }
+
+        private void BlockTypeSelectedHandler(BlockTypeId id)
+        {
+            _placeBlockCursor.SetBlockId((byte)id);    
         }
 
         private void UpdateCursorBlocks()
@@ -188,7 +200,7 @@ namespace MindCraft.Controller
                 var playerPosition = WorldModelHelper.FloorPositionToVector3Int(_playerBody.Transform.position);
                 if (WorldRaycaster.LastPosition != playerPosition && WorldRaycaster.LastPosition != playerPosition + Vector3Int.up)
                 {
-                    WorldModel.EditVoxel(WorldRaycaster.LastPosition, (byte) (_placeBlockType + 2));
+                    WorldModel.EditVoxel(WorldRaycaster.LastPosition, (byte) InventoryModel.SelectedBlockType);
                 }
             }
             
@@ -230,19 +242,6 @@ namespace MindCraft.Controller
                 if (hits >= _minedBlockType.Hardness)
                     WorldModel.EditVoxel(_lastMinePosition, VoxelTypeByte.AIR);
             }
-            
-            if (Mathf.Abs(Input.mouseScrollDelta.y) > 0)
-            {
-                //temp hack to avoid empty + air blocks (1, 2)
-                var numBlocks = Enum.GetValues(typeof(BlockTypeId)).Length - 2;
-
-                byte someVar = 2;
-                someVar = (byte) (someVar - 3);
-
-                var dir = (int)Mathf.Sign(Input.mouseScrollDelta.y);
-                _placeBlockType = (byte) ((_placeBlockType + numBlocks + dir) % numBlocks);
-                _placeBlockCursor.SetBlockId(_placeBlockType + 2);
-            }  
         }
     }
 }

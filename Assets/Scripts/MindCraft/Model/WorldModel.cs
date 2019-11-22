@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
-using DefaultNamespace;
 using Framewerk.Managers;
+using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;

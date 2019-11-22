@@ -1,4 +1,4 @@
-namespace DefaultNamespace
+namespace MindCraft.Common
 {
     public static class ResourcePath
     {
@@ -9,5 +9,8 @@ namespace DefaultNamespace
         
         public const string PREFABS_ROOT = "Prefabs/";
         public const string PLAYER_PREFAB = PREFABS_ROOT + "Player";
+        
+        public const string ATLASES_ROOT = "SpriteAtlas/";
+        public const string MAIN_UI_ATLAS = ATLASES_ROOT + "UiMain";
     }
 }
