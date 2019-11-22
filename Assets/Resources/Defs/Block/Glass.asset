@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Wood
   IsSolid: 1
+  IsTransparent: 1
   Hardness: 6
   FaceTextures: 1d1d1d1d1d1d

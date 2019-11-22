@@ -7,6 +7,7 @@ namespace MindCraft.Data.Defs
     {
         public string Name;
         public bool IsSolid;
+        public bool IsTransparent;
         public int Hardness; // 0 means undestructible
 
         [Header("Textures")] 

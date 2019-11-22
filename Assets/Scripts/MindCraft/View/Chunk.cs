@@ -14,6 +14,7 @@ namespace MindCraft.View
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public TextureLookup TextureLookup { get; set; }
+        [Inject] public IBlockDefs BlockDefs { get; set; }
         
         public static double MAP_ELAPSED_TOTAL = 0;
         public static double MESH_ELAPSED_TOTAL = 0;
@@ -75,8 +76,9 @@ namespace MindCraft.View
             {
                 var neighbour = VoxelLookups.Neighbours[iF];
                 
-                //check neighbours - TODO: Call this method only when sure we're out of chunk - otherwise get from map!
-                if (GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z) != VoxelTypeByte.AIR)
+                //check neighbours
+                var blockDef = BlockDefs.GetDefinitionById((BlockTypeId)GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z));
+                if (!blockDef.IsTransparent)
                     continue;
 
                 //iterate triangles
