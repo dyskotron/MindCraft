@@ -132,7 +132,7 @@ namespace MindCraft.Controller
         {
             _placeBlockCursor = InstanceProvider.GetInstance<BlockMarker>();
             _placeBlockCursor.Init("BuildCursor", WorldSettings.BuildMaterial);
-            _placeBlockCursor.SetBlockId((byte)BlockTypeId.Rock);
+            _placeBlockCursor.SetBlockId((byte)BlockTypeId.Dirt);
             
             _mineBlockCursor = InstanceProvider.GetInstance<BlockMarker>();
             _mineBlockCursor.Init("MineCursor", WorldSettings.MineMaterial);

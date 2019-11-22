@@ -12,9 +12,51 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0661a2c35a2e4f36b77085ece8a76940, type: 3}
   m_Name: WorldSettings
   m_EditorClassIdentifier: 
+  Gravity: -9.8
+  Seed: 67
   WorldMaterial: {fileID: 2100000, guid: 7387af500986b4877b025a539dcba0fd, type: 2}
   MineMaterial: {fileID: 2100000, guid: 0ce17b032d0624d7cb72fdd9b216a848, type: 2}
-  PlacingMaterial: {fileID: 2100000, guid: fe4adf146144e4ed980334d1409a2690, type: 2}
-  Seed: 67
+  BuildMaterial: {fileID: 2100000, guid: fe4adf146144e4ed980334d1409a2690, type: 2}
+  PlayerSettings:
+    Radius: 0.3
+    Height: 1.8
+    LookSpeed: 3
+    WalkSpeed: 3
+    RunSpeed: 10
+    JumpForce: 5
+    MiningInterval: 0.4
+    PickMovementCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.8764126
+        value: 1.004247
+        inSlope: 0.8819655
+        outSlope: 0.8819655
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.20440196
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.9956665
+        value: -0.001991272
+        inSlope: -28.295567
+        outSlope: -28.295567
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.15964323
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
   DebugChunksMaterialEnabled: 0
   DebugMaterial: {fileID: 2100000, guid: a3d1935e44fc64713b7aed4ca59645b0, type: 2}

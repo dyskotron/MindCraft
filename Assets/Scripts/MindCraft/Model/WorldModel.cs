@@ -176,7 +176,7 @@ namespace MindCraft.Model
                 return VoxelTypeByte.AIR;
 
             if (y == 0)
-                return VoxelTypeByte.HARD_ROCK;
+                return VoxelTypeByte.GREY_STONE;
 
             // ======== RETURN CACHED VOXELS OR PLAYER MODIFIED VOXELS ========
 
@@ -208,7 +208,7 @@ namespace MindCraft.Model
             // ======== STATIC RULES ========
 
             if (y == 0)
-                return VoxelTypeByte.HARD_ROCK;
+                return VoxelTypeByte.GREY_STONE;
 
             // ======== BASIC PASS ========
 
@@ -227,10 +227,10 @@ namespace MindCraft.Model
                 voxelValue = VoxelTypeByte.DIRT;
             //rest is rock
             else
-                voxelValue = VoxelTypeByte.ROCK;
+                voxelValue = VoxelTypeByte.STONE;
 
             //LODES PASS
-            if (voxelValue == VoxelTypeByte.ROCK)
+            if (voxelValue == VoxelTypeByte.STONE)
             {
                 foreach (var lode in _biomeDef.Lodes)
                 {

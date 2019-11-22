@@ -10,8 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 77f7575b6286417a83fba486a2efa28e, type: 3}
-  m_Name: HardRock
+  m_Name: StoneWithSand
   m_EditorClassIdentifier: 
-  Name: Hard Rock
+  Id: 0
+  Name: ' Stone With Sand'
   IsSolid: 1
-  FaceTextures: 060606060606
+  Hardness: 6
+  FaceTextures: 00000c0e0000

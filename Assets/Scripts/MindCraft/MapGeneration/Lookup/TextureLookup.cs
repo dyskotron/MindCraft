@@ -11,7 +11,7 @@ namespace MindCraft.MapGeneration.Lookup
         [Inject] public IBlockDefs BlockDefs { get; set; }
 
         //World
-        private const int BLOCKS_PER_SIDE_WORLD = 4;
+        private const int BLOCKS_PER_SIDE_WORLD = 8;
         private const float NORMALIZED_BLOCK_SIZE_WORLD = 1f / BLOCKS_PER_SIDE_WORLD;
 
         //Utils
