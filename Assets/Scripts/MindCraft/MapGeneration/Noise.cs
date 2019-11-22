@@ -1,4 +1,5 @@
 using MindCraft.MapGeneration.Lookup;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.MapGeneration
@@ -13,8 +14,12 @@ namespace MindCraft.MapGeneration
         
         public static float Get2DPerlin(float x, float y, float offset, float scale)
         {
+            return noise.cnoise(new float2((x + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset,
+                                        (y + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset));
+            
+            /*
             return Mathf.PerlinNoise((x + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset, 
-                                     (y + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset);
+                                     (y + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset);*/
         }
 
         public static bool Get3DPerlin(Vector3 position, float offset, float scale, float threshold)

@@ -15,18 +15,6 @@ namespace MindCraft.View
         private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
         private ChunkCoord _lastPlayerCoords;
         
-        public void GenerateWorld()
-        {
-            //create chunks
-            for (var x = -VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; x < VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; x++)
-            {
-                for (var y = -VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; y < VoxelLookups.VIEW_DISTANCE_IN_CHUNKS; y++)
-                {
-                    CreateChunk(new ChunkCoord(x, y));
-                }
-            }
-        }
-        
         public void UpdateChunkMesh(ChunkCoord coords, byte[,,] chunkMap)
         {
             _chunks[coords].UpdateChunkMesh(chunkMap);
@@ -81,9 +69,9 @@ namespace MindCraft.View
             _lastPlayerCoords = newCoords;
         }
         
-        private void CreateChunk(ChunkCoord coords)
+        public void CreateChunk(ChunkCoord coords)
         {
-            var map = WorldModel.CreateChunkMap(coords);
+            var map = WorldModel.TryGetMapByChunkCoords(coords);
             var chunk = InstanceProvider.GetInstance<Chunk>();
             chunk.Init(coords);
             chunk.UpdateChunkMesh(map);

@@ -7,6 +7,9 @@ using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Lookup;
 using MindCraft.View;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
 using UnityEngine;
 
 namespace MindCraft.Model
@@ -139,26 +142,66 @@ namespace MindCraft.Model
         {
             var mapWatch = new Stopwatch();
             mapWatch.Start();
-
+            
+            
             var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
-
+            var nativeArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
+            
+            var mapJob = CreateMapJob(coords.X, coords.Y, _biomeDef, nativeArray);
+            mapJob.Complete();
+            
             for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
             {
                 for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
                 {
                     for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
                     {
-                        map[iX, iY, iZ] = GenerateVoxel(iX + coords.X * VoxelLookups.CHUNK_SIZE, iY, iZ + coords.Y * VoxelLookups.CHUNK_SIZE);
+                        var index = ArrayHelper.To1D(iX, iY, iZ);
+                        map[iX, iY, iZ] = nativeArray[index];
                     }
                 }
             }
 
             _chunkMaps[coords] = map;
+            
+            nativeArray.Dispose();
 
             mapWatch.Stop();
             Chunk.MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
 
             return map;
+        }
+
+        private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDef biomeDef, NativeArray<byte> map)
+        {
+            var job = new GenerateMapJob()
+                      {
+                          ChunkX = chunkX,
+                          ChunkY = chunkY,
+                          BiomeDef = biomeDef.BiomeDefData,
+                          Map =  map
+                      };
+            
+            return job.Schedule(VoxelLookups.VOXELS_PER_CHUNK,64);    
+        }
+        
+        [BurstCompile]
+        public struct GenerateMapJob : IJobParallelFor
+        {
+            [ReadOnly]
+            public int ChunkX;
+            [ReadOnly]
+            public int ChunkY;
+            
+            [ReadOnly] public BiomeDefData BiomeDef;
+
+            [WriteOnly] public NativeArray<byte> Map;
+            
+            public void Execute(int index)
+            {
+                ArrayHelper.To3D(index, out int x, out int y, out int z);
+                Map[index] = GenerateVoxel(x + ChunkX * VoxelLookups.CHUNK_SIZE, y, z + ChunkY * VoxelLookups.CHUNK_SIZE, BiomeDef);
+            }
         }
 
         /// <summary>
@@ -187,12 +230,17 @@ namespace MindCraft.Model
 
             // ======== BASIC PASS ========
 
-            return GenerateVoxel(x, y, z);
+            return GenerateVoxel(x, y, z, _biomeDef.BiomeDefData);
         }
 
         public int GetTerrainHeight(int x, int y)
         {
-            return Mathf.FloorToInt(_biomeDef.TerrainMin + _biomeDef.TerrainHeight * Noise.Get2DPerlin(x, y, 0, _biomeDef.TerrainScale));
+            return GetTerrainHeight(x, y, _biomeDef.BiomeDefData);
+        }
+
+        public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef)
+        {
+            return Mathf.FloorToInt(biomeDef.TerrainMin + biomeDef.TerrainHeight * Noise.Get2DPerlin(x, y, 0, biomeDef.TerrainScale));
         }
 
         /// <summary>
@@ -202,8 +250,9 @@ namespace MindCraft.Model
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
+        /// <param name="biomeDef"></param>
         /// <returns></returns>
-        private byte GenerateVoxel(int x, int y, int z)
+        private static byte GenerateVoxel(int x, int y, int z, BiomeDefData biomeDef)
         {
             // ======== STATIC RULES ========
 
@@ -212,7 +261,7 @@ namespace MindCraft.Model
 
             // ======== BASIC PASS ========
 
-            var terrainHeight = GetTerrainHeight(x, z);
+            var terrainHeight = GetTerrainHeight(x, z, biomeDef);
 
             byte voxelValue = 0;
             //everything higher then terrainHeight is air
@@ -232,8 +281,11 @@ namespace MindCraft.Model
             //LODES PASS
             if (voxelValue == VoxelTypeByte.STONE)
             {
-                foreach (var lode in _biomeDef.Lodes)
+                var lodesCount = biomeDef.Lodes.Length;
+                for (var i = 0; i < lodesCount; i++)
                 {
+                    var lode = biomeDef.Lodes[i];
+                    
                     if (y > lode.MinHeight && y < lode.MaxHeight)
                     {
                         var treshold = lode.Treshold;
