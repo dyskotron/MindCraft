@@ -80,7 +80,7 @@ namespace MindCraft.View.Inventory
                 if (Input.GetKeyDown(keyCode))
                 {
                     SelectItemAt(id);
-                    BlockTypeSelectedSignal.Dispatch((BlockTypeId)id);
+                    BlockTypeSelectedSignal.Dispatch(GetSelectedItem().BlockTypeId);
                     break;
                 }
 
