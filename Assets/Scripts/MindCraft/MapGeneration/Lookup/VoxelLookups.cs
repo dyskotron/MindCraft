@@ -8,7 +8,7 @@ namespace MindCraft.MapGeneration.Lookup
         // that means (24 vertices * 6(width) * 6(depth) * 128(height)) / 2 = 55296 Vertices out of 65534 Vertex per mesh Limit
         public const int CHUNK_SIZE = 6; 
         public const int CHUNK_HEIGHT = 128;
-        public const int VIEW_DISTANCE = 30;//100;
+        public const int VIEW_DISTANCE = 100;
         public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
 
         public static readonly Vector3Int[] Vertices =

@@ -109,12 +109,12 @@ namespace MindCraft.Controller
 
             //walk / sprint
             _playerBody.Velocity = ((_playerBody.Transform.forward * _vertical) + (_playerBody.Transform.right * _horizontal)) * Time.deltaTime * _moveSpeed;
+            //_playerBody.Force = ((_playerBody.Transform.forward * _vertical) + (_playerBody.Transform.right * _horizontal)) * _moveSpeed;
         }
 
         private void Jump()
         {
             _playerBody.VerticalMomentum = _playerSettings.JumpForce;
-            _playerBody.Grounded = false; //TODO: make only physics responsible for determining if the player is grounded
             _jumpRequest = false;
         }
 

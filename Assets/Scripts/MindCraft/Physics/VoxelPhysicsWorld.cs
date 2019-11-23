@@ -6,50 +6,40 @@ using UnityEngine;
 
 namespace MindCraft.Physics
 {
-    public class VoxelRigidBody
-    {
-        public float Size;
-        public float Height;
-        public Transform Transform;
-        
-        public Vector3 Velocity;
-        public float VerticalMomentum;
-        public bool Grounded;
-
-        public VoxelRigidBody(float size, float height, Transform transform)
-        {
-            Size = size;
-            Height = height;
-            Transform = transform;
-        }
-    }
-
     public interface IVoxelPhysicsWorld
     {
         void AddRigidBody(VoxelRigidBody body);
-        bool Enabled { get;}
-        void SetEnabled(bool enabled);
+        void SetEnabled(bool value);
         void Destroy();
     }
 
+    /// <summary>
+    /// Super simple voxel "physics"
+    /// </summary>
     public class VoxelPhysicsWorld : IVoxelPhysicsWorld
     {
         [Inject] public IUpdater Updater { get; set; }
-        [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public IWorldSettings WorldSettings { get; set; }
+        [Inject] public IWorldModel WorldModel { get; set; }
 
         public bool Enabled => _enabled;
         
-        private float _gravity = -9.8f;
-        private List<VoxelRigidBody> _bodies = new List<VoxelRigidBody>();
-
         private bool _enabled;
 
+        private float _gravity;
+        
+        private List<VoxelRigidBody> _bodies = new List<VoxelRigidBody>();
+        
         [PostConstruct]
         public void PostConstruct()
         {
             _gravity = WorldSettings.Gravity;
             SetEnabled(true);
+        }
+        
+        public void AddRigidBody(VoxelRigidBody body)
+        {
+            _bodies.Add(body);    
         }
 
         public void SetEnabled(bool value)
@@ -70,88 +60,74 @@ namespace MindCraft.Physics
             SetEnabled(false);
         }
 
-        public void AddRigidBody(VoxelRigidBody body)
-        {
-            _bodies.Add(body);
-        }
-
         private void UpdateBodies()
         {
-            foreach (var body in _bodies)
+            foreach (var voxelRigidBody in _bodies)
             {
-                //apply gravity
-                if (body.VerticalMomentum > _gravity)
-                    body.VerticalMomentum += Time.fixedDeltaTime * _gravity;
-
-                //apply vertical momentum
-                body.Velocity += body.VerticalMomentum * Time.fixedDeltaTime * Vector3.up;
-
-                if (body.Velocity.z > 0 && CheckFront(body) || (body.Velocity.z < 0 && CheckBack(body)))
-                    body.Velocity.z = 0;
-                if (body.Velocity.x > 0 && CheckRight(body) || (body.Velocity.x < 0 && CheckLeft(body)))
-                    body.Velocity.x = 0;
-
-                if (body.Velocity.y < 0)
-                    body.Velocity.y = CheckDownSpeed(body);
-                if (body.Velocity.y > 0)
-                    body.Velocity.y = CheckUpSpeed(body);
-
-                body.Transform.Translate(body.Velocity, Space.World);
-            }
+                UpdateBody(voxelRigidBody); 
+            } 
         }
 
-        private float CheckDownSpeed(VoxelRigidBody body)
+        private void UpdateBody(VoxelRigidBody voxelRigidBody)
         {
-            if (WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x - body.Size, body.Transform.position.y + body.Velocity.y, body.Transform.position.z - body.Size) ||
-                WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x - body.Size, body.Transform.position.y + body.Velocity.y, body.Transform.position.z + body.Size) ||
-                WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x + body.Size, body.Transform.position.y + body.Velocity.y, body.Transform.position.z - body.Size) ||
-                WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x + body.Size, body.Transform.position.y + body.Velocity.y, body.Transform.position.z + body.Size))
+            voxelRigidBody.Grounded = false;
+                
+            //apply gravity
+            if (voxelRigidBody.VerticalMomentum > _gravity)
+                voxelRigidBody.VerticalMomentum += Time.fixedDeltaTime * _gravity;
+
+            //apply vertical momentum
+            voxelRigidBody.Velocity += voxelRigidBody.VerticalMomentum * Time.fixedDeltaTime * Vector3.up;
+            
+            //collision with world
+            var oldPosition = voxelRigidBody.Transform.position;
+            var newPosition = oldPosition + voxelRigidBody.Velocity;
+            voxelRigidBody.LostVelocity = Vector3.zero;
+            
+            if (WorldModel.CheckVoxelOnGlobalXyz(newPosition.x, newPosition.y, newPosition.z))
             {
-                body.Grounded = true;
+                if (WorldModel.CheckVoxelOnGlobalXyz(newPosition.x, oldPosition.y, oldPosition.z))
+                {
+                    voxelRigidBody.LostVelocity.x = voxelRigidBody.Velocity.x;
+                    voxelRigidBody.Velocity.x = 0;
+                }
 
-                return 0;
+                if (WorldModel.CheckVoxelOnGlobalXyz(oldPosition.x, newPosition.y, oldPosition.z))
+                {
+                    if (voxelRigidBody.Velocity.y < 0)
+                        voxelRigidBody.Grounded = true;
+                    
+                    voxelRigidBody.LostVelocity.y = voxelRigidBody.Velocity.y;
+                    voxelRigidBody.Velocity.y = 0;
+                }
+
+                if (WorldModel.CheckVoxelOnGlobalXyz(oldPosition.x, oldPosition.y, newPosition.z))
+                {
+                    voxelRigidBody.LostVelocity.z = voxelRigidBody.Velocity.z;
+                    voxelRigidBody.Velocity.z = 0;
+                }
+
+                newPosition = oldPosition + voxelRigidBody.Velocity;
+            }
+            
+            //if we are prevented to move on horizontal plane and it can be solved by jumping one square then jump
+            //should work only one block above ground
+            //TODO: check neighbour blocks as now it can autojump in weird cornercases
+            if (voxelRigidBody.Grounded)
+            {
+                var preventedHoriontalMagnitude = new Vector2(voxelRigidBody.LostVelocity.x, voxelRigidBody.LostVelocity.z).magnitude;
+                voxelRigidBody.LostVelocity.z = preventedHoriontalMagnitude;
+                var lostVelocityNormalised = voxelRigidBody.LostVelocity.normalized;
+                
+                if (preventedHoriontalMagnitude > 0.05f && !WorldModel.CheckVoxelOnGlobalXyz(newPosition.x + lostVelocityNormalised.x, 
+                                                                                             newPosition.y + 1, 
+                                                                                             newPosition.z + lostVelocityNormalised.z))
+                {
+                    voxelRigidBody.VerticalMomentum = 5;
+                }
             }
 
-            body.Grounded = false;
-
-            return  + body.Velocity.y;
-        }
-
-        private float CheckUpSpeed(VoxelRigidBody body)
-        {
-            if (
-                WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x - body.Size, body.Transform.position.y + body.Height + body.Velocity.y, body.Transform.position.z - body.Size) ||
-                WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x - body.Size, body.Transform.position.y + body.Height + body.Velocity.y, body.Transform.position.z + body.Size) ||
-                WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x + body.Size, body.Transform.position.y + body.Height + body.Velocity.y, body.Transform.position.z - body.Size) ||
-                WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x + body.Size, body.Transform.position.y + body.Height + body.Velocity.y, body.Transform.position.z + body.Size)
-            )
-                return 0;
-
-            return body.Velocity.y;
-        }
-
-        private bool CheckFront(VoxelRigidBody body)
-        {
-            return WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x, body.Transform.position.y, body.Transform.position.z + body.Size) ||
-                   WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x, body.Transform.position.y, body.Transform.position.z + body.Size);
-        }
-
-        private bool CheckBack(VoxelRigidBody body)
-        {
-            return WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x, body.Transform.position.y, body.Transform.position.z - body.Size) ||
-                   WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x, body.Transform.position.y, body.Transform.position.z - body.Size);
-        }
-
-        private bool CheckLeft(VoxelRigidBody body)
-        {
-            return WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x - body.Size, body.Transform.position.y, body.Transform.position.z) ||
-                   WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x - body.Size, body.Transform.position.y, body.Transform.position.z);
-        }
-
-        private bool CheckRight(VoxelRigidBody body)
-        {
-            return WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x + body.Size, body.Transform.position.y, body.Transform.position.z) ||
-                   WorldModel.CheckVoxelOnGlobalXyz(body.Transform.position.x + body.Size, body.Transform.position.y, body.Transform.position.z);
+            voxelRigidBody.Transform.position = newPosition;
         }
     }
 }
