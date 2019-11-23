@@ -55,12 +55,12 @@ namespace MindCraft.View
             //TODO: merge loops so everything is checked in one iteration
 
             //show new chunks
-            for (var x = newMinX; x < newMaxX; x++)
+            for (var x = newMinX; x <= newMaxX; x++)
             {
-                for (var y = newMinY; y < newMaxY; y++)
+                for (var y = newMinY; y <= newMaxY; y++)
                 {
                     //except old cords
-                    if (x >= lastMinX && x < lastMaxX && y >= lastMinY && y < lastMaxY)
+                    if (x >= lastMinX && x < lastMaxX && y >= lastMinY && y <= lastMaxY)
                         continue;
 
                     ShowChunk(x, y);
@@ -85,7 +85,7 @@ namespace MindCraft.View
         
         public void CreateChunk(ChunkCoord coords)
         {
-            var map = WorldModel.TryGetMapByChunkCoords(coords);
+            var map = WorldModel.GetMapByChunkCoords(coords);
 
             Chunk chunk;
             if (_chunkPool.Count > 0)

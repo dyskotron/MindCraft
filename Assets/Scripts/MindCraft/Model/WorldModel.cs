@@ -17,8 +17,10 @@ namespace MindCraft.Model
     public interface IWorldModel
     {
         void GenerateWorldAroundPlayer(ChunkCoord coords);
+        void UpdateWorldAroundPlayer(ChunkCoord newCoords);
         
         byte[,,] TryGetMapByChunkCoords(ChunkCoord coords);
+        byte[,,] GetMapByChunkCoords(ChunkCoord coords);
         bool CheckVoxelOnGlobalXyz(float x, float y, float z);
         void EditVoxel(Vector3 position, byte VoxelType);
 
@@ -54,6 +56,8 @@ namespace MindCraft.Model
 
         private BiomeDef _biomeDef;
 
+        private ChunkCoord _lastPlayerCoords;
+
         #region Getters / Helper methods
 
         [PostConstruct]
@@ -67,17 +71,16 @@ namespace MindCraft.Model
             _chunkMaps.TryGetValue(coords, out byte[,,] chunkMap);
             return chunkMap;
         }
+        
+        public byte[,,] GetMapByChunkCoords(ChunkCoord coords)
+        {
+            return _chunkMaps[coords];
+        }
 
         public bool CheckVoxelOnGlobalXyz(float x, float y, float z)
         {
             var coords = WorldModelHelper.GetChunkCoordsFromWorldXy(x, z);
-            var chunkMap = TryGetMapByChunkCoords(coords);
-
-            //consider returning true at this point
-            //method is used for collision checking so if we get to hypothetical situation where chunk map is still not generated,
-            //we should not allow player to move out of generated world.
-            if (chunkMap == null)
-                return false;
+            var chunkMap = GetMapByChunkCoords(coords);
 
             WorldModelHelper.GetLocalXyzFromWorldPosition(x, y, z, out int xOut, out int yOut, out int zOut);
 
@@ -152,8 +155,52 @@ namespace MindCraft.Model
             }
         }
         
-        public void UpdateWorldAroundPlayer(ChunkCoord oldCoords, ChunkCoord newCoords)
+        public void UpdateWorldAroundPlayer(ChunkCoord newCoords)
         {
+            if (newCoords == _lastPlayerCoords)
+                return;
+
+            var lastMinX = _lastPlayerCoords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var lastMinY = _lastPlayerCoords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var lastMaxX = _lastPlayerCoords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+            var lastMaxY = _lastPlayerCoords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+
+            var newMinX = newCoords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var newMinY = newCoords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
+            var newMaxX = newCoords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+            var newMaxY = newCoords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
+
+            //TODO: merge loops so everything is checked in one iteration
+
+            //show new chunks
+            for (var x = newMinX; x <= newMaxX; x++)
+            {
+                for (var y = newMinY; y <= newMaxY; y++)
+                {
+                    //except old cords
+                    if (x >= lastMinX && x <= lastMaxX && y >= lastMinY && y <= lastMaxY)
+                        continue;
+
+                    CreateChunkMap(new ChunkCoord(x, y));
+                }
+            }
+
+            //hide all old chunks
+            /*
+            for (var x = lastMinX; x < lastMaxX; x++)
+            {
+                for (var y = lastMinY; y < lastMaxY; y++)
+                {
+                    //except new ones
+                    if (x >= newMinX && x < newMaxX && y >= newMinY && y < newMaxY)
+                        continue;
+
+                    HideChunk(x, y);
+                }
+            }*/
+
+            _lastPlayerCoords = newCoords;
+            
             /*
             var xMin = coords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
             var xMax = coords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
@@ -182,9 +229,9 @@ namespace MindCraft.Model
             mapWatch.Start();
             
             var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
-            var nativeArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
+            var voxelArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
             
-            var mapJob = CreateMapJob(coords.X, coords.Y, _biomeDef, nativeArray);
+            var mapJob = CreateMapJob(coords.X, coords.Y, _biomeDef, voxelArray);
             mapJob.Complete();
 
             _playerModifiedMaps.TryGetValue(coords, out var playerData);
@@ -207,15 +254,15 @@ namespace MindCraft.Model
                         }
                         
                         var index = ArrayHelper.To1D(iX, iY, iZ);
-                        map[iX, iY, iZ] = nativeArray[index];
+                        map[iX, iY, iZ] = voxelArray[index];
                     }
                 }
             }
+            
+            voxelArray.Dispose();
 
             _chunkMaps[coords] = map;
             
-            nativeArray.Dispose();
-
             mapWatch.Stop();
             Chunk.MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
 
@@ -274,7 +321,7 @@ namespace MindCraft.Model
             // ======== RETURN CACHED VOXELS OR PLAYER MODIFIED VOXELS ========
 
             var coords = WorldModelHelper.GetChunkCoordsFromWorldXy(x, z);
-            var map = TryGetMapByChunkCoords(coords);
+            var map = GetMapByChunkCoords(coords);
             if (map != null)
                 return map[x - coords.X * VoxelLookups.CHUNK_SIZE, y, z - coords.Y * VoxelLookups.CHUNK_SIZE];
 

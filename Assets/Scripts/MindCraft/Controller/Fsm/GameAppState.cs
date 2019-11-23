@@ -17,42 +17,49 @@ namespace MindCraft.Controller.Fsm
     public class GameAppState : AppState<GameAppScreen>
     {
         public static float GENERATION_TIME_TOTAL = 0;
-        
+
         [Inject] public IUpdater Updater { get; set; }
         [Inject] public IAssetManager AssetManager { get; set; }
         [Inject] public ViewConfig ViewConfig { get; set; }
-        
+
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public ChunksRenderer ChunksRenderer { get; set; }
 
         private PlayerView _playerView;
         private ChunkCoord _lastPlayerCoords;
-        
+
         protected override void Enter()
         {
             base.Enter();
-            
+
             Random.InitState(WorldSettings.Seed);
             Cursor.lockState = CursorLockMode.Locked;
-            
+
             //create player
             _playerView = AssetManager.GetGameObject<PlayerView>(ResourcePath.PLAYER_PREFAB);
-            _playerView.transform.position = new Vector3(0f, WorldModel.GetTerrainHeight(0,0) + 5, 0f);
-            
+            _playerView.transform.position = new Vector3(0f, WorldModel.GetTerrainHeight(0, 0) + 5, 0f);
+
             //Generate World
             var watch = new Stopwatch();
             watch.Start();
             GenerateWorld(new ChunkCoord());
             watch.Stop();
 
-            GENERATION_TIME_TOTAL = (float)watch.Elapsed.TotalSeconds;
-            
+            GENERATION_TIME_TOTAL = (float) watch.Elapsed.TotalSeconds;
+
             var camera = ViewConfig.Camera3d;
             camera.nearClipPlane = 0.01f;
             camera.farClipPlane = VoxelLookups.VIEW_DISTANCE;
-            
+
             Updater.EveryFrame(UpdateView);
+        }
+
+        private void GenerateWorld(ChunkCoord playerPosition)
+        {
+            WorldModel.GenerateWorldAroundPlayer(playerPosition);
+            ChunksRenderer.RenderChunksAroundPlayer(playerPosition);
+            _lastPlayerCoords = playerPosition;
         }
 
         private void UpdateView()
@@ -61,17 +68,10 @@ namespace MindCraft.Controller.Fsm
             if (newCoords == _lastPlayerCoords)
                 return;
 
-            WorldModel.GenerateWorldAroundPlayer(newCoords);
+            WorldModel.UpdateWorldAroundPlayer(newCoords);
             ChunksRenderer.UpdateChunksAroundPlayer(newCoords);
 
             _lastPlayerCoords = newCoords;
-        }
-        
-        private void GenerateWorld(ChunkCoord playerPosition)
-        {
-            WorldModel.GenerateWorldAroundPlayer(playerPosition);
-            ChunksRenderer.RenderChunksAroundPlayer(playerPosition);
-            _lastPlayerCoords = playerPosition;
         }
     }
 }
