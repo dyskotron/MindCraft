@@ -20,7 +20,7 @@ namespace MindCraft.Model
         void GenerateWorldAroundPlayer(ChunkCoord coords);
         void UpdateWorldAroundPlayer(ChunkCoord newCoords);
         
-        byte[,,] GetMapByChunkCoords(ChunkCoord coords);
+        NativeArray<byte> GetMapByChunkCoords(ChunkCoord coords);
         bool CheckVoxelOnGlobalXyz(float x, float y, float z);
         void EditVoxel(Vector3 position, byte VoxelType);
 
@@ -42,7 +42,7 @@ namespace MindCraft.Model
         [Inject] public ChunksRenderer ChunksRenderer { get; set; }
         
         //map for each generated chunk - only generated data which are always recreated the same
-        private Dictionary<ChunkCoord, byte[,,]> _chunkMaps = new Dictionary<ChunkCoord, byte[,,]>();
+        private Dictionary<ChunkCoord, NativeArray<byte>> _chunkMaps = new Dictionary<ChunkCoord, NativeArray<byte>>();
 
         //Only player modified voxels stored there
         private Dictionary<ChunkCoord, byte[,,]> _playerModifiedMaps = new Dictionary<ChunkCoord, byte[,,]>();
@@ -57,7 +57,7 @@ namespace MindCraft.Model
             _biomeDef = AssetManager.GetAsset<BiomeDef>(ResourcePath.BIOME_DEF);
         }
 
-        public byte[,,] GetMapByChunkCoords(ChunkCoord coords)
+        public NativeArray<byte> GetMapByChunkCoords(ChunkCoord coords)
         {
             return _chunkMaps[coords];
         }
@@ -69,7 +69,8 @@ namespace MindCraft.Model
 
             WorldModelHelper.GetLocalXyzFromWorldPosition(x, y, z, out int xOut, out int yOut, out int zOut);
 
-            return chunkMap[xOut, yOut, zOut] != BlockTypeByte.AIR;
+            
+            return chunkMap[ArrayHelper.To1D(xOut, yOut, zOut)] != BlockTypeByte.AIR;
         }
 
         #endregion
@@ -79,8 +80,13 @@ namespace MindCraft.Model
             WorldModelHelper.GetLocalXyzFromWorldPosition(position, out int x, out int y, out int z);
             var coords = WorldModelHelper.GetChunkCoordsFromWorldPosition(position);
 
+            var id = ArrayHelper.To1D(x, y, z);
+
+            var map = _chunkMaps[coords];
+            map[id] = VoxelType;
+            
             //update voxel in chunk map
-            _chunkMaps[coords][x, y, z] = VoxelType;
+            _chunkMaps[coords] = map;
 
             //update voxel in user player modifications map
             //so that data can persist when we clean distant chunks from memory or can be used to save / load game
@@ -140,10 +146,11 @@ namespace MindCraft.Model
         public void UpdateWorldAroundPlayer(ChunkCoord newCoords)
         {
             //remove chunk data out of sight
+            /* TODO: dispose array properly
             foreach (var position in MapBoundsLookup.MapDataRemove)
             {
                 _chunkMaps.Remove(new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y));
-            }
+            }*/
             
             //create data for chunks coming into view distance
             var coordsList = new List<ChunkCoord>();
@@ -166,9 +173,12 @@ namespace MindCraft.Model
             var jobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
             var results = new NativeArray<byte>[coordsList.Count];
             
+            var watch = new Stopwatch();
+            watch.Start();
+            
             for (var i = 0; i < coordsList.Count; i++)
             {
-                results[i] = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
+                results[i] = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
                 var handle = CreateMapJob(coordsList[i].X, coordsList[i].Y, _biomeDef, results[i]);
                 jobArray[i] = handle;
             }
@@ -178,42 +188,20 @@ namespace MindCraft.Model
             JobHandle.CompleteAll(jobArray);
             jobArray.Dispose();
 
+            var jobTime = watch.ElapsedMilliseconds;
+            
+            watch.Restart();
+            
             for (var i = 0; i < results.Length; i++)
             {
                 var coords = coordsList[i];
-                var voxelArray = results[i];
-                
-                //process job data
-                var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
-                _playerModifiedMaps.TryGetValue(coords, out var playerData);
-                var mergeWithPlayerData = playerData != null;
-            
-                for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
-                {
-                    for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
-                    {
-                        for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
-                        {
-                            if (mergeWithPlayerData)
-                            {
-                                var modifiedBlock = playerData[iX, iY, iZ];
-                                if (modifiedBlock != BlockTypeByte.NONE)
-                                {
-                                    map[iX, iY, iZ] = modifiedBlock;  
-                                    continue;
-                                }
-                            }
-                        
-                            var index = ArrayHelper.To1D(iX, iY, iZ);
-                            map[iX, iY, iZ] = voxelArray[index];
-                        }
-                    }
-                }
-            
-                voxelArray.Dispose();
-
-                _chunkMaps[coords] = map;   
+                _chunkMaps[coords] = results[i];
             }
+            
+            var processTime = watch.ElapsedMilliseconds;
+
+
+            Debug.LogWarning($"<color=\"aqua\">WorldModel.CreateChunkMaps() : Jobified map generation ended. jobTime: {jobTime} processTime: {processTime}</color>");
         }
 
         /// <summary>
@@ -226,41 +214,13 @@ namespace MindCraft.Model
             mapWatch.Start();
             
             
-            var voxelArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
+            var voxelArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
             
             var mapJob = CreateMapJob(coords.X, coords.Y, _biomeDef, voxelArray);
             mapJob.Complete();
 
-            //process job data
-            var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
-            _playerModifiedMaps.TryGetValue(coords, out var playerData);
-            var mergeWithPlayerData = playerData != null;
-            
-            for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
-            {
-                for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
-                {
-                    for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
-                    {
-                        if (mergeWithPlayerData)
-                        {
-                            var modifiedBlock = playerData[iX, iY, iZ];
-                            if (modifiedBlock != BlockTypeByte.NONE)
-                            {
-                                map[iX, iY, iZ] = modifiedBlock;  
-                                continue;
-                            }
-                        }
-                        
-                        var index = ArrayHelper.To1D(iX, iY, iZ);
-                        map[iX, iY, iZ] = voxelArray[index];
-                    }
-                }
-            }
-            
-            voxelArray.Dispose();
 
-            _chunkMaps[coords] = map;
+            _chunkMaps[coords] = voxelArray;
         }
 
         private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDef biomeDef, NativeArray<byte> map)
@@ -316,8 +276,11 @@ namespace MindCraft.Model
 
             var coords = WorldModelHelper.GetChunkCoordsFromWorldXy(x, z);
             var map = GetMapByChunkCoords(coords);
+
+            var index = ArrayHelper.To1D(x - coords.X * VoxelLookups.CHUNK_SIZE, y, z - coords.Y * VoxelLookups.CHUNK_SIZE);
+            
             if (map != null)
-                return map[x - coords.X * VoxelLookups.CHUNK_SIZE, y, z - coords.Y * VoxelLookups.CHUNK_SIZE];
+                return map[index];
 
             // ======== BASIC PASS ========
 

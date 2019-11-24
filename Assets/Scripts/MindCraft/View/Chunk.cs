@@ -4,6 +4,7 @@ using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Debug = UnityEngine.Debug;
@@ -17,7 +18,7 @@ namespace MindCraft.View
         [Inject] public TextureLookup TextureLookup { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
 
-        private const int FACES_PER_VOXEL = 6;
+        public const int FACES_PER_VOXEL = 6;
         private const int TRIANGLE_INDICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
 
@@ -111,8 +112,9 @@ namespace MindCraft.View
 
         #region Mesh Generation
 
-        public void UpdateChunkMesh(byte[,,] map)
+        public void UpdateChunkMesh(NativeArray<byte> map)
         {
+            /*
             _map = map;
 
             currentVertexIndex = 0;
@@ -140,7 +142,7 @@ namespace MindCraft.View
             mesh.uv = uvs.ToArray();
             mesh.RecalculateNormals();
 
-            _meshFilter.mesh = mesh;
+            _meshFilter.mesh = mesh;*/
         }
 
         #endregion
