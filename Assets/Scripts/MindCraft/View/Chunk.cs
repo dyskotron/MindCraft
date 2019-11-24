@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using MindCraft.Data;
 using MindCraft.MapGeneration;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using UnityEngine;
 using UnityEngine.Rendering;
