@@ -17,12 +17,6 @@ namespace MindCraft.View
         [Inject] public TextureLookup TextureLookup { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
 
-        public static double MAP_ELAPSED_TOTAL = 0;
-        public static double MESH_ELAPSED_TOTAL = 0;
-        public static double CHUNKS_TOTAL = 0;
-
-        private const int VERTEX_LIMIT = 65534;
-        
         private const int FACES_PER_VOXEL = 6;
         private const int TRIANGLE_INDICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
@@ -121,9 +115,6 @@ namespace MindCraft.View
         {
             _map = map;
 
-            var meshWatch = new Stopwatch();
-            meshWatch.Start();
-
             currentVertexIndex = 0;
             vertices.Clear();
             triangles.Clear();
@@ -150,10 +141,6 @@ namespace MindCraft.View
             mesh.RecalculateNormals();
 
             _meshFilter.mesh = mesh;
-
-            meshWatch.Stop();
-            MESH_ELAPSED_TOTAL += meshWatch.Elapsed.TotalSeconds;
-            CHUNKS_TOTAL++;
         }
 
         #endregion

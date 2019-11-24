@@ -25,13 +25,6 @@ namespace MindCraft.Model
         void EditVoxel(Vector3 position, byte VoxelType);
 
         /// <summary>
-        /// Generates Chunk Map based only on seed and generation algorithm
-        /// </summary>
-        /// <param name="coords"></param>
-        /// <returns></returns>
-        byte[,,] CreateChunkMap(ChunkCoord coords);
-
-        /// <summary>
         /// Returns voxel on world coordinates - decides if we need to generate the voxel or we can retrieve that from existing chunk
         /// </summary>
         /// <param name="x"></param>
@@ -130,13 +123,18 @@ namespace MindCraft.Model
 
         #region Terrain Generation
 
-        public void GenerateWorldAroundPlayer(ChunkCoord coords)
+        public void GenerateWorldAroundPlayer(ChunkCoord playerCords)
         {
             //create all map data within view distance
-            foreach (var position in MapBoundsLookup.MapDataGenaration)
+            var coordsList = new List<ChunkCoord>();
+            foreach (var position in MapBoundsLookup.MapDataGeneration)
             {
-                CreateChunkMap(new ChunkCoord(position)); 
+                var coords = new ChunkCoord(playerCords.X + position.x, playerCords.Y + position.y);
+                if(!_chunkMaps.ContainsKey(coords))
+                    coordsList.Add(coords);
             }
+
+            CreateChunkMaps(coordsList);
         }
         
         public void UpdateWorldAroundPlayer(ChunkCoord newCoords)
@@ -148,29 +146,93 @@ namespace MindCraft.Model
             }
             
             //create data for chunks coming into view distance
+            var coordsList = new List<ChunkCoord>();
             foreach (var position in MapBoundsLookup.MapDataAdd)
             {
-                CreateChunkMap(new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y));    
-            } 
-        }
+                var coords = new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y);
+                if(!_chunkMaps.ContainsKey(coords))
+                    coordsList.Add(coords);
+            }
 
+            CreateChunkMaps(coordsList);
+        }
 
         /// <summary>
         /// Generates Chunk Map based only on seed and generation algorithm
         /// </summary>
-        /// <param name="coords"></param>
-        /// <returns></returns>
-        public byte[,,] CreateChunkMap(ChunkCoord coords)
+        /// <param name="coordsList"> List of Chunk coordinates></param>
+        private void CreateChunkMaps(List<ChunkCoord> coordsList)
+        {
+            var jobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
+            var results = new NativeArray<byte>[coordsList.Count];
+            
+            for (var i = 0; i < coordsList.Count; i++)
+            {
+                results[i] = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
+                var handle = CreateMapJob(coordsList[i].X, coordsList[i].Y, _biomeDef, results[i]);
+                jobArray[i] = handle;
+            }
+            
+            JobHandle.ScheduleBatchedJobs();
+            
+            JobHandle.CompleteAll(jobArray);
+            jobArray.Dispose();
+
+            for (var i = 0; i < results.Length; i++)
+            {
+                var coords = coordsList[i];
+                var voxelArray = results[i];
+                
+                //process job data
+                var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
+                _playerModifiedMaps.TryGetValue(coords, out var playerData);
+                var mergeWithPlayerData = playerData != null;
+            
+                for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
+                {
+                    for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
+                    {
+                        for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
+                        {
+                            if (mergeWithPlayerData)
+                            {
+                                var modifiedBlock = playerData[iX, iY, iZ];
+                                if (modifiedBlock != BlockTypeByte.NONE)
+                                {
+                                    map[iX, iY, iZ] = modifiedBlock;  
+                                    continue;
+                                }
+                            }
+                        
+                            var index = ArrayHelper.To1D(iX, iY, iZ);
+                            map[iX, iY, iZ] = voxelArray[index];
+                        }
+                    }
+                }
+            
+                voxelArray.Dispose();
+
+                _chunkMaps[coords] = map;   
+            }
+        }
+
+        /// <summary>
+        /// Generates Chunk Map based only on seed and generation algorithm
+        /// </summary>
+        /// <param name="coords"Chunk coordinates></param>
+        public void CreateChunkMap(ChunkCoord coords)
         {
             var mapWatch = new Stopwatch();
             mapWatch.Start();
             
-            var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
+            
             var voxelArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.TempJob);
             
             var mapJob = CreateMapJob(coords.X, coords.Y, _biomeDef, voxelArray);
             mapJob.Complete();
 
+            //process job data
+            var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
             _playerModifiedMaps.TryGetValue(coords, out var playerData);
             var mergeWithPlayerData = playerData != null;
             
@@ -199,11 +261,6 @@ namespace MindCraft.Model
             voxelArray.Dispose();
 
             _chunkMaps[coords] = map;
-            
-            mapWatch.Stop();
-            Chunk.MAP_ELAPSED_TOTAL += mapWatch.Elapsed.TotalSeconds;
-
-            return map;
         }
 
         private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDef biomeDef, NativeArray<byte> map)
@@ -216,10 +273,10 @@ namespace MindCraft.Model
                           Map =  map
                       };
             
-            return job.Schedule(VoxelLookups.VOXELS_PER_CHUNK,64);    
+            return job.Schedule(VoxelLookups.VOXELS_PER_CHUNK,512);    
         }
         
-        [BurstCompile]
+        [BurstCompile(CompileSynchronously = true)]
         public struct GenerateMapJob : IJobParallelFor
         {
             [ReadOnly]

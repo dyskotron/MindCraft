@@ -23,7 +23,7 @@ namespace MindCraft.View
         public void GenerateChunksAroundPlayer(ChunkCoord coords)
         {
             //render all chunks within view distance
-            foreach (var pos in MapBoundsLookup.ChunkGenaration)
+            foreach (var pos in MapBoundsLookup.ChunkGeneration)
             {
                 CreateChunk(new ChunkCoord(pos)); 
             } 
@@ -31,6 +31,9 @@ namespace MindCraft.View
 
         public void UpdateChunksAroundPlayer(ChunkCoord newCoords)
         {
+            //TODO ONLY SetActive(false); for chunks within MapBoundsLookup.REMOVE_RING_OFFSET
+            //current HideChunk method moving chunk to the pool should be calle only for those out of remove ring.
+            
             //hide chunks out of sight
             foreach (var position in MapBoundsLookup.ChunkRemove)
             {
