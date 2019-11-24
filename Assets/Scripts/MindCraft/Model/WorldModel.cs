@@ -204,25 +204,6 @@ namespace MindCraft.Model
             Debug.LogWarning($"<color=\"aqua\">WorldModel.CreateChunkMaps() : Jobified map generation ended. jobTime: {jobTime} processTime: {processTime}</color>");
         }
 
-        /// <summary>
-        /// Generates Chunk Map based only on seed and generation algorithm
-        /// </summary>
-        /// <param name="coords"Chunk coordinates></param>
-        public void CreateChunkMap(ChunkCoord coords)
-        {
-            var mapWatch = new Stopwatch();
-            mapWatch.Start();
-            
-            
-            var voxelArray = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
-            
-            var mapJob = CreateMapJob(coords.X, coords.Y, _biomeDef, voxelArray);
-            mapJob.Complete();
-
-
-            _chunkMaps[coords] = voxelArray;
-        }
-
         private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDef biomeDef, NativeArray<byte> map)
         {
             var job = new GenerateMapJob()
@@ -233,7 +214,7 @@ namespace MindCraft.Model
                           Map =  map
                       };
             
-            return job.Schedule(VoxelLookups.VOXELS_PER_CHUNK,512);    
+            return job.Schedule(VoxelLookups.VOXELS_PER_CHUNK,64);    
         }
         
         [BurstCompile(CompileSynchronously = true)]

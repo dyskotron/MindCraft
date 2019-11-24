@@ -4,17 +4,17 @@ namespace MindCraft.Common
 {
     public static class ArrayHelper
     {
-        public static int To1D(int x, int y, int z)
+        public static int To1D(int x, int y, int z, int xMax = VoxelLookups.CHUNK_SIZE, int yMax = VoxelLookups.CHUNK_HEIGHT)
         {
-            return z * VoxelLookups.CHUNK_SIZE * VoxelLookups.CHUNK_HEIGHT + y * VoxelLookups.CHUNK_SIZE + x;
+            return z * xMax * yMax + y * xMax + x;
         }
 
-        public static void To3D(int idx, out int x, out int y, out int z)
+        public static void To3D(int idx, out int x, out int y, out int z, int xMax = VoxelLookups.CHUNK_SIZE, int yMax = VoxelLookups.CHUNK_HEIGHT)
         {
-            z = idx / (VoxelLookups.CHUNK_SIZE * VoxelLookups.CHUNK_HEIGHT);
-            idx -= (z * VoxelLookups.CHUNK_SIZE * VoxelLookups.CHUNK_HEIGHT);
-            y = idx / VoxelLookups.CHUNK_SIZE;
-            x = idx % VoxelLookups.CHUNK_SIZE;
+            z = idx / (xMax * yMax);
+            idx -= (z * xMax * yMax);
+            y = idx / xMax;
+            x = idx % xMax;
         }
     }
 }

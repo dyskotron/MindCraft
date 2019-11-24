@@ -1,13 +1,14 @@
 using System.Collections.Generic;
-using System.Diagnostics;
+using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using Unity.Collections;
+using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
-using Debug = UnityEngine.Debug;
 
 namespace MindCraft.View
 {
@@ -33,7 +34,7 @@ namespace MindCraft.View
         private List<Vector2> uvs = new List<Vector2>();
 
         private ChunkCoord _coords;
-        private byte[,,] _map;
+        //private byte[,,] _map;
 
         [PostConstruct]
         public void PostConstruct()
@@ -67,11 +68,50 @@ namespace MindCraft.View
         {
             //TODO: specific checks for each direction when using by face checks, dont test in rest of cases at all
             if (IsVoxelInChunk(x, y, z))
-                return _map[x, y, z];
+                return 0;//_map[x, y, z]; //TODO fix this
 
             return WorldModel.GetVoxel(x + _coords.X * VoxelLookups.CHUNK_SIZE, y, z + _coords.Y * VoxelLookups.CHUNK_SIZE);
         }
 
+        private bool IsVoxelInChunk(int x, int y, int z)
+        {
+            return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
+        }
+
+        #region Mesh Generation
+/*
+        public void UpdateChunkMesh(NativeArray<byte> map)
+        {   
+            _map = map;
+
+            currentVertexIndex = 0;
+            vertices.Clear();
+            triangles.Clear();
+            uvs.Clear();
+
+            for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
+            {
+                for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
+                {
+                    for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
+                    {
+                        var type = _map[iX, iY, iZ];
+                        if (type != BlockTypeByte.AIR)
+                            AddVoxel(type, iX, iY, iZ);
+                    }
+                }
+            }
+
+            Mesh mesh = new Mesh();
+            mesh.indexFormat = IndexFormat.UInt32;
+            mesh.vertices = vertices.ToArray();
+            mesh.triangles = triangles.ToArray();
+            mesh.uv = uvs.ToArray();
+            mesh.RecalculateNormals();
+
+            _meshFilter.mesh = mesh;
+        }
+        
         private void AddVoxel(byte voxelId, int x, int y, int z)
         {
             var position = new Vector3(x, y, z);
@@ -103,46 +143,131 @@ namespace MindCraft.View
 
                 currentVertexIndex += VERTICES_PER_FACE;
             }
-        }
-
-        private bool IsVoxelInChunk(int x, int y, int z)
-        {
-            return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
-        }
-
-        #region Mesh Generation
+        }*/
 
         public void UpdateChunkMesh(NativeArray<byte> map)
+        { 
+            var vertices = new NativeList<float3>(Allocator.Persistent);
+            var trinagles = new NativeList<int>(Allocator.Persistent);
+            var uvs = new NativeList<float2>(Allocator.Persistent);
+            
+            var mapJob = CreateMapJob(map, vertices, trinagles, uvs, TextureLookup.WorldUvLookupNative);
+            mapJob.Complete();
+            
+            //process job result
+            Mesh mesh = new Mesh();
+            mesh.indexFormat = IndexFormat.UInt32;
+            mesh.vertices = ToV3Array(vertices);
+            mesh.triangles = trinagles.ToArray();
+            mesh.uv = ToV2Array(uvs);
+            mesh.RecalculateNormals();
+
+            _meshFilter.mesh = mesh;
+            
+            //dispose
+            vertices.Dispose();
+            trinagles.Dispose();
+            uvs.Dispose();
+        }
+
+        private Vector3[] ToV3Array(NativeList<float3> nl)
         {
-            /*
-            _map = map;
-
-            currentVertexIndex = 0;
-            vertices.Clear();
-            triangles.Clear();
-            uvs.Clear();
-
-            for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
+            var vec = new Vector3[nl.Length]; 
+            
+            for (var i = 0; i < nl.Length; i++)
             {
-                for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
-                {
-                    for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
+                vec[i] = nl[i];
+            }
+
+            return vec;
+        }
+
+        private Vector2[] ToV2Array(NativeList<float2> nl)
+        {
+            var vec = new Vector2[nl.Length]; 
+            
+            for (var i = 0; i < nl.Length; i++)
+            {
+                vec[i] = nl[i];
+            }
+
+            return vec;
+        }
+
+        private JobHandle CreateMapJob(NativeArray<byte> mapData, NativeList<float3> vertices, NativeList<int> triangles, NativeList<float2> uvs, NativeArray<float2> uvLookup)
+        {
+            var job = new GenerateChunkMeshJob()
+                      {
+                          MapData = mapData,
+                          Vertices = vertices,
+                          Triangles = triangles,
+                          Uvs =  uvs,
+                          UvLookup =  uvLookup,
+                      };
+            
+            return job.Schedule();    
+        }
+        
+        
+        public struct GenerateChunkMeshJob : IJob
+        {
+            [ReadOnly] public NativeArray<byte> MapData;
+            [ReadOnly] public NativeArray<float2> UvLookup;
+            
+            [WriteOnly] public NativeList<float3> Vertices;
+            [WriteOnly] public NativeList<int> Triangles;
+            [WriteOnly] public NativeList<float2> Uvs;
+
+            private int _currentVertexIndex;
+
+            public void Execute()
+            {
+                for(var index = 0; index < MapData.Length; index++){
+                    
+                    var voxelId = MapData[index];
+                    
+                    if(voxelId == BlockTypeByte.AIR)
+                        continue;
+                    
+                    ArrayHelper.To3D(index, out int x, out int y, out int z);
+
+
+                    //TODO: render shit 
+                    var position = new Vector3(x, y, z);
+                    //iterate faces
+                    for (int iF = 0; iF < FACES_PER_VOXEL; iF++)
                     {
-                        var type = _map[iX, iY, iZ];
-                        if (type != BlockTypeByte.AIR)
-                            AddVoxel(type, iX, iY, iZ);
+                        //var neighbour = VoxelLookups.Neighbours[iF];
+
+                        //check neighbours
+                        
+                        //var blockDef = BlockDefs.GetDefinitionById((BlockTypeId) GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z));
+                        //if (!blockDef.IsTransparent)
+                        //    continue;
+                            
+
+                        //iterate triangles
+                        for (int iV = 0; iV < TRIANGLE_INDICES_PER_FACE; iV++)
+                        {
+                            var vertexIndex = VoxelLookups.indexToVertex[iV];
+
+                            // each face needs just 4 vertices & UVs
+                            if (iV < VERTICES_PER_FACE)
+                            {
+                                Vertices.Add(position + VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
+
+                                var uvId = ArrayHelper.To1D(voxelId, iF, iV, TextureLookup.MAX_BLOCKDEF_COUNT, TextureLookup.FACES_PER_VOXEL);
+                                Uvs.Add(UvLookup[uvId]);
+                            }
+
+                            //we still need 6 triangle vertices tho
+                            Triangles.Add(_currentVertexIndex + vertexIndex);
+                        }
+
+                        _currentVertexIndex += VERTICES_PER_FACE;
                     }
                 }
             }
-
-            Mesh mesh = new Mesh();
-            mesh.indexFormat = IndexFormat.UInt32;
-            mesh.vertices = vertices.ToArray();
-            mesh.triangles = triangles.ToArray();
-            mesh.uv = uvs.ToArray();
-            mesh.RecalculateNormals();
-
-            _meshFilter.mesh = mesh;*/
         }
 
         #endregion
