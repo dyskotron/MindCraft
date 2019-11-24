@@ -25,7 +25,7 @@ namespace MindCraft.MapGeneration
             X = x;
             Y = y;
         }
-        
+
         public ChunkCoord(Vector3 position)
         {
             X = Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE);
@@ -36,6 +36,11 @@ namespace MindCraft.MapGeneration
         {
             X = position.x;
             Y = position.y;
+        }
+        
+        public override string ToString()
+        {
+            return $"ChunkChoords({X}.{Y})";
         }
 
         public static bool operator == (ChunkCoord lhs, ChunkCoord rhs)

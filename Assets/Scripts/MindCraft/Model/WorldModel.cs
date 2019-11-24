@@ -11,6 +11,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace MindCraft.Model
 {
@@ -19,7 +20,6 @@ namespace MindCraft.Model
         void GenerateWorldAroundPlayer(ChunkCoord coords);
         void UpdateWorldAroundPlayer(ChunkCoord newCoords);
         
-        byte[,,] TryGetMapByChunkCoords(ChunkCoord coords);
         byte[,,] GetMapByChunkCoords(ChunkCoord coords);
         bool CheckVoxelOnGlobalXyz(float x, float y, float z);
         void EditVoxel(Vector3 position, byte VoxelType);
@@ -64,12 +64,6 @@ namespace MindCraft.Model
             _biomeDef = AssetManager.GetAsset<BiomeDef>(ResourcePath.BIOME_DEF);
         }
 
-        public byte[,,] TryGetMapByChunkCoords(ChunkCoord coords)
-        {
-            _chunkMaps.TryGetValue(coords, out byte[,,] chunkMap);
-            return chunkMap;
-        }
-        
         public byte[,,] GetMapByChunkCoords(ChunkCoord coords)
         {
             return _chunkMaps[coords];
@@ -150,7 +144,7 @@ namespace MindCraft.Model
             //remove chunk data out of sight
             foreach (var position in MapBoundsLookup.MapDataRemove)
             {
-                _chunkMaps.Remove(new ChunkCoord(position));
+                _chunkMaps.Remove(new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y));
             }
             
             //create data for chunks coming into view distance

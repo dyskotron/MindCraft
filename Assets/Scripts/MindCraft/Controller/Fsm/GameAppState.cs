@@ -11,6 +11,7 @@ using MindCraft.View;
 using MindCraft.View.Screen;
 using Temari.Common;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace MindCraft.Controller.Fsm
 {
@@ -72,8 +73,22 @@ namespace MindCraft.Controller.Fsm
             //TODO: check new / old coords distance and generate full map around player when difference is bigger than 1 chunk
             //Useful later on for teleporting or any other transport that is fast enough that player can move several chunks within frame
             
+            var watch = new Stopwatch();
+            watch.Start();
+            
             WorldModel.UpdateWorldAroundPlayer(newCoords);
+            
+            watch.Stop();
+
+            var elapsedMap = watch.ElapsedMilliseconds;
+            
+            watch.Restart();
             ChunksRenderer.UpdateChunksAroundPlayer(newCoords);
+            
+            watch.Stop();
+            
+            Debug.LogWarning($"<color=\"aqua\">GameAppState.UpdateView() : elapsedData:{elapsedMap} : elapsedRender:{watch.ElapsedMilliseconds}</color>");
+
 
             _lastPlayerCoords = newCoords;
         }

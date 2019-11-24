@@ -6,6 +6,7 @@ using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Debug = UnityEngine.Debug;
 
 namespace MindCraft.View
 {
@@ -15,13 +16,15 @@ namespace MindCraft.View
         [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public TextureLookup TextureLookup { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
-        
+
         public static double MAP_ELAPSED_TOTAL = 0;
         public static double MESH_ELAPSED_TOTAL = 0;
         public static double CHUNKS_TOTAL = 0;
 
-        private const int FACES_PER_VERTEX = 6;
-        private const int TRIANGLE_VERTICES_PER_FACE = 6;
+        private const int VERTEX_LIMIT = 65534;
+        
+        private const int FACES_PER_VOXEL = 6;
+        private const int TRIANGLE_INDICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
 
         private GameObject _gameObject;
@@ -40,10 +43,10 @@ namespace MindCraft.View
         [PostConstruct]
         public void PostConstruct()
         {
-            _gameObject = new GameObject(); 
+            _gameObject = new GameObject();
             _meshRenderer = _gameObject.AddComponent<MeshRenderer>();
             _meshFilter = _gameObject.AddComponent<MeshFilter>();
-            
+
             _meshRenderer.material = WorldSettings.WorldMaterial;
             _meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
             _meshRenderer.receiveShadows = false;
@@ -52,7 +55,7 @@ namespace MindCraft.View
         public void Init(ChunkCoord coords)
         {
             _coords = coords;
-            
+
             _gameObject.name = $"Chunk({coords.X},{coords.Y})";
             _gameObject.transform.position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
 
@@ -65,12 +68,12 @@ namespace MindCraft.View
             set { _gameObject.SetActive(value); }
         }
 
-        private byte GetVoxelData(int x , int y, int z)
+        private byte GetVoxelData(int x, int y, int z)
         {
             //TODO: specific checks for each direction when using by face checks, dont test in rest of cases at all
             if (IsVoxelInChunk(x, y, z))
                 return _map[x, y, z];
-            
+
             return WorldModel.GetVoxel(x + _coords.X * VoxelLookups.CHUNK_SIZE, y, z + _coords.Y * VoxelLookups.CHUNK_SIZE);
         }
 
@@ -78,17 +81,17 @@ namespace MindCraft.View
         {
             var position = new Vector3(x, y, z);
             //iterate faces
-            for (int iF = 0; iF < FACES_PER_VERTEX; iF++)
+            for (int iF = 0; iF < FACES_PER_VOXEL; iF++)
             {
                 var neighbour = VoxelLookups.Neighbours[iF];
-                
+
                 //check neighbours
-                var blockDef = BlockDefs.GetDefinitionById((BlockTypeId)GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z));
+                var blockDef = BlockDefs.GetDefinitionById((BlockTypeId) GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z));
                 if (!blockDef.IsTransparent)
                     continue;
 
                 //iterate triangles
-                for (int iV = 0; iV < TRIANGLE_VERTICES_PER_FACE; iV++)
+                for (int iV = 0; iV < TRIANGLE_INDICES_PER_FACE; iV++)
                 {
                     var vertexIndex = VoxelLookups.indexToVertex[iV];
 
@@ -102,7 +105,7 @@ namespace MindCraft.View
                     //we still need 6 triangle vertices tho
                     triangles.Add(currentVertexIndex + vertexIndex);
                 }
-                
+
                 currentVertexIndex += VERTICES_PER_FACE;
             }
         }
@@ -117,10 +120,10 @@ namespace MindCraft.View
         public void UpdateChunkMesh(byte[,,] map)
         {
             _map = map;
-            
+
             var meshWatch = new Stopwatch();
             meshWatch.Start();
-            
+
             currentVertexIndex = 0;
             vertices.Clear();
             triangles.Clear();
@@ -140,13 +143,14 @@ namespace MindCraft.View
             }
 
             Mesh mesh = new Mesh();
+            mesh.indexFormat = IndexFormat.UInt32;
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
             mesh.uv = uvs.ToArray();
             mesh.RecalculateNormals();
 
             _meshFilter.mesh = mesh;
-            
+
             meshWatch.Stop();
             MESH_ELAPSED_TOTAL += meshWatch.Elapsed.TotalSeconds;
             CHUNKS_TOTAL++;

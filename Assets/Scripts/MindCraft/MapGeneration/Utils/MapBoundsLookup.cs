@@ -17,13 +17,15 @@ namespace MindCraft.MapGeneration.Utils
 
         public static readonly int2[] MapDataGenaration;
 
-        private const bool USE_RADIAL_BOUNDS = true;
+        private const bool USE_RADIAL_BOUNDS = false;
         
         // make sure that map data are generated in advance as chunks render needs access to neighbours map data to generate chunk properly.
-        private const int MAP_DATA_LOOKAHEAD = 3;
+        private const int MAP_DATA_LOOKAHEAD = 2;
 
         // higher offset => more memory used, but less chunks to regenerate when returning to already visited chunks
-        private const int REMOVE_RING_OFFSET = 10;
+        private const int REMOVE_RING_OFFSET = 5;
+        
+        private const int RING_WIDTH = 1;
 
         static MapBoundsLookup()
         {
@@ -40,12 +42,12 @@ namespace MindCraft.MapGeneration.Utils
             else
             {
                 MapDataGenaration = GenerateRect(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
-                MapDataAdd = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, 2);
-                MapDataRemove = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, 2);
+                MapDataAdd = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, RING_WIDTH);
+                MapDataRemove = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, RING_WIDTH);
 
                 ChunkGenaration = GenerateRect(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS);
-                ChunkAdd = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS, 2);
-                ChunkRemove = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, 2);
+                ChunkAdd = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS, RING_WIDTH);
+                ChunkRemove = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, RING_WIDTH);
             }
         }
 
@@ -206,7 +208,7 @@ namespace MindCraft.MapGeneration.Utils
             {
                 for (var iY = min; iY <= max; iY++)
                 {
-                    if (iX < minInner + ringSize || iX > maxInner || iY < minInner + ringSize || iY > maxInner)
+                    if (iX < (minInner + ringSize) || iX > maxInner || iY < (minInner + ringSize) || iY > maxInner)
                         indexes.Add(new int2(iX, iY));
                 }
             }
