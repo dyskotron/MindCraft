@@ -5,7 +5,7 @@ using Framewerk.Managers;
 using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.MapGeneration;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using MindCraft.View;
 using MindCraft.View.Screen;
@@ -58,7 +58,8 @@ namespace MindCraft.Controller.Fsm
         private void GenerateWorld(ChunkCoord playerPosition)
         {
             WorldModel.GenerateWorldAroundPlayer(playerPosition);
-            ChunksRenderer.RenderChunksAroundPlayer(playerPosition);
+            ChunksRenderer.GenerateChunksAroundPlayer(playerPosition);
+            
             _lastPlayerCoords = playerPosition;
         }
 
@@ -68,6 +69,9 @@ namespace MindCraft.Controller.Fsm
             if (newCoords == _lastPlayerCoords)
                 return;
 
+            //TODO: check new / old coords distance and generate full map around player when difference is bigger than 1 chunk
+            //Useful later on for teleporting or any other transport that is fast enough that player can move several chunks within frame
+            
             WorldModel.UpdateWorldAroundPlayer(newCoords);
             ChunksRenderer.UpdateChunksAroundPlayer(newCoords);
 

@@ -1,4 +1,4 @@
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using Unity.Mathematics;
 using UnityEngine;
 

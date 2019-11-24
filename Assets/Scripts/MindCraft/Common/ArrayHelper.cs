@@ -1,6 +1,6 @@
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 
-namespace MindCraft.Model
+namespace MindCraft.Common
 {
     public static class ArrayHelper
     {

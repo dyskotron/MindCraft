@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using MindCraft.MapGeneration;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using strange.framework.api;
+using UnityEngine;
 
 namespace MindCraft.View
 {
@@ -20,21 +21,13 @@ namespace MindCraft.View
             _chunks[coords].UpdateChunkMesh(chunkMap);
         }
         
-        public void RenderChunksAroundPlayer(ChunkCoord coords)
+        public void GenerateChunksAroundPlayer(ChunkCoord coords)
         {
-            var xMin = coords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var xMax = coords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var yMin = coords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var yMax = coords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            
-            //create map data
-            for (var x = xMin; x < xMax; x++)
+            //render all chunks within view distance
+            foreach (var pos in MapBoundsLookup.ChunkGenaration)
             {
-                for (var y = yMin; y < yMax; y++)
-                {
-                    CreateChunk(new ChunkCoord(x, y));
-                }
-            }
+                CreateChunk(new ChunkCoord(pos)); 
+            } 
         }
 
         public void UpdateChunksAroundPlayer(ChunkCoord newCoords)
@@ -42,44 +35,22 @@ namespace MindCraft.View
             if (newCoords == _lastPlayerCoords)
                 return;
 
-            var lastMinX = _lastPlayerCoords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var lastMinY = _lastPlayerCoords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var lastMaxX = _lastPlayerCoords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var lastMaxY = _lastPlayerCoords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-
-            var newMinX = newCoords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var newMinY = newCoords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var newMaxX = newCoords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-            var newMaxY = newCoords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS;
-
-            //TODO: merge loops so everything is checked in one iteration
-
-            //show new chunks
-            for (var x = newMinX; x <= newMaxX; x++)
+            //hide chunks out of sight
+            foreach (var position in MapBoundsLookup.ChunkRemove)
             {
-                for (var y = newMinY; y <= newMaxY; y++)
-                {
-                    //except old cords
-                    if (x >= lastMinX && x < lastMaxX && y >= lastMinY && y <= lastMaxY)
-                        continue;
-
-                    ShowChunk(x, y);
-                }
+                HideChunk(newCoords.X + position.x, newCoords.Y + position.y);    
             }
 
-            //hide all old chunks
-            for (var x = lastMinX; x < lastMaxX; x++)
+            var iShownChunks = 0;
+            //show chunks cmming into view distance
+            foreach (var position in MapBoundsLookup.ChunkAdd)
             {
-                for (var y = lastMinY; y < lastMaxY; y++)
-                {
-                    //except new ones
-                    if (x >= newMinX && x < newMaxX && y >= newMinY && y < newMaxY)
-                        continue;
-
-                    HideChunk(x, y);
-                }
+                if (ShowChunk(newCoords.X + position.x, newCoords.Y + position.y))
+                    iShownChunks++;
             }
 
+            Debug.LogWarning($"<color=\"aqua\">ChunksRenderer.UpdateChunksAroundPlayer() : Chunks Shown {iShownChunks}</color>");
+            
             _lastPlayerCoords = newCoords;
         }
         
@@ -104,15 +75,19 @@ namespace MindCraft.View
             _chunks[coords] = chunk;
         }
         
-        private void ShowChunk(int x, int y)
+        private bool ShowChunk(int x, int y)
         {
             var coords = new ChunkCoord(x, y);
-            if (!_chunks.ContainsKey(coords))
+            if (!_chunks.ContainsKey(coords)){
                 CreateChunk(coords);
+                return true;
+            }
             else if (!_chunks[coords].IsActive)
             {
                 _chunks[coords].IsActive = true;
             }
+            
+            return false;
         }
         
         private void HideChunk(int x, int y)

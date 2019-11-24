@@ -1,5 +1,6 @@
 using System;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.MapGeneration
@@ -29,6 +30,12 @@ namespace MindCraft.MapGeneration
         {
             X = Mathf.FloorToInt(position.x / VoxelLookups.CHUNK_SIZE);
             Y = Mathf.FloorToInt(position.z / VoxelLookups.CHUNK_SIZE);
+        }
+
+        public ChunkCoord(int2 position)
+        {
+            X = position.x;
+            Y = position.y;
         }
 
         public static bool operator == (ChunkCoord lhs, ChunkCoord rhs)

@@ -5,7 +5,7 @@ using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using MindCraft.View;
 using Unity.Burst;
 using Unity.Collections;
@@ -55,8 +55,6 @@ namespace MindCraft.Model
         private Dictionary<ChunkCoord, byte[,,]> _playerModifiedMaps = new Dictionary<ChunkCoord, byte[,,]>();
 
         private BiomeDef _biomeDef;
-
-        private ChunkCoord _lastPlayerCoords;
 
         #region Getters / Helper methods
 
@@ -140,81 +138,26 @@ namespace MindCraft.Model
 
         public void GenerateWorldAroundPlayer(ChunkCoord coords)
         {
-            var xMin = coords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var xMax = coords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-            var yMin = coords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var yMax = coords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-            
-            //create map data
-            for (var x = xMin; x < xMax; x++)
+            //create all map data within view distance
+            foreach (var position in MapBoundsLookup.MapDataGenaration)
             {
-                for (var y = yMin; y < yMax; y++)
-                {
-                    CreateChunkMap(new ChunkCoord(x, y));
-                }
+                CreateChunkMap(new ChunkCoord(position)); 
             }
         }
         
         public void UpdateWorldAroundPlayer(ChunkCoord newCoords)
         {
-            if (newCoords == _lastPlayerCoords)
-                return;
-
-            var lastMinX = _lastPlayerCoords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var lastMinY = _lastPlayerCoords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var lastMaxX = _lastPlayerCoords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-            var lastMaxY = _lastPlayerCoords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-
-            var newMinX = newCoords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var newMinY = newCoords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var newMaxX = newCoords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-            var newMaxY = newCoords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-
-            //TODO: merge loops so everything is checked in one iteration
-
-            //show new chunks
-            for (var x = newMinX; x <= newMaxX; x++)
+            //remove chunk data out of sight
+            foreach (var position in MapBoundsLookup.MapDataRemove)
             {
-                for (var y = newMinY; y <= newMaxY; y++)
-                {
-                    //except old cords
-                    if (x >= lastMinX && x <= lastMaxX && y >= lastMinY && y <= lastMaxY)
-                        continue;
-
-                    CreateChunkMap(new ChunkCoord(x, y));
-                }
+                _chunkMaps.Remove(new ChunkCoord(position));
             }
-
-            //hide all old chunks
-            /*
-            for (var x = lastMinX; x < lastMaxX; x++)
-            {
-                for (var y = lastMinY; y < lastMaxY; y++)
-                {
-                    //except new ones
-                    if (x >= newMinX && x < newMaxX && y >= newMinY && y < newMaxY)
-                        continue;
-
-                    HideChunk(x, y);
-                }
-            }*/
-
-            _lastPlayerCoords = newCoords;
             
-            /*
-            var xMin = coords.X - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var xMax = coords.X + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-            var yMin = coords.Y - VoxelLookups.VIEW_DISTANCE_IN_CHUNKS - 1;
-            var yMax = coords.Y + VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + 1;
-            
-            //create map data
-            for (var x = xMin; x < xMax; x++)
+            //create data for chunks coming into view distance
+            foreach (var position in MapBoundsLookup.MapDataAdd)
             {
-                for (var y = yMin; y < yMax; y++)
-                {
-                    CreateChunkMap(new ChunkCoord(x, y));
-                }
-            }*/
+                CreateChunkMap(new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y));    
+            } 
         }
 
 

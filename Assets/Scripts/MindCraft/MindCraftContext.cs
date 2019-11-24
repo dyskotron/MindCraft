@@ -5,7 +5,7 @@ using Framewerk.Popups;
 using Framewerk.StrangeCore;
 using MindCraft.Controller;
 using MindCraft.Data;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using MindCraft.Physics;
 using MindCraft.View;

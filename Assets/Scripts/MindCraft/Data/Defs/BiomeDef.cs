@@ -1,5 +1,5 @@
 using System;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
