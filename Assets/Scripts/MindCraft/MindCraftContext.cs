@@ -31,7 +31,7 @@ namespace MindCraft
             base.mapBindings();
 
             injectionBinder.Bind<IInjector>().To(injectionBinder.injector);
-            
+
             //Framewerk core
             injectionBinder.Bind<ViewConfig>().ToValue(_viewConfig);
             injectionBinder.Bind<ICoroutineManager>().ToValue(CoroutineManager.Instance);
@@ -39,47 +39,56 @@ namespace MindCraft
             injectionBinder.Bind<IAppMonitor>().ToValue(AppMonitor.Instance);
             injectionBinder.Bind<IAssetManager>().To<AssetManager>().ToSingleton();
             injectionBinder.Bind<IUiManager>().To<UiManager>().ToSingleton();
-            
+
             //Popups
             injectionBinder.Bind<IPopupManager>().To<PopupManager>().ToSingleton();
             injectionBinder.Bind<PopupOpenedSignal>().ToSingleton();
             injectionBinder.Bind<PopupClosedSignal>().ToSingleton();
-            
+
             //FSM 
             injectionBinder.Bind<IAppFsm>().To<AppFsm>().ToSingleton();
             injectionBinder.Bind<AppStateEnterSignal>().ToSingleton();
             injectionBinder.Bind<AppStateExitSignal>().ToSingleton();
-            
+
             //Controller
             injectionBinder.Bind<IPlayerController>().To<PlayerController>().ToSingleton();
             injectionBinder.Bind<IWorldRaycaster>().To<WorldRaycaster>().ToSingleton();
-            
+
             //Model
             injectionBinder.Bind<IInventoryModel>().To<InventoryModel>().ToSingleton();
             injectionBinder.Bind<IWorldModel>().To<WorldModel>().ToSingleton();
             injectionBinder.Bind<IVoxelPhysicsWorld>().To<VoxelPhysicsWorld>();
-            
+
             injectionBinder.Bind<Chunk>().To<Chunk>();
             injectionBinder.Bind<BlockMarker>().To<BlockMarker>();
-            
+
             //Data
             injectionBinder.Bind<IWorldSettings>().To<WorldSettings>().ToSingleton();
             injectionBinder.Bind<ChunksRenderer>().To<ChunksRenderer>().ToSingleton();
             injectionBinder.Bind<IBlockDefs>().To<BlockDefs>().ToSingleton();
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
-            
+
             //View
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
             mediationBinder.Bind<PlayerView>().To<PlayerMediator>();
-            
+
             mediationBinder.Bind<InventoryView>().To<InventoryMediator>();
             mediationBinder.Bind<InventoryItemView>().To<InventoryItemMediator>();
-            
-            
+
+
             commandBinder.Bind<ContextStartSignal>().To<InitAppCommand>();
-            
+
             commandBinder.Bind<BlockTypeSelectedSignal>().To<BlockTypeSelectedCommand>();
-            
+        }
+
+        public override void OnRemove()
+        {
+            base.OnRemove();
+
+            //Unbind everything using Native collections so we're not getting memory leak errors
+            injectionBinder.Unbind<IWorldModel>();
+            injectionBinder.Unbind<IBlockDefs>();
+            injectionBinder.Unbind<TextureLookup>();
         }
     }
 }

@@ -1,5 +1,6 @@
 using strange.extensions.context.impl;
 using Temari.Common;
+using UnityEngine;
 
 namespace MindCraft
 {
@@ -14,9 +15,17 @@ namespace MindCraft
             _context = new MindCraftContext(this, ViewConfig);
             _context.Start();
         }
+        
+        void OnDestroy()
+        {
+            #if UNITY_EDITOR
+            OnApplicationQuit();
+            #endif
+        }
 
         private void OnApplicationQuit()
         {
+            Debug.LogWarning($"<color=\"aqua\">Bootstrap.OnApplicationQuit() : ouje</color>");
             _context.OnRemove();
         }
     }
