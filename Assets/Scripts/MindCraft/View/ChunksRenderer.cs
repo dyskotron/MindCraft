@@ -88,91 +88,14 @@ namespace MindCraft.View
 
             if (chunk != null)
             {
-                //if (chunk.IsRendering)
-                //{
-                    //chunk.IsActive = false;
-                    //TODO: schedule for pooling
-                //}
-
-                _chunkPool.Add(chunk);
+                chunk.IsActive = false;
                 _chunks.Remove(coords);
+                
+                if (!chunk.IsRendering)
+                    _chunkPool.Add(chunk);
+                //else
+                    //TODO: schedule for pooling
             }
         }
-        
-        
-        
-        public void UpdateChunkMesh(byte[,,] map)
-        {
-            var _map = map;
-
-            /*
-            currentVertexIndex = 0;
-            vertices.Clear();
-            triangles.Clear();
-            uvs.Clear();
-            */
-            
-            for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
-            {
-                for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
-                {
-                    for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
-                    {
-                        var type = _map[iX, iY, iZ];
-                        //if (type != BlockTypeByte.AIR)
-                            //TODO: AddVoxel(type, iX, iY, iZ);
-                    }
-                }
-            }
-            
-            /*
-            Mesh mesh = new Mesh();
-            mesh.indexFormat = IndexFormat.UInt32;
-            mesh.vertices = vertices.ToArray();
-            mesh.triangles = triangles.ToArray();
-            mesh.uv = uvs.ToArray();
-            mesh.RecalculateNormals();
-
-            _meshFilter.mesh = mesh;
-            */
-        }
-        /*
-        private void AddVoxel(byte voxelId, int x, int y, int z)
-        {
-            //ArrayHelper.To3D(index, out int x, out int y, out int z);
-            
-            
-            var position = new Vector3(x, y, z);
-            //iterate faces
-            for (int iF = 0; iF < Chunk.FACES_PER_VOXEL; iF++)
-            {
-                var neighbour = VoxelLookups.Neighbours[iF];
-
-                //check neighbours
-                / *
-                var blockDef = BlockDefs.GetDefinitionById((BlockTypeId) GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z));
-                if (!blockDef.IsTransparent)
-                    continue;
-                    * /
-
-                //iterate triangles
-                for (int iV = 0; iV < TRIANGLE_INDICES_PER_FACE; iV++)
-                {
-                    var vertexIndex = VoxelLookups.indexToVertex[iV];
-
-                    // each face needs just 4 vertices & UVs
-                    if (iV < VERTICES_PER_FACE)
-                    {
-                        vertices.Add(position + VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
-                        uvs.Add(TextureLookup.WorldUvLookup[voxelId, iF, iV]);
-                    }
-
-                    //we still need 6 triangle vertices tho
-                    triangles.Add(currentVertexIndex + vertexIndex);
-                }
-
-                currentVertexIndex += VERTICES_PER_FACE;
-            }
-        }*/
     }
 }

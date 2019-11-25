@@ -1,10 +1,9 @@
-using System.Collections.Generic;
+using System.Collections;
+using Framewerk.Managers;
 using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
-using MindCraft.Model;
-using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -16,13 +15,15 @@ namespace MindCraft.View
     public class Chunk
     {
         [Inject] public IWorldSettings WorldSettings { get; set; }
-        [Inject] public IWorldModel WorldModel { get; set; }
+        [Inject] public ICoroutineManager CoroutineManager { get; set; }
         [Inject] public TextureLookup TextureLookup { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
 
         public const int FACES_PER_VOXEL = 6;
         private const int TRIANGLE_INDICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
+
+        public bool IsRendering { get; private set; }
 
         private GameObject _gameObject;
         private MeshRenderer _meshRenderer;
@@ -32,6 +33,16 @@ namespace MindCraft.View
         private int currentVertexIndex;
 
         private ChunkCoord _coords;
+
+        private NativeList<float3> _vertices;
+
+        private NativeList<int> _trinagles;
+
+        private NativeList<float2> _uvs;
+
+        private NativeArray<byte> _map;
+
+        private JobHandle _jobHandle;
         //private byte[,,] _map;
 
         [PostConstruct]
@@ -62,110 +73,58 @@ namespace MindCraft.View
             set { _gameObject.SetActive(value); }
         }
 
-        private byte GetVoxelData(int x, int y, int z)
-        {
-            //TODO: specific checks for each direction when using by face checks, dont test in rest of cases at all
-            if (IsVoxelInChunk(x, y, z))
-                return 0;//_map[x, y, z]; //TODO fix this
-
-            return WorldModel.GetVoxel(x + _coords.X * VoxelLookups.CHUNK_SIZE, y, z + _coords.Y * VoxelLookups.CHUNK_SIZE);
-        }
-
-        private bool IsVoxelInChunk(int x, int y, int z)
-        {
-            return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
-        }
-
-        #region Mesh Generation
-/*
-        public void UpdateChunkMesh(NativeArray<byte> map)
-        {   
-            _map = map;
-
-            currentVertexIndex = 0;
-            vertices.Clear();
-            triangles.Clear();
-            uvs.Clear();
-
-            for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
-            {
-                for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
-                {
-                    for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
-                    {
-                        var type = _map[iX, iY, iZ];
-                        if (type != BlockTypeByte.AIR)
-                            AddVoxel(type, iX, iY, iZ);
-                    }
-                }
-            }
-
-            Mesh mesh = new Mesh();
-            mesh.indexFormat = IndexFormat.UInt32;
-            mesh.vertices = vertices.ToArray();
-            mesh.triangles = triangles.ToArray();
-            mesh.uv = uvs.ToArray();
-            mesh.RecalculateNormals();
-
-            _meshFilter.mesh = mesh;
-        }
         
-        private void AddVoxel(byte voxelId, int x, int y, int z)
-        {
-            var position = new Vector3(x, y, z);
-            //iterate faces
-            for (int iF = 0; iF < FACES_PER_VOXEL; iF++)
-            {
-                var neighbour = VoxelLookups.Neighbours[iF];
-
-                //check neighbours
-                var blockDef = BlockDefs.GetDefinitionById((BlockTypeId) GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z));
-                if (!blockDef.IsTransparent)
-                    continue;
-
-                //iterate triangles
-                for (int iV = 0; iV < TRIANGLE_INDICES_PER_FACE; iV++)
-                {
-                    var vertexIndex = VoxelLookups.indexToVertex[iV];
-
-                    // each face needs just 4 vertices & UVs
-                    if (iV < VERTICES_PER_FACE)
-                    {
-                        vertices.Add(position + VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
-                        uvs.Add(TextureLookup.WorldUvLookup[voxelId, iF, iV]);
-                    }
-
-                    //we still need 6 triangle vertices tho
-                    triangles.Add(currentVertexIndex + vertexIndex);
-                }
-
-                currentVertexIndex += VERTICES_PER_FACE;
-            }
-        }*/
+        #region Mesh Generation
 
         public void UpdateChunkMesh(NativeArray<byte> map)
-        { 
-            var vertices = new NativeList<float3>(Allocator.Persistent);
-            var trinagles = new NativeList<int>(Allocator.Persistent);
-            var uvs = new NativeList<float2>(Allocator.Persistent);
+        {
+            if (IsRendering)
+            {
+                Debug.LogError($"<color=\"aqua\">Chunk.UpdateChunkMesh() : CHUNK ALREADY RENDERING!!!!</color>");
+                return;
+            }
             
-            var mapJob = CreateRenderChunkJob(map, vertices, trinagles, uvs, TextureLookup.WorldUvLookupNative, BlockDefs.TransparencyLookup);
-            mapJob.Complete();
+            IsRendering = true;
+            
+            _map = new NativeArray<byte>(map, Allocator.Persistent);
+            _vertices = new NativeList<float3>(Allocator.Persistent);
+            _trinagles = new NativeList<int>(Allocator.Persistent);
+            _uvs = new NativeList<float2>(Allocator.Persistent);
+            
+            _jobHandle = CreateRenderChunkJob(_map, _vertices, _trinagles, _uvs, TextureLookup.WorldUvLookupNative, BlockDefs.TransparencyLookup);
+
+            CoroutineManager.RunCoroutine(CheckRenderJobCoroutine());
+        }
+
+        private IEnumerator CheckRenderJobCoroutine()
+        {
+            if (!_jobHandle.IsCompleted)
+                yield return null;
+
+            ProcessJobResult();
+        }
+
+        private void ProcessJobResult()
+        {
+            _jobHandle.Complete();
             
             //process job result
             Mesh mesh = new Mesh();
             mesh.indexFormat = IndexFormat.UInt32;
-            mesh.vertices = ToV3Array(vertices);
-            mesh.triangles = trinagles.ToArray();
-            mesh.uv = ToV2Array(uvs);
+            mesh.vertices = ToV3Array(_vertices);
+            mesh.triangles = _trinagles.ToArray();
+            mesh.uv = ToV2Array(_uvs);
             mesh.RecalculateNormals();
 
             _meshFilter.mesh = mesh;
             
             //dispose
-            vertices.Dispose();
-            trinagles.Dispose();
-            uvs.Dispose();
+            _vertices.Dispose();
+            _trinagles.Dispose();
+            _uvs.Dispose();  
+            _map.Dispose();
+            
+            IsRendering = false;
         }
 
         private Vector3[] ToV3Array(NativeList<float3> nl)
@@ -207,7 +166,6 @@ namespace MindCraft.View
             return job.Schedule();    
         }
         
-        [BurstCompile]
         public struct RenderChunkMeshJob : IJob
         {
             [ReadOnly] public NativeArray<byte> MapData;
@@ -231,14 +189,10 @@ namespace MindCraft.View
                     
                     ArrayHelper.To3D(index, out int x, out int y, out int z);
 
-
-                    //TODO: render shit 
                     var position = new Vector3(x, y, z);
                     //iterate faces
                     for (int iF = 0; iF < FACES_PER_VOXEL; iF++)
                     {
-                        //var neighbour = VoxelLookups.Neighbours[iF];
-
                         //check neighbours
                         var neighbour = VoxelLookups.Neighbours[iF];
                         if (!GetTransparency(x + neighbour.x, y + neighbour.y, z + neighbour.z))

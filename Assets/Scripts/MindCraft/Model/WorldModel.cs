@@ -190,8 +190,6 @@ namespace MindCraft.Model
                 jobArray[i] = handle;
             }
             
-            JobHandle.ScheduleBatchedJobs();
-            
             JobHandle.CompleteAll(jobArray);
             jobArray.Dispose();
 
