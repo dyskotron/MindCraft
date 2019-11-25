@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Framewerk.Managers;
 using Framewerk.StrangeCore;
 using MindCraft.Common;
+using MindCraft.Common.Serialization;
 using MindCraft.Data;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
@@ -14,7 +15,7 @@ using UnityEngine;
 
 namespace MindCraft.Model
 {
-    public interface IWorldModel
+    public interface IWorldModel : IBinarySerializable
     {
         void GenerateWorldAroundPlayer(ChunkCoord coords);
         void UpdateWorldAroundPlayer(ChunkCoord newCoords);
@@ -35,11 +36,11 @@ namespace MindCraft.Model
         int GetTerrainHeight(int x, int y);
     }
 
-    public class WorldModel : IWorldModel, IDestroyable
+    public class WorldModel : IWorldModel, IBinarySerializable, IDestroyable
     {
         [Inject] public IAssetManager AssetManager { get; set; }
         [Inject] public ChunksRenderer ChunksRenderer { get; set; }
-        
+
         //map for each generated chunk - only generated data which are always recreated the same
         private Dictionary<ChunkCoord, NativeArray<byte>> _chunkMaps = new Dictionary<ChunkCoord, NativeArray<byte>>();
 
@@ -193,6 +194,27 @@ namespace MindCraft.Model
             for (var i = 0; i < results.Length; i++)
             {
                 var coords = coordsList[i];
+
+                if (_playerModifiedMaps.ContainsKey(coords))
+                {
+                    var map = _playerModifiedMaps[coords];
+                    for (var iX = 0; iX < VoxelLookups.CHUNK_SIZE; iX++)
+                    {
+                        for (var iY = 0; iY < VoxelLookups.CHUNK_HEIGHT; iY++)
+                        {
+                            for (var iZ = 0; iZ < VoxelLookups.CHUNK_SIZE; iZ++)
+                            {
+                                var blockId = map[iX, iY, iZ];
+                                if (blockId != BlockTypeByte.NONE)
+                                {
+                                    var id = ArrayHelper.To1D(iX, iY, iZ);
+                                    results[i][id] = blockId;
+                                }
+                            }
+                        }    
+                    }
+                }
+                
                 _chunkMaps[coords] = results[i];
             }
         }
@@ -363,5 +385,73 @@ namespace MindCraft.Model
         }
 
         #endregion
+
+        public void Serialize(BinaryWriter writer)
+        {   
+            writer.Begin();
+            writer.Write(_playerModifiedMaps.Count);
+            
+            foreach (var playerModifiedMap in _playerModifiedMaps)
+            {
+                var dict = To1DChangesOnlyDictionary(playerModifiedMap.Value);
+                
+                writer.Write(playerModifiedMap.Key);
+                writer.Write(dict.Count);
+                
+                foreach (var keyValuePair in dict)
+                {
+                    writer.Write(keyValuePair.Key);   
+                    writer.Write(keyValuePair.Value);   
+                } 
+            } 
+            
+            writer.End();
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            var mapCount = reader.ReadInt();
+
+            for (var iMaps = 0; iMaps < mapCount; iMaps++)
+            {
+                var coords = reader.Read<ChunkCoord>();
+                var dictLength = reader.ReadInt();
+                
+                var map = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
+
+                for (var iDict = 0; iDict < dictLength; iDict++)
+                {
+                    var id = reader.ReadInt();
+                    ArrayHelper.To3D(id, out int x, out int y, out int z);
+                    var blockType = reader.ReadByte();
+                    map[x,y,z] = blockType;
+                }
+                
+                _playerModifiedMaps[coords] = map;
+            }
+            
+        }
+
+        private Dictionary<int, byte> To1DChangesOnlyDictionary(byte[,,] changes)
+        {
+            var dict = new Dictionary<int, byte>();
+            
+            var length = VoxelLookups.CHUNK_HEIGHT * VoxelLookups.CHUNK_SIZE * VoxelLookups.CHUNK_SIZE;
+
+            for (int i = 0; i < length; i++)
+            {
+                ArrayHelper.To3D(i, out int x, out int y, out int z);
+
+                var blockId = changes[x, y, z];
+
+                if (blockId != BlockTypeByte.NONE)
+                {
+                    Debug.LogWarning($"<color=\"aqua\">WorldModel.To1DChangesOnlyDictionary() => blockId:{(BlockTypeId)blockId} x:{x} y:{y} z:{z} </color>");
+                    dict[i] = blockId;
+                }
+            }
+            
+            return dict;
+        } 
     }
 }

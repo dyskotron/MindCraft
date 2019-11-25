@@ -12,6 +12,7 @@ namespace MindCraft.Controller
     public class InitAppCommand : Command
     {
         [Inject] public IAppFsm AppFsm { get; set; }
+        [Inject] public ISaveLoadManager SaveLoadManager { get; set; }
         [Inject] public IUiManager UiManager { get; set; }
         [Inject] public ViewConfig ViewConfig { get; set; }
         
@@ -21,7 +22,7 @@ namespace MindCraft.Controller
         {
             KeyboardMonitor.RegisterKeycode(KeyCode.Escape);
             
-            //TODO: load stuff
+            SaveLoadManager.LoadGame();
             
             AppFsm.SwitchState(new GameAppState());
 

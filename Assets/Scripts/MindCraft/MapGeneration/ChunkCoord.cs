@@ -1,11 +1,13 @@
 using System;
+using MindCraft.Common.Serialization;
 using MindCraft.MapGeneration.Utils;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.MapGeneration
 {
-    public struct ChunkCoord : IEquatable<ChunkCoord>
+    [Serializable]
+    public struct ChunkCoord : IEquatable<ChunkCoord>, IBinarySerializable
     {
         public static ChunkCoord Left => _leftCoord;
         public static ChunkCoord Right => _rightCoord;
@@ -71,6 +73,18 @@ namespace MindCraft.MapGeneration
         public bool Equals(ChunkCoord other)
         {
             return X == other.X && Y == other.Y;
+        }
+
+        public void Serialize(BinaryWriter writer)
+        {
+            writer.Write(X);
+            writer.Write(Y);
+        }
+
+        public void Deserialize(BinaryReader reader)
+        {
+            X = reader.ReadInt();
+            Y = reader.ReadInt();
         }
     }
 }

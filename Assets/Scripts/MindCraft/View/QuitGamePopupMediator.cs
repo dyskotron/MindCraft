@@ -1,4 +1,5 @@
 using Framewerk.UI;
+using MindCraft.Data.SaveLoadManager;
 using UnityEngine;
 
 namespace MindCraft.View
@@ -6,6 +7,8 @@ namespace MindCraft.View
     public class QuitGamePopupMediator : ExtendedMediator
     {
         [Inject] public QuitGamePopupView View { get; set; }
+        
+        [Inject] public SaveGameSignal SaveGameSignal { get; set; }
         
         public override void OnRegister()
         {
@@ -26,7 +29,13 @@ namespace MindCraft.View
 
         private void QuitButtonHandler()
         {
+            SaveGameSignal.Dispatch();
+            
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
             Application.Quit();     
+#endif
         }
     }
 }

@@ -5,6 +5,7 @@ using Framewerk.Popups;
 using Framewerk.StrangeCore;
 using MindCraft.Controller;
 using MindCraft.Data;
+using MindCraft.Data.SaveLoadManager;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using MindCraft.Physics;
@@ -56,14 +57,13 @@ namespace MindCraft
             injectionBinder.Bind<IPlayerController>().To<PlayerController>().ToSingleton();
             injectionBinder.Bind<IWorldRaycaster>().To<WorldRaycaster>().ToSingleton();
 
-            //Model
+            //Model / Service
             injectionBinder.Bind<IInventoryModel>().To<InventoryModel>().ToSingleton();
             injectionBinder.Bind<IWorldModel>().To<WorldModel>().ToSingleton();
-            injectionBinder.Bind<IVoxelPhysicsWorld>().To<VoxelPhysicsWorld>();
+            injectionBinder.Bind<IVoxelPhysicsWorld>().To<VoxelPhysicsWorld>().ToSingleton();
 
-            injectionBinder.Bind<Chunk>().To<Chunk>();
-            injectionBinder.Bind<BlockMarker>().To<BlockMarker>();
-
+            injectionBinder.Bind<ISaveLoadManager>().To<SaveLoadManager>().ToSingleton();
+            
             //Data
             injectionBinder.Bind<IWorldSettings>().To<WorldSettings>().ToSingleton();
             injectionBinder.Bind<ChunksRenderer>().To<ChunksRenderer>().ToSingleton();
@@ -71,6 +71,9 @@ namespace MindCraft
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
 
             //View
+            injectionBinder.Bind<Chunk>().To<Chunk>();
+            injectionBinder.Bind<BlockMarker>().To<BlockMarker>();
+            
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
             mediationBinder.Bind<PlayerView>().To<PlayerMediator>();
             mediationBinder.Bind<QuitGamePopupView>().To<QuitGamePopupMediator>();
@@ -84,6 +87,8 @@ namespace MindCraft
             commandBinder.Bind<KeyPressedSignal>().To<KeyPressedCommand>();
             
             commandBinder.Bind<BlockTypeSelectedSignal>().To<BlockTypeSelectedCommand>();
+            commandBinder.Bind<SaveGameSignal>().To<SaveGameCommand>();
+            
         }
 
         public override void OnRemove()
