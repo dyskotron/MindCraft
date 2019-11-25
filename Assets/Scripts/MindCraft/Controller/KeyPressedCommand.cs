@@ -22,7 +22,7 @@ namespace MindCraft.Controller
         
         public override void Execute()
         {
-            if (KeyCode == KeyCode.Escape)
+            if (KeyCode == KeyCode.Escape && !QuitGamePopupMediator.IsOpen)
                 UiManager.InstantiateView<QuitGamePopupView>(ResourcePath.POPUPS_ROOT, ViewConfig.Popups);
 
         }
