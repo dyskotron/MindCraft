@@ -44,6 +44,11 @@ namespace MindCraft.Controller
 
         private VoxelRigidBody _playerBody;
         private Transform _camera;
+        
+        private float yaw = 0f;
+        private float _cameraPitchpitch = 0f;
+        private float minPitch = -90f;
+        private float maxPitch = 90f;
 
         [PostConstruct]
         public void PostConstruct()
@@ -105,11 +110,12 @@ namespace MindCraft.Controller
                 Jump();
 
             _playerBody.Transform.Rotate(_mouseHorizontal * _playerSettings.LookSpeed * Vector3.up);
-            _camera.transform.Rotate(-_mouseVertical * _playerSettings.LookSpeed * Vector3.right);
+            _cameraPitchpitch -= _mouseVertical * _playerSettings.LookSpeed;
+            _cameraPitchpitch = Mathf.Clamp(_cameraPitchpitch, minPitch, maxPitch); 
+            _camera.transform.localEulerAngles = new Vector3(_cameraPitchpitch, 0f, 0f);
 
             //walk / sprint
             _playerBody.Velocity = ((_playerBody.Transform.forward * _vertical) + (_playerBody.Transform.right * _horizontal)) * Time.deltaTime * _moveSpeed;
-            //_playerBody.Force = ((_playerBody.Transform.forward * _vertical) + (_playerBody.Transform.right * _horizontal)) * _moveSpeed;
         }
 
         private void Jump()
