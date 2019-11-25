@@ -14,5 +14,10 @@ namespace MindCraft
             _context = new MindCraftContext(this, ViewConfig);
             _context.Start();
         }
+
+        private void OnApplicationQuit()
+        {
+            _context.OnRemove();
+        }
     }
 }

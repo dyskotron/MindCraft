@@ -7,19 +7,14 @@ namespace MindCraft.View
     public class DebugText : MonoBehaviour
     {
         public Text Label;
-        
+
         private void Update()
         {
-            
             //$"Chunk Coords - X:{newCoords.X} Z:{newCoords.Y}\n" +
             //$"Player Position: {Player.position}\n" +
-            
-            
-            Label.text = $"{Chunk.MAP_ELAPSED_TOTAL: 0.0000}\n" +
-                         $"{Chunk.MESH_ELAPSED_TOTAL: 0.0000}\n" +
-                         $"{Chunk.MAP_ELAPSED_TOTAL / Chunk.CHUNKS_TOTAL: 0.00000}\n" +
-                         $"{Chunk.MESH_ELAPSED_TOTAL / Chunk.CHUNKS_TOTAL: 0.00000}\n" +
-                         $"{GameAppState.GENERATION_TIME_TOTAL: 0.00000}\n";
+
+            Label.text = $"START TOTAL:{GameAppState.GENERATION_TIME_TOTAL: 0.00000}\n" +
+                         $"UPDATE DATA{0  : 0.00000}\n";
         }
     }
 }

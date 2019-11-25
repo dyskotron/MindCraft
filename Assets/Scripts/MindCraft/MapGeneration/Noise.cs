@@ -1,52 +1,24 @@
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.MapGeneration
 {
     public static class Noise
     {
-        public static float Get2DPerlin(Vector2 position, float offset, float scale)
-        {
-            return Mathf.PerlinNoise((position.x + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset, 
-                                     (position.y + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset);
-        }
-        
         public static float Get2DPerlin(float x, float y, float offset, float scale)
         {
-            return Mathf.PerlinNoise((x + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset, 
-                                     (y + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset);
+            return noise.cnoise(new float2((x + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset,
+                                        (y + 0.1f) / VoxelLookups.CHUNK_SIZE * scale + offset));
         }
 
-        public static bool Get3DPerlin(Vector3 position, float offset, float scale, float threshold)
-        {
-            float x = (position.x + offset + 0.1f) * scale;
-            float y = (position.y + offset + 0.1f) * scale;
-            float z = (position.z + offset + 0.1f) * scale;
-
-            float AB = Mathf.PerlinNoise(x, y);
-            float BC = Mathf.PerlinNoise(y, z);
-            float AC = Mathf.PerlinNoise(x, z);
-            float BA = Mathf.PerlinNoise(y, x);
-            float CB = Mathf.PerlinNoise(z, y);
-            float CA = Mathf.PerlinNoise(z, x);
-
-            return ((AB + BC + AC + BA + CB + CA) / 6f > threshold);
-        }
-        
         public static bool Get3DPerlin(float x, float y, float z, float offset, float scale, float threshold)
         {
-            x = (x + offset + 0.1f) * scale;
-            y = (y + offset + 0.1f) * scale;
-            z = (z + offset + 0.1f) * scale;
-
-            float AB = Mathf.PerlinNoise(x, y);
-            float BC = Mathf.PerlinNoise(y, z);
-            float AC = Mathf.PerlinNoise(x, z);
-            float BA = Mathf.PerlinNoise(y, x);
-            float CB = Mathf.PerlinNoise(z, y);
-            float CA = Mathf.PerlinNoise(z, x);
-
-            return ((AB + BC + AC + BA + CB + CA) / 6f > threshold);
+            return noise.cnoise(
+                         new float3((x + offset) * scale,
+                                    (y + offset) * scale,
+                                    (z + offset) * scale)
+                        ) > threshold;
         }
     }
 }

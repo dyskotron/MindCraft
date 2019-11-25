@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
 using UnityEngine;
 using UnityEngine.Rendering;
 

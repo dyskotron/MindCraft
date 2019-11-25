@@ -1,10 +1,21 @@
 using System;
-using MindCraft.MapGeneration.Lookup;
+using MindCraft.MapGeneration.Utils;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 namespace MindCraft.Data.Defs
 {
+    public struct BiomeDefData
+    {
+        public int TerrainMin;
+        public int TerrainMax;
+        public int TerrainHeight;
+        public float TerrainScale;
+        
+        public NativeArray<Lode> Lodes;
+    }
+    
     [CreateAssetMenu(menuName = "Defs/Biome definition")]
     public class BiomeDef : ScriptableObject
     {
@@ -16,6 +27,33 @@ namespace MindCraft.Data.Defs
         public int TerrainHeight => TerrainMax - TerrainMin;
 
         public Lode[] Lodes;
+
+        public BiomeDefData BiomeDefData;
+        
+        private NativeArray<Lode> _lodes;
+
+        private void OnEnable()
+        {
+            BiomeDefData = new BiomeDefData();
+            BiomeDefData.TerrainMin = TerrainMin;
+            BiomeDefData.TerrainMax = TerrainMax;
+            BiomeDefData.TerrainHeight = TerrainHeight;
+            BiomeDefData.TerrainScale = TerrainScale;
+
+            _lodes = new NativeArray<Lode>(Lodes.Length, Allocator.Persistent);
+
+            for (var i = 0; i < Lodes.Length; i++)
+            {
+                _lodes[i] = Lodes[i];
+            }
+
+            BiomeDefData.Lodes = _lodes;
+        }
+
+        private void OnDisable()
+        {
+            _lodes.Dispose();
+        }
     }
 
     public enum ScaleTresholdByHeight
@@ -26,10 +64,8 @@ namespace MindCraft.Data.Defs
     }
 
     [Serializable]
-    public class Lode
+    public struct Lode
     {
-        public string Name;
-
         public int HeightRange => MaxHeight - MinHeight;
         
         [Range(0,VoxelLookups.CHUNK_HEIGHT)]

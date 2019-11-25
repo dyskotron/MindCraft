@@ -13,6 +13,7 @@ namespace MindCraft.Data
         int Seed { get; }
         Material MineMaterial { get; }
         Material BuildMaterial { get; }
+        Material WorldMaterial { get; }
         Material GetMaterial(ChunkCoord coords);
         
         PlayerSettings PlayerSettings { get; }
@@ -41,6 +42,7 @@ namespace MindCraft.Data
         public int Seed { get; private set; }
         public Material MineMaterial { get; private set; }
         public Material BuildMaterial { get; private set; }
+        public Material WorldMaterial => _settings.WorldMaterial;
 
         public PlayerSettings PlayerSettings => _settings.PlayerSettings;
 

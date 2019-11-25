@@ -15,7 +15,7 @@ MonoBehaviour:
   Name: BasicBiome
   TerrainScale: 0.05
   TerrainMin: 40
-  TerrainMax: 120
+  TerrainMax: 80
   Lodes:
   - Name: 
     MinHeight: 60
