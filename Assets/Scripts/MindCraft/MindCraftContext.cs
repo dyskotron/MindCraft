@@ -44,6 +44,8 @@ namespace MindCraft
             injectionBinder.Bind<IPopupManager>().To<PopupManager>().ToSingleton();
             injectionBinder.Bind<PopupOpenedSignal>().ToSingleton();
             injectionBinder.Bind<PopupClosedSignal>().ToSingleton();
+            
+            injectionBinder.Bind<IKeyboardMonitor>().To<KeyboardMonitor>().ToSingleton();
 
             //FSM 
             injectionBinder.Bind<IAppFsm>().To<AppFsm>().ToSingleton();
@@ -71,13 +73,16 @@ namespace MindCraft
             //View
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
             mediationBinder.Bind<PlayerView>().To<PlayerMediator>();
+            mediationBinder.Bind<QuitGamePopupView>().To<QuitGamePopupMediator>();
+            mediationBinder.Bind<IntroPopupView>().To<IntroPopupMediator>();
 
             mediationBinder.Bind<InventoryView>().To<InventoryMediator>();
             mediationBinder.Bind<InventoryItemView>().To<InventoryItemMediator>();
 
-
             commandBinder.Bind<ContextStartSignal>().To<InitAppCommand>();
-
+            
+            commandBinder.Bind<KeyPressedSignal>().To<KeyPressedCommand>();
+            
             commandBinder.Bind<BlockTypeSelectedSignal>().To<BlockTypeSelectedCommand>();
         }
 

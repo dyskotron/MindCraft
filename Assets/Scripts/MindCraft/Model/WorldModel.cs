@@ -58,7 +58,6 @@ namespace MindCraft.Model
         
         public void Destroy()
         {
-            Debug.LogWarning($"<color=\"aqua\">WorldModel.Destroy()</color>");
             foreach (var mapData in _chunkMaps.Values)
             {
                 mapData.Dispose();

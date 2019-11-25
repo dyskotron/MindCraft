@@ -25,7 +25,6 @@ namespace MindCraft
 
         private void OnApplicationQuit()
         {
-            Debug.LogWarning($"<color=\"aqua\">Bootstrap.OnApplicationQuit() : ouje</color>");
             _context.OnRemove();
         }
     }

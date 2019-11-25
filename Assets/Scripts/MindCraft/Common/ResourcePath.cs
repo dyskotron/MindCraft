@@ -2,6 +2,7 @@ namespace MindCraft.Common
 {
     public static class ResourcePath
     {
+        public const string POPUPS_ROOT = "Popups/";
         public const string DEFS_ROOT = "Defs/";
         public const string BLOCK_DEFS = DEFS_ROOT + "Block/";
         public const string BIOME_DEF = DEFS_ROOT + "Biome/BasicBiome";

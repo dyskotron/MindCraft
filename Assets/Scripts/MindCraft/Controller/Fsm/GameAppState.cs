@@ -35,7 +35,6 @@ namespace MindCraft.Controller.Fsm
             base.Enter();
 
             Random.InitState(WorldSettings.Seed);
-            Cursor.lockState = CursorLockMode.Locked;
 
             //create player
             _playerView = AssetManager.GetGameObject<PlayerView>(ResourcePath.PLAYER_PREFAB);
