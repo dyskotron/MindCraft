@@ -22,7 +22,7 @@ namespace MindCraft.Data
         private TScriptable[] _allDefinitions;
         
         [PostConstruct]
-        public void PostConstruct()
+        public virtual void PostConstruct()
         {
             foreach (var enumValue in Enum.GetValues(typeof(TEnum)))
             {

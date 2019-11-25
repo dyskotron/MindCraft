@@ -4,6 +4,7 @@ using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -29,9 +30,6 @@ namespace MindCraft.View
 
         //Chunk Generation
         private int currentVertexIndex;
-        private List<Vector3> vertices = new List<Vector3>();
-        private List<int> triangles = new List<int>();
-        private List<Vector2> uvs = new List<Vector2>();
 
         private ChunkCoord _coords;
         //private byte[,,] _map;
@@ -151,7 +149,7 @@ namespace MindCraft.View
             var trinagles = new NativeList<int>(Allocator.Persistent);
             var uvs = new NativeList<float2>(Allocator.Persistent);
             
-            var mapJob = CreateMapJob(map, vertices, trinagles, uvs, TextureLookup.WorldUvLookupNative);
+            var mapJob = CreateRenderChunkJob(map, vertices, trinagles, uvs, TextureLookup.WorldUvLookupNative, BlockDefs.TransparencyLookup);
             mapJob.Complete();
             
             //process job result
@@ -194,25 +192,27 @@ namespace MindCraft.View
             return vec;
         }
 
-        private JobHandle CreateMapJob(NativeArray<byte> mapData, NativeList<float3> vertices, NativeList<int> triangles, NativeList<float2> uvs, NativeArray<float2> uvLookup)
+        private JobHandle CreateRenderChunkJob(NativeArray<byte> mapData, NativeList<float3> vertices, NativeList<int> triangles, NativeList<float2> uvs, NativeArray<float2> uvLookup, NativeArray<bool> transparencyLookup)
         {
-            var job = new GenerateChunkMeshJob()
+            var job = new RenderChunkMeshJob()
                       {
                           MapData = mapData,
                           Vertices = vertices,
                           Triangles = triangles,
                           Uvs =  uvs,
-                          UvLookup =  uvLookup,
+                          UvLookup = uvLookup,
+                          TransparencyLookup = transparencyLookup,
                       };
             
             return job.Schedule();    
         }
         
-        
-        public struct GenerateChunkMeshJob : IJob
+        [BurstCompile]
+        public struct RenderChunkMeshJob : IJob
         {
             [ReadOnly] public NativeArray<byte> MapData;
             [ReadOnly] public NativeArray<float2> UvLookup;
+            [ReadOnly] public NativeArray<bool> TransparencyLookup;
             
             [WriteOnly] public NativeList<float3> Vertices;
             [WriteOnly] public NativeList<int> Triangles;
@@ -240,11 +240,9 @@ namespace MindCraft.View
                         //var neighbour = VoxelLookups.Neighbours[iF];
 
                         //check neighbours
-                        
-                        //var blockDef = BlockDefs.GetDefinitionById((BlockTypeId) GetVoxelData(x + neighbour.x, y + neighbour.y, z + neighbour.z));
-                        //if (!blockDef.IsTransparent)
-                        //    continue;
-                            
+                        var neighbour = VoxelLookups.Neighbours[iF];
+                        if (!GetTransparency(x + neighbour.x, y + neighbour.y, z + neighbour.z))
+                            continue;
 
                         //iterate triangles
                         for (int iV = 0; iV < TRIANGLE_INDICES_PER_FACE; iV++)
@@ -267,6 +265,23 @@ namespace MindCraft.View
                         _currentVertexIndex += VERTICES_PER_FACE;
                     }
                 }
+            }
+            
+            private bool GetTransparency(int x, int y, int z)
+            {
+                //TODO: specific checks for each direction when using by face checks, dont test in rest of cases at all
+                if (IsVoxelInChunk(x, y, z))
+                {
+                    var id = ArrayHelper.To1D(x, y, z);
+                    return TransparencyLookup[MapData[id]];
+                }
+
+                return true;
+            }
+
+            private static bool IsVoxelInChunk(int x, int y, int z)
+            {
+                return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
             }
         }
 

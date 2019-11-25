@@ -88,7 +88,13 @@ namespace MindCraft.View
 
             if (chunk != null)
             {
-                _chunkPool.Add(_chunks[coords]);
+                //if (chunk.IsRendering)
+                //{
+                    //chunk.IsActive = false;
+                    //TODO: schedule for pooling
+                //}
+
+                _chunkPool.Add(chunk);
                 _chunks.Remove(coords);
             }
         }

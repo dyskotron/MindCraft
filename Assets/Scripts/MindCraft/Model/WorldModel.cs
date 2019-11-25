@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Framewerk.Managers;
+using Framewerk.StrangeCore;
 using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.Data.Defs;
@@ -36,7 +37,7 @@ namespace MindCraft.Model
         int GetTerrainHeight(int x, int y);
     }
 
-    public class WorldModel : IWorldModel
+    public class WorldModel : IWorldModel, IDestroyable
     {
         [Inject] public IAssetManager AssetManager { get; set; }
         [Inject] public ChunksRenderer ChunksRenderer { get; set; }
@@ -55,6 +56,15 @@ namespace MindCraft.Model
         public void PostConstruct()
         {
             _biomeDef = AssetManager.GetAsset<BiomeDef>(ResourcePath.BIOME_DEF);
+        }
+        
+        public void Destroy()
+        {
+            Debug.LogWarning($"<color=\"aqua\">WorldModel.Destroy()</color>");
+            foreach (var mapData in _chunkMaps.Values)
+            {
+                mapData.Dispose();
+            } 
         }
 
         public NativeArray<byte> GetMapByChunkCoords(ChunkCoord coords)
@@ -173,9 +183,6 @@ namespace MindCraft.Model
             var jobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
             var results = new NativeArray<byte>[coordsList.Count];
             
-            var watch = new Stopwatch();
-            watch.Start();
-            
             for (var i = 0; i < coordsList.Count; i++)
             {
                 results[i] = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
@@ -188,20 +195,11 @@ namespace MindCraft.Model
             JobHandle.CompleteAll(jobArray);
             jobArray.Dispose();
 
-            var jobTime = watch.ElapsedMilliseconds;
-            
-            watch.Restart();
-            
             for (var i = 0; i < results.Length; i++)
             {
                 var coords = coordsList[i];
                 _chunkMaps[coords] = results[i];
             }
-            
-            var processTime = watch.ElapsedMilliseconds;
-
-
-            Debug.LogWarning($"<color=\"aqua\">WorldModel.CreateChunkMaps() : Jobified map generation ended. jobTime: {jobTime} processTime: {processTime}</color>");
         }
 
         private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDef biomeDef, NativeArray<byte> map)
