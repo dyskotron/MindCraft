@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Water
   IsSolid: 1
-  Hardness: 6
+  IsTransparent: 0
+  Hardness: 1
   FaceTextures: 060606060606

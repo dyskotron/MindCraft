@@ -12,24 +12,172 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
   m_Name: BasicBiome
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
-  Name: BasicBiome
-  TerrainScale: 0.05
-  TerrainMin: 40
-  TerrainMax: 80
+  Name: Test
+  _terrainScale: 0.68
+  TerrainCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -0.0014457703
+      value: 0.2362976
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.54811853
+      value: 0.22543034
+      inSlope: 0.7873095
+      outSlope: 0.7873095
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.59099025
+      value: 0.29214537
+      inSlope: 0.11752587
+      outSlope: 0.11752587
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.7176175
+      value: 0.16609356
+      inSlope: -0.32881635
+      outSlope: -0.32881635
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.8786148
+      value: 0.7131125
+      inSlope: 1.638307
+      outSlope: 1.638307
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 1
+    - serializedVersion: 3
+      time: 0.885012
+      value: 0.4735465
+      inSlope: Infinity
+      outSlope: Infinity
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.9016751
+      value: 0.42079753
+      inSlope: -5.906769
+      outSlope: -5.906769
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.91383684
+      value: 0.5087718
+      inSlope: 0.4524739
+      outSlope: 0.4524739
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 1
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.92594415
+      value: 0.50362563
+      inSlope: -0.09635739
+      outSlope: -0.09635739
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 1
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.93067074
+      value: 0.8387507
+      inSlope: -0.41227773
+      outSlope: -0.41227773
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.45464912
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.957939
+      value: 0.65477145
+      inSlope: -3.2213984
+      outSlope: -3.2213984
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.984034
+      value: 0.87801015
+      inSlope: 2.171976
+      outSlope: 2.171976
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1.0044767
+      value: 0.6117454
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   Lodes:
-  - Name: 
-    MinHeight: 60
-    MaxHeight: 120
-    Scale: 0.248
-    Treshold: 0.587
-    ScaleTresholdByHeight: 2
-    Offset: 0
-    _blockId: 3
-  - Name: Caves
-    MinHeight: 12
-    MaxHeight: 52
-    Scale: 0.1
-    Treshold: 0.522
+  - MinHeight: 0
+    MaxHeight: 22
+    Treshold: 0.46
     ScaleTresholdByHeight: 0
-    Offset: 0.1
-    _blockId: 1
+    Offset: 0.75
+    _blockId: 5
+    _blockMask: 1
+    _scale: 2
+  - MinHeight: 67
+    MaxHeight: 128
+    Treshold: 0.4
+    ScaleTresholdByHeight: 0
+    Offset: 0.422
+    _blockId: 10
+    _blockMask: 1
+    _scale: 0.33
+  - MinHeight: 74
+    MaxHeight: 128
+    Treshold: 0.505
+    ScaleTresholdByHeight: 2
+    Offset: 0.816
+    _blockId: 17
+    _blockMask: 7
+    _scale: 0.09
+  - MinHeight: 80
+    MaxHeight: 128
+    Treshold: 0.56
+    ScaleTresholdByHeight: 0
+    Offset: 0.81
+    _blockId: 18
+    _blockMask: 7
+    _scale: 1.48
+  - MinHeight: 54
+    MaxHeight: 128
+    Treshold: 0
+    ScaleTresholdByHeight: 0
+    Offset: 0.816
+    _blockId: 7
+    _blockMask: 7
+    _scale: 0.2
+  TopBlock: 4
+  MiddleBlock: 3
+  BottomBlock: 7

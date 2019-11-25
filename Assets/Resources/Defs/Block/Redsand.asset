@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Redsand
   IsSolid: 1
-  Hardness: 6
+  IsTransparent: 0
+  Hardness: 2
   FaceTextures: 090909090909

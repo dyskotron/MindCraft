@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: ' Stone With Grass'
   IsSolid: 1
-  Hardness: 6
+  IsTransparent: 0
+  Hardness: 7
   FaceTextures: 01010d0e0101

@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Trunk
   IsSolid: 1
-  Hardness: 6
+  IsTransparent: 0
+  Hardness: 2
   FaceTextures: 020203030202

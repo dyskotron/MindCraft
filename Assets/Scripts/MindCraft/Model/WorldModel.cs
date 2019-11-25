@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using Framewerk.Managers;
 using Framewerk.StrangeCore;
 using MindCraft.Common;
@@ -12,7 +11,6 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 namespace MindCraft.Model
 {
@@ -271,7 +269,8 @@ namespace MindCraft.Model
 
         public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef)
         {
-            return Mathf.FloorToInt(biomeDef.TerrainMin + biomeDef.TerrainHeight * Noise.Get2DPerlin(x, y, 0, biomeDef.TerrainScale));
+            var heightFromNoise = Mathf.FloorToInt(VoxelLookups.CHUNK_HEIGHT * Noise.Get2DPerlin(x, y, 0, biomeDef.TerrainScale));
+            return biomeDef.TerrainCurve[heightFromNoise];
         }
 
         /// <summary>
@@ -301,40 +300,65 @@ namespace MindCraft.Model
 
             //top voxels are grass
             if (y == terrainHeight - 1)
-                voxelValue = BlockTypeByte.DIRT_WITH_GRASS;
+                voxelValue = BlockMaskByte.TOP;
             //3 voxels under grass are dirt
             else if (y >= terrainHeight - 4)
-                voxelValue = BlockTypeByte.DIRT;
+                voxelValue = BlockMaskByte.MIDDLE;
             //rest is rock
             else
-                voxelValue = BlockTypeByte.STONE;
+                voxelValue = BlockMaskByte.BOTTOM;
 
             //LODES PASS
-            if (voxelValue == BlockTypeByte.STONE)
+            bool lodesPassResolved = false;
+            var lodesCount = biomeDef.Lodes.Length;
+            for (var i = 0; i < lodesCount; i++)
             {
-                var lodesCount = biomeDef.Lodes.Length;
-                for (var i = 0; i < lodesCount; i++)
+                var lode = biomeDef.Lodes[i];
+                
+                if((lode.BlockMask & voxelValue) == 0)
+                    continue; //try next lode
+                
+                if (y > lode.MinHeight && y < lode.MaxHeight)
                 {
-                    var lode = biomeDef.Lodes[i];
-                    
-                    if (y > lode.MinHeight && y < lode.MaxHeight)
+                    var treshold = lode.Treshold;
+                    switch (lode.ScaleTresholdByHeight)
                     {
-                        var treshold = lode.Treshold;
-                        switch (lode.ScaleTresholdByHeight)
-                        {
-                            case ScaleTresholdByHeight.HighestTop:
-                                treshold *= (y - lode.MinHeight) / (float) lode.HeightRange;
-                                break;
-                            case ScaleTresholdByHeight.HighestBottom:
-                                treshold *= (lode.MaxHeight - y) / (float) lode.HeightRange;
-                                break;
-                        }
+                        case ScaleTresholdByHeight.HighestTop:
+                            treshold *= (y - lode.MinHeight) / (float) lode.HeightRange;
+                            break;
+                        case ScaleTresholdByHeight.HighestBottom:
+                            treshold *= (lode.MaxHeight - y) / (float) lode.HeightRange;
+                            break;
+                    }
 
-                        if (Noise.Get3DPerlin(x, y, z, lode.Offset, lode.Scale, treshold))
-                            voxelValue = lode.BlockId;
+                    if (Noise.Get3DPerlin(x, y, z, lode.Offset, lode.Scale, treshold))
+                    {
+                        voxelValue = lode.BlockId;
+                        lodesPassResolved = true;
+                        break; //We found our block - continue to next pass!
                     }
                 }
             }
+            
+            //if no lode was applied, show basic biome block for given placeholder
+            if (!lodesPassResolved)
+            {
+                switch (voxelValue)
+                {
+                    case BlockMaskByte.TOP:
+                        voxelValue = biomeDef.TopBlock;
+                        break;
+                    
+                    case BlockMaskByte.MIDDLE:
+                        voxelValue = biomeDef.MiddleBlock;
+                        break;
+                    
+                    case BlockMaskByte.BOTTOM:
+                        voxelValue = biomeDef.BottomBlock;
+                        break;
+                }
+            }
+
 
             return voxelValue;
         }
