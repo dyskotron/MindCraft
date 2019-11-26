@@ -1,4 +1,3 @@
-using System;
 using Framewerk.UI;
 using MindCraft.Controller;
 using MindCraft.Data;
@@ -7,7 +6,6 @@ using strange.extensions.mediation.impl;
 using Temari.Common;
 using UnityEngine;
 using UnityEngine.Serialization;
-using Vector3 = UnityEngine.Vector3;
 
 public class PlayerView : View
 {
@@ -48,6 +46,8 @@ public class PlayerMediator : ExtendedMediator
         cameraTransform.SetParent(View.CameraContainer);
         cameraTransform.localPosition = Vector3.zero;
     }
+    
+#if UNITY_EDITOR
 
     private void Update()
     {
@@ -56,4 +56,6 @@ public class PlayerMediator : ExtendedMediator
         View.AntiForce = _playerBody.LostVelocity;
         View.VerticalMomentum = _playerBody.VerticalMomentum;
     }
+    
+#endif
 }

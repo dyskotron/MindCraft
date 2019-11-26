@@ -23,6 +23,7 @@ namespace MindCraft.Controller
         [Inject] public IUpdater Updater { get; set; }
         [Inject] public IInstanceProvider InstanceProvider { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
+        [Inject] public IVoxelPhysicsWorld PhysicsWorld { get; set; }
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldRaycaster WorldRaycaster { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
@@ -170,10 +171,12 @@ namespace MindCraft.Controller
             {
                 // ====== Update Place Block cursor ======
 
+                var placeBlockPosition = WorldRaycaster.LastPosition;
+
                 // don't show place block cursor if it collides with the player
-                var playerPosition = WorldModelHelper.FloorPositionToVector3Int(_playerBody.Transform.position);
-                _collidesWithPlayer = WorldRaycaster.LastPosition == playerPosition || WorldRaycaster.LastPosition == playerPosition + Vector3Int.up;
-                _placeBlockCursor.Transform.position = WorldRaycaster.LastPosition;
+                _collidesWithPlayer = PhysicsWorld.CheckBodyOnGlobalXyz(_playerBody, placeBlockPosition.x, placeBlockPosition.y, placeBlockPosition.z);
+
+                _placeBlockCursor.Transform.position = placeBlockPosition;
                 
                 // ====== Update Mining cursor / position / time ======
                 

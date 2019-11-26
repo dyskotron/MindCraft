@@ -9,6 +9,7 @@ namespace MindCraft.Physics
     public interface IVoxelPhysicsWorld
     {
         void AddRigidBody(VoxelRigidBody body);
+        bool CheckBodyOnGlobalXyz(VoxelRigidBody body, float x, float y, float z);
         void SetEnabled(bool value);
         void Destroy();
     }
@@ -18,38 +19,42 @@ namespace MindCraft.Physics
     /// </summary>
     public class VoxelPhysicsWorld : IVoxelPhysicsWorld
     {
+        private const float AUTOJUMP_FORCE = 5;
+        private const float AUTOJUMP_TRESHOLD = 0.05f;
+        private const float ATOJUMP_TRESHOLD_POW2 = AUTOJUMP_TRESHOLD * AUTOJUMP_TRESHOLD;
+        
         [Inject] public IUpdater Updater { get; set; }
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
-
-        public bool Enabled => _enabled;
         
+        public bool Enabled => _enabled;
+
         private bool _enabled;
 
         private float _gravity;
-        
+
         private List<VoxelRigidBody> _bodies = new List<VoxelRigidBody>();
-        
+
         [PostConstruct]
         public void PostConstruct()
         {
             _gravity = WorldSettings.Gravity;
             SetEnabled(true);
         }
-        
+
         public void AddRigidBody(VoxelRigidBody body)
         {
-            _bodies.Add(body);    
+            _bodies.Add(body);
         }
 
         public void SetEnabled(bool value)
         {
-            if(_enabled == value)
+            if (_enabled == value)
                 return;
-            
-            _enabled = value;  
 
-            if(_enabled)
+            _enabled = value;
+
+            if (_enabled)
                 Updater.EveryStep(UpdateBodies);
             else
                 Updater.RemoveStepAction(UpdateBodies);
@@ -62,72 +67,101 @@ namespace MindCraft.Physics
 
         private void UpdateBodies()
         {
-            foreach (var voxelRigidBody in _bodies)
+            foreach (var body in _bodies)
             {
-                UpdateBody(voxelRigidBody); 
-            } 
+                UpdateBody(body);
+            }
         }
 
-        private void UpdateBody(VoxelRigidBody voxelRigidBody)
+        private void UpdateBody(VoxelRigidBody body)
         {
-            voxelRigidBody.Grounded = false;
-                
+            body.Grounded = false;
+
             //apply gravity
-            if (voxelRigidBody.VerticalMomentum > _gravity)
-                voxelRigidBody.VerticalMomentum += Time.fixedDeltaTime * _gravity;
+            if (body.VerticalMomentum > _gravity)
+                body.VerticalMomentum += Time.fixedDeltaTime * _gravity;
 
             //apply vertical momentum
-            voxelRigidBody.Velocity += voxelRigidBody.VerticalMomentum * Time.fixedDeltaTime * Vector3.up;
-            
+            body.Velocity += body.VerticalMomentum * Time.fixedDeltaTime * Vector3.up;
+
             //collision with world
-            var oldPosition = voxelRigidBody.Transform.position;
-            var newPosition = oldPosition + voxelRigidBody.Velocity;
-            voxelRigidBody.LostVelocity = Vector3.zero;
-            
-            if (WorldModel.CheckVoxelOnGlobalXyz(newPosition.x, newPosition.y, newPosition.z))
+            var oldPosition = body.Transform.position;
+            var targetPosition = oldPosition + body.Velocity;
+            body.LostVelocity = Vector3.zero;
+
+            if (CheckBodyOnGlobalXyz(body, targetPosition.x, targetPosition.y, targetPosition.z))
             {
-                if (WorldModel.CheckVoxelOnGlobalXyz(newPosition.x, oldPosition.y, oldPosition.z))
+                if (CheckBodyOnGlobalXyz(body, targetPosition.x, oldPosition.y, oldPosition.z))
                 {
-                    voxelRigidBody.LostVelocity.x = voxelRigidBody.Velocity.x;
-                    voxelRigidBody.Velocity.x = 0;
+                    body.LostVelocity.x = body.Velocity.x;
+                    body.Velocity.x = 0;
                 }
 
-                if (WorldModel.CheckVoxelOnGlobalXyz(oldPosition.x, newPosition.y, oldPosition.z))
+                if (CheckBodyOnGlobalXyz(body, oldPosition.x, targetPosition.y, oldPosition.z))
                 {
-                    if (voxelRigidBody.Velocity.y < 0)
-                        voxelRigidBody.Grounded = true;
-                    
-                    voxelRigidBody.LostVelocity.y = voxelRigidBody.Velocity.y;
-                    voxelRigidBody.Velocity.y = 0;
+                    if (body.Velocity.y < 0)
+                        body.Grounded = true;
+
+                    body.LostVelocity.y = body.Velocity.y;
+                    body.Velocity.y = 0;
                 }
 
-                if (WorldModel.CheckVoxelOnGlobalXyz(oldPosition.x, oldPosition.y, newPosition.z))
+                if (CheckBodyOnGlobalXyz(body, oldPosition.x, oldPosition.y, targetPosition.z))
                 {
-                    voxelRigidBody.LostVelocity.z = voxelRigidBody.Velocity.z;
-                    voxelRigidBody.Velocity.z = 0;
+                    body.LostVelocity.z = body.Velocity.z;
+                    body.Velocity.z = 0;
                 }
-
-                newPosition = oldPosition + voxelRigidBody.Velocity;
             }
             
-            //if we are prevented to move on horizontal plane and it can be solved by jumping one square then jump
-            //should work only one block above ground
-            //TODO: check neighbour blocks as now it can autojump in weird cornercases
-            if (voxelRigidBody.Grounded)
+            var newPosition = oldPosition + body.Velocity;
+            
+            // == AUTOJUMP == //TODO: move to player controller
+            //jump if we're prevented to move on horizontal plane and there is space to move there one voxel up
+            //jumping shoul also check
+            if (body.Grounded)
             {
-                var preventedHoriontalMagnitude = new Vector2(voxelRigidBody.LostVelocity.x, voxelRigidBody.LostVelocity.z).magnitude;
-                voxelRigidBody.LostVelocity.z = preventedHoriontalMagnitude;
-                var lostVelocityNormalised = voxelRigidBody.LostVelocity.normalized;
+                var preventedHorizontalMagnitude = new Vector2(body.LostVelocity.x, body.LostVelocity.z).magnitude;
                 
-                if (preventedHoriontalMagnitude > 0.05f && !WorldModel.CheckVoxelOnGlobalXyz(newPosition.x + lostVelocityNormalised.x, 
-                                                                                             newPosition.y + 1, 
-                                                                                             newPosition.z + lostVelocityNormalised.z))
+                if (preventedHorizontalMagnitude > AUTOJUMP_TRESHOLD && CheckAutojumpPositionAvailable(body, targetPosition, oldPosition))
+                    //!CheckBodyOnGlobalXyz(body , targetPosition.x, oldPosition.y + 1, targetPosition.z))
                 {
-                    voxelRigidBody.VerticalMomentum = 5;
+                    body.VerticalMomentum = 5;
                 }
             }
 
-            voxelRigidBody.Transform.position = newPosition;
+            body.Transform.position = newPosition;
+        }
+
+        //this brute force works for now as its cheap physics anyway, but definitely not feasible when more bodies than just player will be present in a game
+        //TODO: check only in direction player is actually moving to
+        public bool CheckBodyOnGlobalXyz(VoxelRigidBody body, float x, float y , float z)
+        {
+                //bottom
+                return WorldModel.CheckVoxelOnGlobalXyz(x + body.Size, y, z) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x + body.Size, y, z + body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x, y, z + body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x - body.Size, y, z + body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x - body.Size, y , z) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x - body.Size, y, z - body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x, y, z - body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x + body.Size, y, z - body.Size) ||
+
+                       //top
+                       WorldModel.CheckVoxelOnGlobalXyz(x + body.Size, y + body.Height, z) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x + body.Size, y + body.Height, z + body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x, y + body.Height, z + body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x - body.Size, y + body.Height, z + body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x - body.Size, y + body.Height, z) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x - body.Size, y + body.Height, z - body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x, y + body.Height, z - body.Size) ||
+                       WorldModel.CheckVoxelOnGlobalXyz(x + body.Size, y + body.Height, z - body.Size);
+        }
+
+        private bool CheckAutojumpPositionAvailable(VoxelRigidBody body, Vector3 targetPosition, Vector3 oldPosition)
+        {
+            return !CheckBodyOnGlobalXyz(body, targetPosition.x, oldPosition.y + 1, targetPosition.z) ||
+                !CheckBodyOnGlobalXyz(body, targetPosition.x, oldPosition.y + 1, targetPosition.z) ||
+                !CheckBodyOnGlobalXyz(body, targetPosition.x, oldPosition.y + 1, targetPosition.z);
         }
     }
 }

@@ -38,7 +38,7 @@ namespace MindCraft.Model
 
     public class WorldModel : IWorldModel, IBinarySerializable, IDestroyable
     {
-        [Inject] public IAssetManager AssetManager { get; set; }
+        [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public ChunksRenderer ChunksRenderer { get; set; }
 
         //map for each generated chunk - only generated data which are always recreated the same
@@ -47,14 +47,14 @@ namespace MindCraft.Model
         //Only player modified voxels stored there
         private Dictionary<ChunkCoord, byte[,,]> _playerModifiedMaps = new Dictionary<ChunkCoord, byte[,,]>();
 
-        private BiomeDef _biomeDef;
+        private BiomeDefData _biomeDef;
 
         #region Getters / Helper methods
 
         [PostConstruct]
         public void PostConstruct()
         {
-            _biomeDef = AssetManager.GetAsset<BiomeDef>(ResourcePath.BIOME_DEF);
+            _biomeDef = WorldSettings.DefaultBiome;
         }
         
         public void Destroy()
@@ -219,13 +219,13 @@ namespace MindCraft.Model
             }
         }
 
-        private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDef biomeDef, NativeArray<byte> map)
+        private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDefData biomeDef, NativeArray<byte> map)
         {
             var job = new GenerateMapJob()
                       {
                           ChunkX = chunkX,
                           ChunkY = chunkY,
-                          BiomeDef = biomeDef.BiomeDefData,
+                          BiomeDef = biomeDef,
                           Map =  map
                       };
             
@@ -280,12 +280,12 @@ namespace MindCraft.Model
 
             // ======== BASIC PASS ========
 
-            return GenerateVoxel(x, y, z, _biomeDef.BiomeDefData);
+            return GenerateVoxel(x, y, z, _biomeDef);
         }
 
         public int GetTerrainHeight(int x, int y)
         {
-            return GetTerrainHeight(x, y, _biomeDef.BiomeDefData);
+            return GetTerrainHeight(x, y, _biomeDef);
         }
 
         public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef)
