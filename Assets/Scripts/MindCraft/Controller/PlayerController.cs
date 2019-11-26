@@ -137,7 +137,9 @@ namespace MindCraft.Controller
         private BlockMarker _placeBlockCursor;
         private BlockMarker _mineBlockCursor;
         private Transform _pick;
-        
+        private bool _isHit;
+        private bool _collidesWithPlayer;
+
         [PostConstruct]
         public void DiggingPostConstructor()
         {
@@ -162,20 +164,17 @@ namespace MindCraft.Controller
 
         private void UpdateCursorBlocks()
         {
-            var isHit = WorldRaycaster.Raycast(_camera.position, _camera.forward);
+            _isHit = WorldRaycaster.Raycast(_camera.position, _camera.forward);
 
-            if (isHit)
+            if (_isHit)
             {
                 // ====== Update Place Block cursor ======
 
                 // don't show place block cursor if it collides with the player
                 var playerPosition = WorldModelHelper.FloorPositionToVector3Int(_playerBody.Transform.position);
-                var collidesWithPlayer = WorldRaycaster.LastPosition == playerPosition || WorldRaycaster.LastPosition == playerPosition + Vector3Int.up;
-                if (!collidesWithPlayer)
-                    _placeBlockCursor.Transform.position = WorldRaycaster.LastPosition;
+                _collidesWithPlayer = WorldRaycaster.LastPosition == playerPosition || WorldRaycaster.LastPosition == playerPosition + Vector3Int.up;
+                _placeBlockCursor.Transform.position = WorldRaycaster.LastPosition;
                 
-                _placeBlockCursor.SetActive(!collidesWithPlayer);
-
                 // ====== Update Mining cursor / position / time ======
                 
                 var hitPosition = WorldRaycaster.HitPosition;
@@ -183,8 +182,7 @@ namespace MindCraft.Controller
                 {
 
                     _mineBlockCursor.Transform.position = WorldRaycaster.HitPosition;
-                    _mineBlockCursor.SetActive(true);
-
+                    
                     //position changed => reset mining timer
                     _miningStartedTime = Time.time;
 
@@ -192,11 +190,8 @@ namespace MindCraft.Controller
                     _lastMinePosition = hitPosition;
                 }
             }
-            else
-            {
-                _mineBlockCursor.SetActive(isHit);
-                _placeBlockCursor.SetActive(isHit);
-            }
+
+            UpdateCursorsVisibility();
         }
 
         private void UpdateMining()
@@ -217,6 +212,7 @@ namespace MindCraft.Controller
                 {
                     //START MINING
                     _isMining = true;
+                    UpdateCursorsVisibility();
                     _miningStartedTime = Time.time;
                 }
             }
@@ -226,28 +222,42 @@ namespace MindCraft.Controller
                 {
                     //STOP MINING
                     _isMining = false;
+                    UpdateCursorsVisibility();
                     _mineBlockCursor.SetMiningProgress(0);
                     _pick.transform.localRotation = Quaternion.identity;
                     return;
                 }
 
-                //block can't be mined (bedrock)
-                if (_minedBlockType.Hardness == 0)
-                    return;
-
                 var miningLength = Time.time - _miningStartedTime;
                 var hits = Mathf.FloorToInt(miningLength / _playerSettings.MiningInterval);
+                var blockHardness = _minedBlockType.Hardness;
 
                 var animProgress = _playerSettings.PickMovementCurve.Evaluate((miningLength % _playerSettings.MiningInterval) / _playerSettings.MiningInterval);
 
                 _pick.transform.localRotation = Quaternion.Euler(new Vector3(-45 * animProgress, 0 ,0));
 
-                _mineBlockCursor.SetMiningProgress(hits);
+                //blockHardness == means indestructible
+                
 
                 //finish mining (remove block)
-                if (hits >= _minedBlockType.Hardness)
+                if (hits >= blockHardness && blockHardness != 0)
+                {
                     WorldModel.EditVoxel(_lastMinePosition, BlockTypeByte.AIR);
+                    UpdateCursorsVisibility();
+                    return;
+                }
+                
+                //anim block
+                if(blockHardness > 0)
+                    _mineBlockCursor.SetMiningProgress(hits / (float)blockHardness);
             }
+            
+        }
+        
+        private void UpdateCursorsVisibility()
+        {
+            _placeBlockCursor.SetActive(_isHit && !_collidesWithPlayer);
+            _placeBlockCursor.SetActive(_isHit && !_isMining);    
         }
     }
 }

@@ -16,6 +16,7 @@ namespace MindCraft.View
         private const int FACES_PER_VERTEX = 6;
         private const int TRIANGLE_VERTICES_PER_FACE = 6;
         private const int VERTICES_PER_FACE = 4;
+        private const int MINE_ANIMATION_FRAMES = 6;
 
         private GameObject _gameObject;
         private MeshRenderer _meshRenderer;
@@ -73,10 +74,9 @@ namespace MindCraft.View
             _meshFilter.mesh = _mesh;
         }
         
-        public void SetMiningProgress(int progress) //0 = select >1 = damage ratio
+        public void SetMiningProgress(float progress) //0 = select >1 = damage ratio
         {
-            progress = Math.Min(progress, 6); // max brick animation atm
-            var textureId = TextureLookup.UtilsTextureIndexes[progress];
+            var textureId = TextureLookup.UtilsTextureIndexes[Mathf.FloorToInt(progress * MINE_ANIMATION_FRAMES)];
             
             currentVertexIndex = 0;
             uvs.Clear();
