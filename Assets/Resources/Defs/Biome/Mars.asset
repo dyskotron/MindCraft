@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
+  m_Name: Mars
+  m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
+  Name: Mars
+  _terrainScale: 1.26
+  TerrainCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.011633767
+      value: 0.8365454
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.2203058
+      value: 0.81466097
+      inSlope: -0.031716373
+      outSlope: -0.031716373
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.37456992
+      value: 0.842804
+      inSlope: 0.027707195
+      outSlope: 0.027707195
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.42530692
+      value: 0.8215807
+      inSlope: -0.11375606
+      outSlope: -0.11375606
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.60026956
+      value: 0.81770265
+      inSlope: -0.036850225
+      outSlope: -0.036850225
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.6640402
+      value: 0.8269105
+      inSlope: -0.031054297
+      outSlope: -0.031054297
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.72038364
+      value: 0.8139597
+      inSlope: -0.02434184
+      outSlope: -0.02434184
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.81239754
+      value: 0.8123414
+      inSlope: -0.010168562
+      outSlope: -0.010168562
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.86637414
+      value: 0.81206083
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.15714417
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.9578563
+      value: 0.96932036
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.99853516
+      value: 0.96813965
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  Lodes:
+  - MinHeight: 0
+    MaxHeight: 22
+    Treshold: 0.203
+    ScaleTresholdByHeight: 0
+    Offset: 0.75
+    _blockId: 1
+    _blockMask: 6
+    _scale: 0.51
+  - MinHeight: 0
+    MaxHeight: 22
+    Treshold: 0.203
+    ScaleTresholdByHeight: 0
+    Offset: 0.75
+    _blockId: 20
+    _blockMask: 1
+    _scale: 1.41
+  TopBlock: 13
+  MiddleBlock: 12
+  BottomBlock: 7

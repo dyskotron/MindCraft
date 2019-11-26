@@ -11,11 +11,15 @@ namespace MindCraft.Data.Defs
         public Material WorldMaterial;
         public Material MineMaterial;
         public Material BuildMaterial;
+        
+        public BiomeDef DefaultBiome;
 
         public PlayerSettings PlayerSettings;
 
         [Header("Debug Params")] 
         public bool DebugChunksMaterialEnabled;
         public Material DebugMaterial;
+        
+        
     }
 }
