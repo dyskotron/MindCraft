@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.MapGeneration.Utils
@@ -8,6 +9,7 @@ namespace MindCraft.MapGeneration.Utils
         public const int CHUNK_HEIGHT = 128;
         public const int VOXELS_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT;
         public const int VIEW_DISTANCE = 100;
+        public const float LIGHT_FALL_OFF = 0.3f;
         public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
 
         public static readonly Vector3Int[] Vertices =
@@ -40,6 +42,16 @@ namespace MindCraft.MapGeneration.Utils
             new Vector3Int(0,-1,0), // Bottom
             new Vector3Int(-1,0,0), // Left
             new Vector3Int(1,0,0), // Right
+        };
+        
+        public static readonly int3[] NeighboursInt3 =
+        {
+            new int3(0,0, -1), // Back
+            new int3(0,0, 1), // Front
+            new int3(0,1,0), // Top
+            new int3(0,-1,0), // Bottom
+            new int3(-1,0,0), // Left
+            new int3(1,0,0), // Right
         };
 
         public static readonly int[] indexToVertex = {0, 1, 2, 2, 1, 3};

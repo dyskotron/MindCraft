@@ -42,8 +42,10 @@ namespace MindCraft.View
         private NativeArray<byte> _map;
         private NativeArray<float> _lightLevels;
         private NativeQueue<int3> _litVoxels;
+        private NativeArray<int> _debug;
 
         private JobHandle _jobHandle;
+        private RenderChunkMeshJob _job;
 
         [PostConstruct]
         public void PostConstruct()
@@ -94,8 +96,9 @@ namespace MindCraft.View
             _triangles = new NativeList<int>(Allocator.Persistent);
             _uvs = new NativeList<float2>(Allocator.Persistent);
             _colors = new NativeList<float>(Allocator.Persistent);
+            _debug = new NativeArray<int>(1, Allocator.Persistent);
 
-            var job = new RenderChunkMeshJob()
+            _job = new RenderChunkMeshJob()
                       {
                           MapData = _map,
                           Vertices = _vertices,
@@ -106,9 +109,10 @@ namespace MindCraft.View
                           LitVoxels = _litVoxels,
                           UvLookup = TextureLookup.WorldUvLookupNative,
                           TransparencyLookup = BlockDefs.TransparencyLookup,
+                          Debug = _debug,
                       };
 
-            _jobHandle = job.Schedule();
+            _jobHandle = _job.Schedule();
 
             CoroutineManager.RunCoroutine(CheckRenderJobCoroutine());
         }
@@ -125,6 +129,8 @@ namespace MindCraft.View
         {
             _jobHandle.Complete();
 
+            Debug.LogWarning($"<color=\"aqua\">Chunk.ProcessJobResult() : LightVertexesCounted:{_debug[0]}</color>");
+            
             //process job result
             Mesh mesh = new Mesh();
             mesh.indexFormat = IndexFormat.UInt32;
@@ -144,8 +150,10 @@ namespace MindCraft.View
             _map.Dispose();
             _lightLevels.Dispose();
             _litVoxels.Dispose();
+            _debug.Dispose();
 
             IsRendering = false;
+
         }
 
         private Vector3[] ToV3Array(NativeList<float3> nl)
@@ -194,18 +202,18 @@ namespace MindCraft.View
             [WriteOnly] public NativeList<int> Triangles;
             [WriteOnly] public NativeList<float2> Uvs;
             [WriteOnly] public NativeList<float> Colors;
-            [WriteOnly] public NativeQueue<int3> LitVoxels;
+            public NativeQueue<int3> LitVoxels;
 
             public NativeArray<float> LightLevels;
 
-            private int _currentVertexIndex;
+            public NativeArray<int> Debug;
+
+            public int _currentVertexIndex;
 
             public void Execute()
             {
                 CalculateLight();
                 
-                float lightLevel = 1f;
-
                 //for(var index = 0; index < MapData.Length; index++){
                 for (var x = 0; x < VoxelLookups.CHUNK_SIZE; x++)
                 {
@@ -216,15 +224,10 @@ namespace MindCraft.View
                             //we need x, y, z at this point for light
                             var index = ArrayHelper.To1D(x, y, z);
 
-                            if (y == VoxelLookups.CHUNK_HEIGHT - 1)
-                                lightLevel = 1f;
-
                             var voxelId = MapData[index];
 
                             if (voxelId == BlockTypeByte.AIR)
                                 continue;
-
-                            lightLevel -= (1 / 32f);
 
                             var position = new Vector3(x, y, z);
 
@@ -292,12 +295,41 @@ namespace MindCraft.View
 
                             var voxelId = MapData[index];
                             
-                            //basically air has transparency 1
-                            if(voxelId != BlockTypeByte.AIR)
-                                lightLevel = Mathf.Min(TransparencyLookup[voxelId] ? 0.7f : 0.25f,lightLevel) ;
-                            
+                            //basically air has transparency 1 so we're keeping last value
+                            if (voxelId != BlockTypeByte.AIR)
+                                lightLevel = Mathf.Min(TransparencyLookup[voxelId] ? 0.7f : 0.25f, lightLevel);
+
+                            if (lightLevel > VoxelLookups.LIGHT_FALL_OFF)
+                                LitVoxels.Enqueue(new int3(x, y, z));
                         }
                     }
+                }
+ 
+                //iterate trough lit voxels and project light to neighbours
+                while (LitVoxels.Count > 0)
+                {
+                    Debug[0] = Debug[0] + 1;
+                    
+                    var litVoxel = LitVoxels.Dequeue();
+                    var litVoxelId = ArrayHelper.To1D(litVoxel.x, litVoxel.y, litVoxel.z);
+                    var litVoxelFalloff = LightLevels[litVoxelId] - VoxelLookups.LIGHT_FALL_OFF;
+                    
+                    //iterate trough neighbours
+                    for (int iF = 0; iF < FACES_PER_VOXEL; iF++)
+                    {
+                        var neighbour = litVoxel + VoxelLookups.NeighboursInt3[iF];
+
+                        if (IsVoxelInChunk(neighbour.x, neighbour.y, neighbour.z))
+                        {
+                            var neighbourId = ArrayHelper.To1D(neighbour.x, neighbour.y, neighbour.z);
+                            if(LightLevels[neighbourId] < litVoxelFalloff)
+                            {
+                                LightLevels[neighbourId] = litVoxelFalloff;
+                                if(litVoxelFalloff > VoxelLookups.LIGHT_FALL_OFF)
+                                    LitVoxels.Enqueue(neighbour);
+                            }
+                        }
+                    }      
                 }
             }
 
