@@ -1,4 +1,5 @@
 using Framewerk.UI;
+using MindCraft.Common;
 using MindCraft.Controller;
 using UnityEngine;
 
@@ -6,14 +7,18 @@ namespace MindCraft.View
 {
     public class IntroPopupMediator : ExtendedMediator
     {
-        [Inject] public IntroPopupView View { get; set; }
+        [Inject] public IMouseModeManager MouseModeManager { get; set; }
+        
         [Inject] public IPlayerController PlayerController { get; set; }
+        
+        [Inject] public IntroPopupView View { get; set; }
 
         public override void OnRegister()
         {
             base.OnRegister();
 
             PlayerController.SetEnabled(false);
+            MouseModeManager.SetMouseLocked(false);
             
             AddButtonListener(View.OkButton, OkButtonHandler);
             
@@ -25,7 +30,7 @@ namespace MindCraft.View
         {
             Destroy(View.gameObject);  
             PlayerController.SetEnabled(true);
-            Cursor.lockState = CursorLockMode.Locked;
+            MouseModeManager.SetMouseLocked(true);
         }
     }
 }

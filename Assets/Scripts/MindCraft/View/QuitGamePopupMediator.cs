@@ -1,4 +1,5 @@
 using Framewerk.UI;
+using MindCraft.Common;
 using MindCraft.Controller;
 using MindCraft.Data.SaveLoadManager;
 using UnityEngine;
@@ -8,6 +9,7 @@ namespace MindCraft.View
     public class QuitGamePopupMediator : ExtendedMediator
     {
         [Inject] public IPlayerController PlayerController { get; set; }
+        [Inject] public IMouseModeManager MouseModeManager { get; set; }
         
         [Inject] public SaveGameSignal SaveGameSignal { get; set; }
         
@@ -24,7 +26,7 @@ namespace MindCraft.View
             AddButtonListener(View.BackButton, BackButtonHandler);
             AddButtonListener(View.BackgroundButton, BackButtonHandler);
             
-            Cursor.lockState = CursorLockMode.None;
+            MouseModeManager.SetMouseLocked(false);
             PlayerController.SetEnabled(false);
 
             IsOpen = true;
@@ -32,7 +34,7 @@ namespace MindCraft.View
 
         private void BackButtonHandler()
         {
-            Cursor.lockState = CursorLockMode.Locked;
+            MouseModeManager.SetMouseLocked(true);
             PlayerController.SetEnabled(true);
             Destroy(View.gameObject);
             IsOpen = false;
