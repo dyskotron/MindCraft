@@ -3,6 +3,7 @@ using Framewerk.AppStateMachine;
 using Framewerk.Managers;
 using Framewerk.Popups;
 using Framewerk.StrangeCore;
+using MindCraft.Common;
 using MindCraft.Controller;
 using MindCraft.Data;
 using MindCraft.Data.SaveLoadManager;
@@ -40,14 +41,16 @@ namespace MindCraft
             injectionBinder.Bind<IAppMonitor>().ToValue(AppMonitor.Instance);
             injectionBinder.Bind<IAssetManager>().To<AssetManager>().ToSingleton();
             injectionBinder.Bind<IUiManager>().To<UiManager>().ToSingleton();
+            
+            //General
+            injectionBinder.Bind<IKeyboardMonitor>().To<KeyboardMonitor>().ToSingleton();
+            injectionBinder.Bind<IMouseModeManager>().To<MouseModeManager>().ToSingleton();
 
             //Popups
             injectionBinder.Bind<IPopupManager>().To<PopupManager>().ToSingleton();
             injectionBinder.Bind<PopupOpenedSignal>().ToSingleton();
             injectionBinder.Bind<PopupClosedSignal>().ToSingleton();
             
-            injectionBinder.Bind<IKeyboardMonitor>().To<KeyboardMonitor>().ToSingleton();
-
             //FSM 
             injectionBinder.Bind<IAppFsm>().To<AppFsm>().ToSingleton();
             injectionBinder.Bind<AppStateEnterSignal>().ToSingleton();
