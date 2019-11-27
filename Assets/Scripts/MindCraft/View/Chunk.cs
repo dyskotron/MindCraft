@@ -40,6 +40,8 @@ namespace MindCraft.View
         private NativeList<float> _colors;
 
         private NativeArray<byte> _map;
+        private NativeArray<float> _lightLevels;
+        private NativeQueue<int3> _litVoxels;
 
         private JobHandle _jobHandle;
 
@@ -85,6 +87,9 @@ namespace MindCraft.View
             IsRendering = true;
 
             _map = new NativeArray<byte>(map, Allocator.Persistent);
+            _lightLevels = new NativeArray<float>(map.Length, Allocator.Persistent);
+            _litVoxels = new NativeQueue<int3>(Allocator.Persistent);
+            
             _vertices = new NativeList<float3>(Allocator.Persistent);
             _triangles = new NativeList<int>(Allocator.Persistent);
             _uvs = new NativeList<float2>(Allocator.Persistent);
@@ -97,6 +102,8 @@ namespace MindCraft.View
                           Triangles = _triangles,
                           Uvs = _uvs,
                           Colors = _colors,
+                          LightLevels = _lightLevels,
+                          LitVoxels = _litVoxels,
                           UvLookup = TextureLookup.WorldUvLookupNative,
                           TransparencyLookup = BlockDefs.TransparencyLookup,
                       };
@@ -135,6 +142,8 @@ namespace MindCraft.View
             _uvs.Dispose();
             _colors.Dispose();
             _map.Dispose();
+            _lightLevels.Dispose();
+            _litVoxels.Dispose();
 
             IsRendering = false;
         }
@@ -185,16 +194,15 @@ namespace MindCraft.View
             [WriteOnly] public NativeList<int> Triangles;
             [WriteOnly] public NativeList<float2> Uvs;
             [WriteOnly] public NativeList<float> Colors;
-            
-            //[WriteOnly] public NativeArray<float> LightLevels;
+            [WriteOnly] public NativeQueue<int3> LitVoxels;
+
+            public NativeArray<float> LightLevels;
 
             private int _currentVertexIndex;
 
             public void Execute()
             {
-                //LightLevels = new NativeArray<float>(MapData.Length, Allocator.TempJob);
-
-                //CalculateLight();
+                CalculateLight();
                 
                 float lightLevel = 1f;
 
@@ -224,10 +232,18 @@ namespace MindCraft.View
                             for (int iF = 0; iF < FACES_PER_VOXEL; iF++)
                             {
                                 //check neighbours
-                                var neighbour = VoxelLookups.Neighbours[iF];
-                                if (!GetTransparency(x + neighbour.x, y + neighbour.y, z + neighbour.z))
+                                var neighbourPos = VoxelLookups.Neighbours[iF];
+                                
+                                var nX = x + neighbourPos.x;
+                                var nY = y + neighbourPos.y;
+                                var nZ = z + neighbourPos.z;
+                                
+                                
+                                if (!GetTransparency(nX, nY, nZ))
                                     continue;
-
+                                
+                                var neighbourId = ArrayHelper.To1D(nX, nY, nZ);
+                                
                                 //iterate triangles
                                 for (int iV = 0; iV < TRIANGLE_INDICES_PER_FACE; iV++)
                                 {
@@ -240,8 +256,12 @@ namespace MindCraft.View
 
                                         var uvId = ArrayHelper.To1D(voxelId, iF, iV, TextureLookup.MAX_BLOCKDEF_COUNT, TextureLookup.FACES_PER_VOXEL);
                                         Uvs.Add(UvLookup[uvId]);
-
-                                        Colors.Add(lightLevel);
+                                        
+                                        //TODO: get neighbours to job properly
+                                        if(IsVoxelInChunk(nX, nY, nZ))
+                                            Colors.Add(LightLevels[neighbourId]);
+                                        else
+                                            Colors.Add(1);
                                     }
 
                                     //we still need 6 triangle vertices tho
@@ -253,10 +273,8 @@ namespace MindCraft.View
                         }
                     }
                 }
-                
-                //LightLevels.Dispose();
             }
-/*
+
             private void CalculateLight()
             {
                 float lightLevel = 1f;
@@ -268,19 +286,20 @@ namespace MindCraft.View
                         lightLevel = 1f;
                         
                         for (var y = VoxelLookups.CHUNK_HEIGHT - 1; y >= 0; y--)
-                        {
+                        {   
                             var index = ArrayHelper.To1D(x, y, z);
+                            LightLevels[index] = lightLevel;
 
                             var voxelId = MapData[index];
-                            if (voxelId != BlockTypeByte.AIR)
-                                lightLevel = TransparencyLookup[MapData[index]] ? 0.7f : 0.25f;
-
-                            //LightLevels[index] = lightLevel;
-                            LightLevels[index] = lightLevel;
+                            
+                            //basically air has transparency 1
+                            if(voxelId != BlockTypeByte.AIR)
+                                lightLevel = Mathf.Min(TransparencyLookup[voxelId] ? 0.7f : 0.25f,lightLevel) ;
+                            
                         }
                     }
                 }
-            }*/
+            }
 
             private bool GetTransparency(int x, int y, int z)
             {
