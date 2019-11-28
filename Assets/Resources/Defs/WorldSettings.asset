@@ -17,7 +17,7 @@ MonoBehaviour:
   WorldMaterial: {fileID: 2100000, guid: 7387af500986b4877b025a539dcba0fd, type: 2}
   MineMaterial: {fileID: 2100000, guid: 0ce17b032d0624d7cb72fdd9b216a848, type: 2}
   BuildMaterial: {fileID: 2100000, guid: fe4adf146144e4ed980334d1409a2690, type: 2}
-  DefaultBiome: {fileID: 11400000, guid: 43a626695b34446609e811fa75ae2568, type: 2}
+  DefaultBiome: {fileID: 11400000, guid: bb16966845a2a46d58c889f9190d9bbd, type: 2}
   PlayerSettings:
     Radius: 0.3
     Height: 1.8

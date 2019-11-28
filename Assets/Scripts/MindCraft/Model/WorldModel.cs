@@ -11,6 +11,7 @@ using MindCraft.View;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.Model
@@ -290,8 +291,9 @@ namespace MindCraft.Model
 
         public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef)
         {
-            var heightFromNoise = Mathf.FloorToInt(VoxelLookups.CHUNK_HEIGHT * Noise.Get2DPerlin(x, y, 0, biomeDef.TerrainScale));
-            return biomeDef.TerrainCurve[heightFromNoise];
+            var sampleNoise = Noise.Get2DPerlin(x, y, biomeDef.Octaves, biomeDef.Lunacrity, biomeDef.Persistance, biomeDef.TerrainScale, biomeDef.Offset);
+            var heightFromNoise = Mathf.FloorToInt(VoxelLookups.CHUNK_HEIGHT * sampleNoise);
+            return math.clamp(biomeDef.TerrainCurve[heightFromNoise], 0, VoxelLookups.CHUNK_HEIGHT - 1);
         }
 
         /// <summary>

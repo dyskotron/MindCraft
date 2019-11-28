@@ -2,7 +2,6 @@ using System;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace MindCraft.Data.Defs
 {
@@ -11,7 +10,11 @@ namespace MindCraft.Data.Defs
         public float TerrainScale;
         
         public NativeArray<int> TerrainCurve { get; set; }
-        
+        public int Octaves { get; set; }
+        public float Lunacrity { get; set; }
+        public float Persistance { get; set; }
+        public float Offset { get; set; }
+
         public byte TopBlock;
         public byte MiddleBlock;
         public byte BottomBlock;
@@ -26,16 +29,25 @@ namespace MindCraft.Data.Defs
 
         //invert scale as smaller number for bigger terrain seems counterintuitive + scale to human-easy numbers
         public float TerrainScale => 0.01f / _terrainScale; 
-        [FormerlySerializedAs("TerrainScale")] [SerializeField][Range(0,5f)]
+        
+        [SerializeField][Range(0,5f)]
         private float _terrainScale;
 
+        [Range(0,10)]
+        public int Octaves;
+        [Range(1f, 10f)]
+        public float Lunacrity;
+        [Range(0.1f, 1f)]
+        public float Persistance;
+        [Range(0, 1f)]
+        public float Offset;
         public AnimationCurve TerrainCurve;
         
-        public Lode[] Lodes;
-
         public BlockTypeId TopBlock;
         public BlockTypeId MiddleBlock;
         public BlockTypeId BottomBlock;
+        
+        public Lode[] Lodes;
         
         // BiomeDefData we can pass to terrain generating jobs
         public BiomeDefData BiomeDefData;
@@ -46,6 +58,10 @@ namespace MindCraft.Data.Defs
         {
             BiomeDefData = new BiomeDefData();
             BiomeDefData.TerrainScale = TerrainScale; 
+            BiomeDefData.Octaves = Octaves; 
+            BiomeDefData.Lunacrity = Lunacrity; 
+            BiomeDefData.Persistance = Persistance; 
+            BiomeDefData.Offset = Offset; 
 
             _lodes = new NativeArray<Lode>(Lodes.Length, Allocator.Persistent);
 
@@ -92,20 +108,20 @@ namespace MindCraft.Data.Defs
 
         public byte BlockMask => (byte) _blockMask;
         
-        [Range(0,VoxelLookups.CHUNK_HEIGHT)]
+        [UnityEngine.Range(0,VoxelLookups.CHUNK_HEIGHT)]
         public int MinHeight;
         
-        [Range(0,VoxelLookups.CHUNK_HEIGHT)]
+        [UnityEngine.Range(0,VoxelLookups.CHUNK_HEIGHT)]
         public int MaxHeight;
 
         public float Scale => 0.01f / _scale; //invert + multiply scale
         
-        [Range(0,1f)]
+        [UnityEngine.Range(0,1f)]
         public float Treshold;
 
         public ScaleTresholdByHeight ScaleTresholdByHeight;
         
-        [Range(0,1f)]
+        [UnityEngine.Range(0,1f)]
         public float Offset;
         
         public byte BlockId => (byte)_blockId;
@@ -117,7 +133,7 @@ namespace MindCraft.Data.Defs
         [SerializeField]
         private BlockMaskId _blockMask;
         
-        [SerializeField][Range(0,2f)]
+        [SerializeField][UnityEngine.Range(0,2f)]
         private float _scale;
     }
 }
