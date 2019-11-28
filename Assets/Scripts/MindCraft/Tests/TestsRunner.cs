@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using MindCraft.MapGeneration.Utils;
 using MindCraft.Tests;
 using MindCraft.Tests.TestBounds;
 using Unity.Mathematics;
@@ -14,15 +15,25 @@ public class TestsRunner : MonoBehaviour
     void Start()
     {
         RunTest(new TestBoundsRadial());
-        RunTest(new TestBoundsRectangular());
-        RunTest(new TestBoundsRectangularPreinitedArray());
-        RunTest(new TestBoundsRectangularPreinitedArrayForeach());
+        //RunTest(new TestBoundsRectangular());
+        //RunTest(new TestBoundsRectangularPreinitedArray());
+        //RunTest(new TestBoundsRectangularPreinitedArrayForeach());
     }
 
     private void RunTest(IMindCraftTest test)
     {
-        
-        
+        for (var iF = 0; iF < 6; iF++)
+        {
+            Debug.LogWarning($"<color=\"aqua\">TestsRunner.RunTest() : ===================== {iF} =====================</color>");
+            for (var iV = 0; iV < 4; iV++)
+            {
+
+                Debug.LogWarning($"<color=\"aqua\">TestsRunner.RunTest() : {VoxelLookups.Neighbours[VoxelLookups.LightNeighbours[iF][iV][0]]} + " +
+                                 $"{VoxelLookups.Neighbours[VoxelLookups.LightNeighbours[iF][iV][1]]}</color>");
+            }
+        }
+
+        return;
             
             
         for (var i = 0; i < 100; i++)

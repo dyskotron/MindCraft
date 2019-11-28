@@ -9,6 +9,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Timeline;
 
 namespace MindCraft.View
 {
@@ -236,11 +237,11 @@ namespace MindCraft.View
                             {
                                 //check neighbours
                                 var neighbourPos = VoxelLookups.Neighbours[iF];
-                                
+                                var lightNeighbours = VoxelLookups.LightNeighbours[iF];
+
                                 var nX = x + neighbourPos.x;
                                 var nY = y + neighbourPos.y;
                                 var nZ = z + neighbourPos.z;
-                                
                                 
                                 if (!GetTransparency(nX, nY, nZ))
                                     continue;
@@ -261,8 +262,47 @@ namespace MindCraft.View
                                         Uvs.Add(UvLookup[uvId]);
                                         
                                         //TODO: get neighbours to job properly
-                                        if(IsVoxelInChunk(nX, nY, nZ))
-                                            Colors.Add(LightLevels[neighbourId]);
+                                        if (IsVoxelInChunk(nX, nY, nZ))
+                                        {
+                                            //basic light level based on face direct neighbour
+                                            var lightLevel = LightLevels[neighbourId];
+
+                                            
+                                                //compute light from vertex adjacent neighbours
+
+                                                //so we're getting two neighbours /of vertex /specific for face 
+
+                                                Vector3Int diagonal = new Vector3Int();
+
+                                                for (var iL = 0; iL < 2; iL++)
+                                                {
+
+//                                                if (iL == 0)
+//                                                {
+//                                                    lightLevel += 1;
+//                                                    continue;
+//                                                } 
+
+                                                    var lightNeighbour = VoxelLookups.Neighbours[lightNeighbours[iV][iL]];
+                                                    var lnX = nX + lightNeighbour.x;
+                                                    var lnY = nY + lightNeighbour.y;
+                                                    var lnZ = nZ + lightNeighbour.z;
+
+                                                    lightLevel += GetVertexNeighbourLightLevel(lnX, lnY, lnZ);
+
+                                                    diagonal += lightNeighbour;
+                                                }
+
+                                                //+ ugly hardcoded diagonal brick
+
+                                                var lnXDiagonal = nX + diagonal.x;
+                                                var lnYDiagonal = nY + diagonal.y;
+                                                var lnZDiagonal = nZ + diagonal.z;
+                                                lightLevel += GetVertexNeighbourLightLevel(lnXDiagonal, lnYDiagonal, lnZDiagonal);
+                                            
+
+                                            Colors.Add(lightLevel * 0.25f); //multiply instead of divide by 3 as that's faster - but we can use >> 2 in the end
+                                        }
                                         else
                                             Colors.Add(1);
                                     }
@@ -276,6 +316,19 @@ namespace MindCraft.View
                         }
                     }
                 }
+            }
+
+            private float GetVertexNeighbourLightLevel(int x , int y, int z)
+            {
+                if (IsVoxelInChunk(x, y, z))
+                {
+                    //consider adding neighbour light only as 0.5 weight compared to main source
+                    var lightNeighbourId = ArrayHelper.To1D(x, y, z);
+                    return LightLevels[lightNeighbourId];
+
+                }
+
+                return 1;
             }
 
             private void CalculateLight()
@@ -301,11 +354,14 @@ namespace MindCraft.View
 
                             if (lightLevel > VoxelLookups.LIGHT_FALL_OFF)
                                 LitVoxels.Enqueue(new int3(x, y, z));
+                            
+                            LightLevels[index] = lightLevel;
                         }
                     }
                 }
  
                 //iterate trough lit voxels and project light to neighbours
+                /*
                 while (LitVoxels.Count > 0)
                 {
                     Debug[0] = Debug[0] + 1;
@@ -331,6 +387,7 @@ namespace MindCraft.View
                         }
                     }      
                 }
+                */
             }
 
             private bool GetTransparency(int x, int y, int z)
