@@ -3,6 +3,7 @@ using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
+using MindCraft.View.Chunk;
 using strange.framework.api;
 using Unity.Collections;
 using UnityEngine;
@@ -15,8 +16,8 @@ namespace MindCraft.View
         [Inject] public IInstanceProvider InstanceProvider { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
         
-        private Dictionary<ChunkCoord, Chunk> _chunks = new Dictionary<ChunkCoord, Chunk>();
-        private List<Chunk> _chunkPool = new List<Chunk>();
+        private Dictionary<ChunkCoord, ChunkView> _chunks = new Dictionary<ChunkCoord, ChunkView>();
+        private List<ChunkView> _chunkPool = new List<ChunkView>();
         
         public void UpdateChunkMesh(ChunkCoord coords, NativeArray<byte> chunkMap)
         {
@@ -35,7 +36,7 @@ namespace MindCraft.View
         public void UpdateChunksAroundPlayer(ChunkCoord newCoords)
         {
             //TODO ONLY SetActive(false); for chunks within MapBoundsLookup.REMOVE_RING_OFFSET
-            //current HideChunk method moving chunk to the pool should be calle only for those out of remove ring.
+            //current HideChunk method moving chunk to the pool should be calls only for those out of remove ring.
             
             //hide chunks out of sight
             foreach (var position in MapBoundsLookup.ChunkRemove)
@@ -54,21 +55,21 @@ namespace MindCraft.View
         {
             var map = WorldModel.GetMapByChunkCoords(coords);
 
-            Chunk chunk;
+            ChunkView chunkView;
             if (_chunkPool.Count > 0)
             {
-                chunk = _chunkPool[0];
+                chunkView = _chunkPool[0];
                 _chunkPool.RemoveAt(0);
             }
             else
             {
-                chunk = InstanceProvider.GetInstance<Chunk>();    
+                chunkView = InstanceProvider.GetInstance<ChunkView>();    
             }
             
-            chunk.Init(coords);
-            chunk.UpdateChunkMesh(map);
+            chunkView.Init(coords);
+            chunkView.UpdateChunkMesh(map);
 
-            _chunks[coords] = chunk;
+            _chunks[coords] = chunkView;
         }
         
         private void ShowChunk(int x, int y)
@@ -84,7 +85,7 @@ namespace MindCraft.View
         private void HideChunk(int x, int y)
         {
             var coords = new ChunkCoord(x, y);
-            _chunks.TryGetValue(coords, out Chunk chunk);
+            _chunks.TryGetValue(coords, out ChunkView chunk);
 
             if (chunk != null)
             {

@@ -11,6 +11,7 @@ using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using MindCraft.Physics;
 using MindCraft.View;
+using MindCraft.View.Chunk;
 using MindCraft.View.Inventory;
 using MindCraft.View.Screen;
 using strange.extensions.injector.api;
@@ -74,7 +75,7 @@ namespace MindCraft
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
 
             //View
-            injectionBinder.Bind<Chunk>().To<Chunk>();
+            injectionBinder.Bind<ChunkView>().To<ChunkView>();
             injectionBinder.Bind<BlockMarker>().To<BlockMarker>();
             
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
