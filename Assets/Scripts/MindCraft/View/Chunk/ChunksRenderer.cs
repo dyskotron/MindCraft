@@ -1,15 +1,11 @@
 using System.Collections.Generic;
-using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
-using MindCraft.View.Chunk;
 using strange.framework.api;
 using Unity.Collections;
-using UnityEngine;
-using UnityEngine.Rendering;
 
-namespace MindCraft.View
+namespace MindCraft.View.Chunk
 {
     public class ChunksRenderer
     {
@@ -21,7 +17,7 @@ namespace MindCraft.View
         
         public void UpdateChunkMesh(ChunkCoord coords, NativeArray<byte> chunkMap)
         {
-            _chunks[coords].UpdateChunkMesh(chunkMap);
+            _chunks[coords].UpdateChunkMesh(GetDataForChunkWithNeighbours(coords));
         }
         
         public void GenerateChunksAroundPlayer(ChunkCoord coords)
@@ -53,8 +49,6 @@ namespace MindCraft.View
         
         public void CreateChunk(ChunkCoord coords)
         {
-            var map = WorldModel.GetMapByChunkCoords(coords);
-
             ChunkView chunkView;
             if (_chunkPool.Count > 0)
             {
@@ -67,7 +61,7 @@ namespace MindCraft.View
             }
             
             chunkView.Init(coords);
-            chunkView.UpdateChunkMesh(map);
+            chunkView.UpdateChunkMesh( GetDataForChunkWithNeighbours(coords));
 
             _chunks[coords] = chunkView;
         }
@@ -97,6 +91,22 @@ namespace MindCraft.View
                 //else
                     //TODO: schedule for pooling
             }
+        }
+
+        private NativeArray<byte> GetDataForChunkWithNeighbours(ChunkCoord coords)
+        {
+            var multimap = new NativeArray<byte>(9 * VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
+            for (var x = 0; x < 3; x++)
+            {
+                for (var y = 0; y < 3; y++)
+                {
+                    var offset = (x + y * 3) * VoxelLookups.VOXELS_PER_CHUNK;
+                    var map = WorldModel.GetMapByChunkCoords(coords + new ChunkCoord(x - 1, y - 1));
+                    multimap.Slice(offset, VoxelLookups.VOXELS_PER_CHUNK).CopyFrom(map);
+                }
+            }
+
+            return multimap;
         }
     }
 }

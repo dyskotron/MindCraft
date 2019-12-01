@@ -11,6 +11,10 @@ namespace MindCraft.MapGeneration.Utils
         public const int VIEW_DISTANCE = 100;
         public const float LIGHT_FALL_OFF = 0.3f;
         public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
+        
+        //index of chunk in the center of concenated arrays we send to jobs that needs to know about neighbours
+        //center chunk is what we care about, rest is just to get surrounding data
+        public static readonly int MULTIMAP_CENTER_OFFSET = 4 * VoxelLookups.VOXELS_PER_CHUNK;
 
         //array of all local vertex coordinates for cube
         public static readonly Vector3Int[] Vertices =

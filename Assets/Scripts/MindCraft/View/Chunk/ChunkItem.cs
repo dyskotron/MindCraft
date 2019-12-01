@@ -44,7 +44,7 @@ namespace MindCraft.View.Chunk
         private NativeArray<int> _debug;
 
         private JobHandle _jobHandle;
-        private OldRenderChunkMeshJob _job;
+        private RenderChunkMeshJob _job;
 
         [PostConstruct]
         public void PostConstruct()
@@ -87,8 +87,10 @@ namespace MindCraft.View.Chunk
 
             IsRendering = true;
 
-            _map = new NativeArray<byte>(map, Allocator.Persistent);
-            _lightLevels = new NativeArray<float>(map.Length, Allocator.Persistent);
+            _map = map;//new NativeHashMap<int2, NativeArray<byte>>(9, Allocator.Persistent);
+            
+            //copy here?
+            _lightLevels = new NativeArray<float>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
             
             //populate with all voxels lit for noew
             for (var i = 0; i < _lightLevels.Length; i++)
@@ -103,7 +105,7 @@ namespace MindCraft.View.Chunk
             _colors = new NativeList<float>(Allocator.Persistent);
             _debug = new NativeArray<int>(1, Allocator.Persistent);
 
-            _job = new OldRenderChunkMeshJob()
+            _job = new RenderChunkMeshJob()
                       {
                           MapData = _map,
                           Vertices = _vertices,
@@ -111,10 +113,8 @@ namespace MindCraft.View.Chunk
                           Uvs = _uvs,
                           Colors = _colors,
                           LightLevels = _lightLevels,
-                          LitVoxels = _litVoxels,
                           UvLookup = TextureLookup.WorldUvLookupNative,
                           TransparencyLookup = BlockDefs.TransparencyLookup,
-                          Debug = _debug,
                       };
 
             _jobHandle = _job.Schedule();
@@ -134,8 +134,6 @@ namespace MindCraft.View.Chunk
         {
             _jobHandle.Complete();
 
-            Debug.LogWarning($"<color=\"aqua\">Chunk.ProcessJobResult() : LightVertexesCounted:{_debug[0]}</color>");
-            
             //process job result
             Mesh mesh = new Mesh();
             mesh.indexFormat = IndexFormat.UInt32;
@@ -158,8 +156,12 @@ namespace MindCraft.View.Chunk
             _debug.Dispose();
 
             IsRendering = false;
-
         }
+        
+        #endregion
+
+
+        #region Native collection convesion helpers
 
         private Vector3[] ToV3Array(NativeList<float3> nl)
         {
@@ -196,6 +198,8 @@ namespace MindCraft.View.Chunk
 
             return vectors;
         }
+
+        
 
         #endregion
     }

@@ -22,7 +22,7 @@ namespace MindCraft.Controller
         {
             KeyboardMonitor.RegisterKeycode(KeyCode.Escape);
             
-            SaveLoadManager.LoadGame();
+            //SaveLoadManager.LoadGame();
             
             AppFsm.SwitchState(new GameAppState());
 

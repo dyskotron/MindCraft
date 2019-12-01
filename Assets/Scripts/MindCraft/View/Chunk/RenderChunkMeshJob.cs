@@ -35,7 +35,7 @@ namespace MindCraft.View.Chunk
                         //we need x, y, z at this point for light
                         var index = ArrayHelper.To1D(x, y, z);
 
-                        var voxelId = MapData[index];
+                        var voxelId = MapData[index + VoxelLookups.MULTIMAP_CENTER_OFFSET];
 
                         if (voxelId == BlockTypeByte.AIR)
                             continue;
@@ -131,12 +131,28 @@ namespace MindCraft.View.Chunk
 
         private bool GetTransparency(int x, int y, int z)
         {
+            if (y >= VoxelLookups.CHUNK_HEIGHT)
+                return true;
+
+            if (y < 0)
+                return false;
+            
+            
+            var xOffset = (x + VoxelLookups.CHUNK_SIZE) / VoxelLookups.CHUNK_SIZE;
+            var zOffset = (z + VoxelLookups.CHUNK_SIZE) / VoxelLookups.CHUNK_SIZE;
+            
+            //adjust x,z to be always within chunk voxel range
+            x = (x + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
+            z = (z + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
+
+            var chunkAddress = (xOffset + zOffset * 3) * VoxelLookups.VOXELS_PER_CHUNK;
+            
             //TODO: specific checks for each direction when using by face checks, don't test in rest of cases at all
-            if (IsVoxelInChunk(x, y, z))
-            {
+//            if (IsVoxelInChunk(x, y, z))
+//            {
                 var id = ArrayHelper.To1D(x, y, z);
-                return TransparencyLookup[MapData[id]];
-            }
+                return TransparencyLookup[MapData[id + chunkAddress]];
+//            }
 
             return true;
         }

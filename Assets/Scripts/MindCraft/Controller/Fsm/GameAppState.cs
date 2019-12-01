@@ -8,6 +8,7 @@ using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using MindCraft.View;
+using MindCraft.View.Chunk;
 using MindCraft.View.Screen;
 using Temari.Common;
 using UnityEngine;

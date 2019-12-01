@@ -20,7 +20,7 @@ namespace MindCraft.MapGeneration.Utils
         private const bool USE_RADIAL_BOUNDS = true;
         
         // make sure that map data are generated in advance as chunks render needs access to neighbours map data to generate chunk properly.
-        private const int MAP_DATA_LOOKAHEAD = 1;
+        private const int MAP_DATA_LOOKAHEAD = 2;
 
         // higher offset => more memory used, but less chunks to regenerate when returning to already visited chunks
         private const int REMOVE_RING_OFFSET = 5;

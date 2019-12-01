@@ -8,6 +8,7 @@ using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.View;
+using MindCraft.View.Chunk;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
