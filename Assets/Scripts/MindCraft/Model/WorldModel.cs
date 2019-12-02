@@ -19,8 +19,7 @@ namespace MindCraft.Model
 {
     public interface IWorldModel : IBinarySerializable
     {
-        void GenerateWorldAroundPlayer(ChunkCoord coords);
-        void UpdateWorldAroundPlayer(ChunkCoord newCoords);
+        void CreateChunkMaps(List<ChunkCoord> coordsList);
         
         NativeArray<byte> GetMapByChunkCoords(ChunkCoord coords);
         bool CheckVoxelOnGlobalXyz(float x, float y, float z);
@@ -41,7 +40,7 @@ namespace MindCraft.Model
     public class WorldModel : IWorldModel, IBinarySerializable, IDestroyable
     {
         [Inject] public IWorldSettings WorldSettings { get; set; }
-        [Inject] public ChunksRenderer ChunksRenderer { get; set; }
+        [Inject] public WorldRenderer WorldRenderer { get; set; }
 
         //map for each generated chunk - only generated data which are always recreated the same
         private Dictionary<ChunkCoord, NativeArray<byte>> _chunkMaps = new Dictionary<ChunkCoord, NativeArray<byte>>();
@@ -106,7 +105,7 @@ namespace MindCraft.Model
             _playerModifiedMaps[coords][x, y, z] = VoxelType;
 
             //TODO: chunks update should not be called directly from model!
-            ChunksRenderer.UpdateChunkMesh(coords, _chunkMaps[coords]);
+            WorldRenderer.UpdateChunkMesh(coords, _chunkMaps[coords]);
 
             ChunkCoord neighbourCoords;
 
@@ -114,26 +113,26 @@ namespace MindCraft.Model
             {
                 // Update left neighbour
                 neighbourCoords = coords + ChunkCoord.Left;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
             else if (x >= VoxelLookups.CHUNK_SIZE - 1)
             {
                 // Update right neighbour
                 neighbourCoords = coords + ChunkCoord.Right;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
 
             if (z <= 0)
             {
                 // Update back neighbour
                 neighbourCoords = coords + ChunkCoord.Back;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
             else if (z >= VoxelLookups.CHUNK_SIZE - 1)
             {
                 // Update forward neighbour
                 neighbourCoords = coords + ChunkCoord.Forward;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
             }
         }
 
@@ -143,7 +142,7 @@ namespace MindCraft.Model
         {
             //create all map data within view distance
             var coordsList = new List<ChunkCoord>();
-            foreach (var position in MapBoundsLookup.MapDataGeneration)
+            foreach (var position in MapBoundsLookup.DataGeneration)
             {
                 var coords = new ChunkCoord(playerCords.X + position.x, playerCords.Y + position.y);
                 if(!_chunkMaps.ContainsKey(coords))
@@ -153,32 +152,11 @@ namespace MindCraft.Model
             CreateChunkMaps(coordsList);
         }
         
-        public void UpdateWorldAroundPlayer(ChunkCoord newCoords)
-        {
-            //remove chunk data out of sight
-            /* TODO: dispose array properly
-            foreach (var position in MapBoundsLookup.MapDataRemove)
-            {
-                _chunkMaps.Remove(new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y));
-            }*/
-            
-            //create data for chunks coming into view distance
-            var coordsList = new List<ChunkCoord>();
-            foreach (var position in MapBoundsLookup.MapDataAdd)
-            {
-                var coords = new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y);
-                if(!_chunkMaps.ContainsKey(coords))
-                    coordsList.Add(coords);
-            }
-
-            CreateChunkMaps(coordsList);
-        }
-
         /// <summary>
         /// Generates Chunk Map based only on seed and generation algorithm
         /// </summary>
         /// <param name="coordsList"> List of Chunk coordinates></param>
-        private void CreateChunkMaps(List<ChunkCoord> coordsList)
+        public void CreateChunkMaps(List<ChunkCoord> coordsList)
         {
             var jobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
             var results = new NativeArray<byte>[coordsList.Count];

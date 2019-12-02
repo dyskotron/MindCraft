@@ -33,9 +33,10 @@ namespace MindCraft.View.Chunk
                     for (var y = VoxelLookups.CHUNK_HEIGHT - 1; y >= 0; y--)
                     {
                         //we need x, y, z at this point for light
-                        var index = ArrayHelper.To1D(x, y, z);
-
-                        var voxelId = MapData[index + VoxelLookups.MULTIMAP_CENTER_OFFSET];
+                        //no need to use more expensive ArrayHelper.ToCluster1D as we are going only trough middle chunk
+                        var index = ArrayHelper.To1D(x, y, z) + VoxelLookups.MULTIMAP_CENTER_OFFSET;
+                        
+                        var voxelId = MapData[index];
 
                         if (voxelId == BlockTypeByte.AIR)
                             continue;
@@ -56,7 +57,8 @@ namespace MindCraft.View.Chunk
                             if (!GetTransparency(nX, nY, nZ))
                                 continue;
 
-                            var neighbourId = ArrayHelper.To1D(nX, nY, nZ);
+                            var neighbourId = ArrayHelper.ToCluster1D(nX, nY, nZ);
+                            //var neighbourId = ArrayHelper.To1D(nX, nY, nZ) + VoxelLookups.MULTIMAP_CENTER_OFFSET;
 
                             //iterate triangles
                             for (int iV = 0; iV < ChunkView.TRIANGLE_INDICES_PER_FACE; iV++)
@@ -70,52 +72,47 @@ namespace MindCraft.View.Chunk
 
                                     var uvId = ArrayHelper.To1D(voxelId, iF, iV, TextureLookup.MAX_BLOCKDEF_COUNT, TextureLookup.FACES_PER_VOXEL);
                                     Uvs.Add(UvLookup[uvId]);
+                                    
+                                    //basic light level based on face direct neighbour
+                                    var lightLevel = LightLevels[neighbourId];
+                                    /*
 
-                                    //TODO: get neighbours to job properly
-                                    if (IsVoxelInChunk(nX, nY, nZ))
+                                    //compute light from vertex adjacent neighbours
+
+                                    //so we're getting two neighbours /of vertex /specific for face 
+
+                                    Vector3Int diagonal = new Vector3Int();
+
+                                    for (var iL = 0; iL < 2; iL++)
                                     {
-                                        //basic light level based on face direct neighbour
-                                        var lightLevel = LightLevels[neighbourId];
-                                        /*
-
-                                        //compute light from vertex adjacent neighbours
-
-                                        //so we're getting two neighbours /of vertex /specific for face 
-
-                                        Vector3Int diagonal = new Vector3Int();
-
-                                        for (var iL = 0; iL < 2; iL++)
-                                        {
 //                                                if (iL == 0)
 //                                                {
 //                                                    lightLevel += 1;
 //                                                    continue;
 //                                                } 
 
-                                            var lightNeighbour = VoxelLookups.Neighbours[lightNeighbours[iV][iL]];
-                                            var lnX = nX + lightNeighbour.x;
-                                            var lnY = nY + lightNeighbour.y;
-                                            var lnZ = nZ + lightNeighbour.z;
+                                        var lightNeighbour = VoxelLookups.Neighbours[lightNeighbours[iV][iL]];
+                                        var lnX = nX + lightNeighbour.x;
+                                        var lnY = nY + lightNeighbour.y;
+                                        var lnZ = nZ + lightNeighbour.z;
 
-                                            lightLevel += GetVertexNeighbourLightLevel(lnX, lnY, lnZ);
+                                        lightLevel += GetVertexNeighbourLightLevel(lnX, lnY, lnZ);
 
-                                            diagonal += lightNeighbour;
-                                        }
-
-                                        //+ ugly hardcoded diagonal brick
-
-                                        var lnXDiagonal = nX + diagonal.x;
-                                        var lnYDiagonal = nY + diagonal.y;
-                                        var lnZDiagonal = nZ + diagonal.z;
-                                        lightLevel += GetVertexNeighbourLightLevel(lnXDiagonal, lnYDiagonal, lnZDiagonal);
-
-
-                                        Colors.Add(lightLevel * 0.25f); //multiply instead of divide by 3 as that's faster - but we can use >> 2 in the end
-                                        */
-                                        Colors.Add(lightLevel);
+                                        diagonal += lightNeighbour;
                                     }
-                                    else
-                                        Colors.Add(1);
+
+                                    //+ ugly hardcoded diagonal brick
+
+                                    var lnXDiagonal = nX + diagonal.x;
+                                    var lnYDiagonal = nY + diagonal.y;
+                                    var lnZDiagonal = nZ + diagonal.z;
+                                    lightLevel += GetVertexNeighbourLightLevel(lnXDiagonal, lnYDiagonal, lnZDiagonal);
+
+
+                                    Colors.Add(lightLevel * 0.25f); //multiply instead of divide by 3 as that's faster - but we can use >> 2 in the end
+                                    */
+                                    Colors.Add(lightLevel);
+                                    
                                 }
 
                                 //we still need 6 triangle vertices tho
@@ -128,7 +125,7 @@ namespace MindCraft.View.Chunk
                 }
             }
         }
-
+        
         private bool GetTransparency(int x, int y, int z)
         {
             if (y >= VoxelLookups.CHUNK_HEIGHT)

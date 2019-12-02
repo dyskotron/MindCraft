@@ -9,13 +9,13 @@ namespace MindCraft.MapGeneration.Utils
 
         public static readonly int2[] ChunkAdd;
 
-        public static readonly int2[] ChunkGeneration;
+        public static readonly int2[] RenderGeneration;
 
         public static readonly int2[] MapDataRemove;
 
         public static readonly int2[] MapDataAdd;
 
-        public static readonly int2[] MapDataGeneration;
+        public static readonly int2[] DataGeneration;
 
         private const bool USE_RADIAL_BOUNDS = true;
         
@@ -31,21 +31,21 @@ namespace MindCraft.MapGeneration.Utils
         {
             if (USE_RADIAL_BOUNDS)
             {
-                MapDataGeneration = GenerateCircle(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
+                DataGeneration = GenerateCircle(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
                 MapDataAdd = GenerateRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, 2);
                 MapDataRemove = GenerateRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, 2);
 
-                ChunkGeneration = GenerateCircle(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS);
+                RenderGeneration = GenerateCircle(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS);
                 ChunkAdd = GenerateRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS, 2);
                 ChunkRemove = GenerateRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, 2);
             }
             else
             {
-                MapDataGeneration = GenerateRect(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
+                DataGeneration = GenerateRect(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
                 MapDataAdd = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, RING_WIDTH);
                 MapDataRemove = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, RING_WIDTH);
 
-                ChunkGeneration = GenerateRect(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS);
+                RenderGeneration = GenerateRect(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS);
                 ChunkAdd = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS, RING_WIDTH);
                 ChunkRemove = GenerateRectRing(VoxelLookups.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, RING_WIDTH);
             }

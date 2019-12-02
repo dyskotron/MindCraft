@@ -39,12 +39,12 @@ namespace MindCraft.View.Chunk
         private NativeList<float> _colors;
 
         private NativeArray<byte> _map;
-        private NativeArray<float> _lightLevels;
-        private NativeQueue<int3> _litVoxels;
+       private NativeQueue<int3> _litVoxels;
         private NativeArray<int> _debug;
 
         private JobHandle _jobHandle;
         private RenderChunkMeshJob _job;
+        private NativeArray<float> _lights;
 
         [PostConstruct]
         public void PostConstruct()
@@ -77,7 +77,7 @@ namespace MindCraft.View.Chunk
 
         #region Mesh Generation
 
-        public void UpdateChunkMesh(NativeArray<byte> map)
+        public void UpdateChunkMesh(NativeArray<byte> map, NativeArray<float> lights)
         {
             if (IsRendering)
             {
@@ -88,15 +88,8 @@ namespace MindCraft.View.Chunk
             IsRendering = true;
 
             _map = map;//new NativeHashMap<int2, NativeArray<byte>>(9, Allocator.Persistent);
+            _lights = lights;
             
-            //copy here?
-            _lightLevels = new NativeArray<float>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
-            
-            //populate with all voxels lit for noew
-            for (var i = 0; i < _lightLevels.Length; i++)
-            {
-                _lightLevels[i] = 1f;
-            }
             _litVoxels = new NativeQueue<int3>(Allocator.Persistent);
             
             _vertices = new NativeList<float3>(Allocator.Persistent);
@@ -112,7 +105,7 @@ namespace MindCraft.View.Chunk
                           Triangles = _triangles,
                           Uvs = _uvs,
                           Colors = _colors,
-                          LightLevels = _lightLevels,
+                          LightLevels = _lights,
                           UvLookup = TextureLookup.WorldUvLookupNative,
                           TransparencyLookup = BlockDefs.TransparencyLookup,
                       };
@@ -146,13 +139,13 @@ namespace MindCraft.View.Chunk
             _meshFilter.mesh = mesh;
 
             //dispose
+            _map.Dispose();
+            _lights.Dispose();
+            _litVoxels.Dispose();
             _vertices.Dispose();
             _triangles.Dispose();
             _uvs.Dispose();
             _colors.Dispose();
-            _map.Dispose();
-            _lightLevels.Dispose();
-            _litVoxels.Dispose();
             _debug.Dispose();
 
             IsRendering = false;
