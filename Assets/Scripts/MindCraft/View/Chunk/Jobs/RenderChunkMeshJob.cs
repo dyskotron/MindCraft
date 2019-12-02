@@ -75,8 +75,12 @@ namespace MindCraft.View.Chunk
                                     
                                     //basic light level based on face direct neighbour
                                     var lightLevel = LightLevels[neighbourId];
-                                    /*
-
+                                    
+                                    // To disable smooth lighting just do:
+                                    // Colors.Add(lightLevel) 
+                                    // Triangles.Add(_currentVertexIndex + vertexIndex);
+                                    // continue;
+                                    
                                     //compute light from vertex adjacent neighbours
 
                                     //so we're getting two neighbours /of vertex /specific for face 
@@ -96,7 +100,7 @@ namespace MindCraft.View.Chunk
                                         var lnY = nY + lightNeighbour.y;
                                         var lnZ = nZ + lightNeighbour.z;
 
-                                        lightLevel += GetVertexNeighbourLightLevel(lnX, lnY, lnZ);
+                                        lightLevel += LightLevels[ArrayHelper.ToCluster1D(lnX, lnY, lnZ)];
 
                                         diagonal += lightNeighbour;
                                     }
@@ -106,13 +110,13 @@ namespace MindCraft.View.Chunk
                                     var lnXDiagonal = nX + diagonal.x;
                                     var lnYDiagonal = nY + diagonal.y;
                                     var lnZDiagonal = nZ + diagonal.z;
-                                    lightLevel += GetVertexNeighbourLightLevel(lnXDiagonal, lnYDiagonal, lnZDiagonal);
+                                    lightLevel += LightLevels[ArrayHelper.ToCluster1D(lnXDiagonal, lnYDiagonal, lnZDiagonal)];
 
 
                                     Colors.Add(lightLevel * 0.25f); //multiply instead of divide by 3 as that's faster - but we can use >> 2 in the end
-                                    */
-                                    Colors.Add(lightLevel);
-                                    
+
+
+                                   
                                 }
 
                                 //we still need 6 triangle vertices tho
@@ -152,11 +156,6 @@ namespace MindCraft.View.Chunk
 //            }
 
             return true;
-        }
-
-        private static bool IsVoxelInChunk(int x, int y, int z)
-        {
-            return !(x < 0 || y < 0 || z < 0 || x >= VoxelLookups.CHUNK_SIZE || y >= VoxelLookups.CHUNK_HEIGHT || z >= VoxelLookups.CHUNK_SIZE);
         }
     }
 }
