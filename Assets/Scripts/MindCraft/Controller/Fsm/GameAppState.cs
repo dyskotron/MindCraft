@@ -77,14 +77,11 @@ namespace MindCraft.Controller.Fsm
             if (newCoords == _lastPlayerCoords)
                 return;
             
-            
             var watch = new Stopwatch();
             watch.Start();
             
             var dataCords = GetDataCoords(newCoords, MapBoundsLookup.MapDataAdd);
             WorldModel.CreateChunkMaps(dataCords);
-            
-            //WorldModel.UpdateWorldAroundPlayer(newCoords);
             
             watch.Stop();
             var elapsedMap = watch.ElapsedMilliseconds;
@@ -99,7 +96,6 @@ namespace MindCraft.Controller.Fsm
 
             _lastPlayerCoords = newCoords;
         }
-        
         
         /// <summary>
         /// Temp shiat, move somewehere

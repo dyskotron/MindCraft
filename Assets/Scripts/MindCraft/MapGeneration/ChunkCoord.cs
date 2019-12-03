@@ -11,13 +11,22 @@ namespace MindCraft.MapGeneration
     {
         public static ChunkCoord Left => _leftCoord;
         public static ChunkCoord Right => _rightCoord;
-        public static ChunkCoord Forward => _forwardCoord;
+        public static ChunkCoord Front => FrontCoord;
         public static ChunkCoord Back => _backCoord;
+        public static ChunkCoord LeftFront => LeftFrontCoord;
+        public static ChunkCoord RightFront => RightFrontCoord;
+        public static ChunkCoord LeftBack => _leftBackCoord;
+        public static ChunkCoord RightBack => _rightBackCoord;
         
         private static readonly ChunkCoord _leftCoord    = new ChunkCoord(-1, 0);
         private static readonly ChunkCoord _rightCoord   = new ChunkCoord(1, 0);
-        private static readonly ChunkCoord _forwardCoord = new ChunkCoord(0, 1);
+        private static readonly ChunkCoord FrontCoord = new ChunkCoord(0, 1);
         private static readonly ChunkCoord _backCoord    = new ChunkCoord(0, -1);
+        
+        private static readonly ChunkCoord LeftFrontCoord    = new ChunkCoord(-1, 1);
+        private static readonly ChunkCoord RightFrontCoord   = new ChunkCoord(1, 1);
+        private static readonly ChunkCoord _leftBackCoord    = new ChunkCoord(-1, -1);
+        private static readonly ChunkCoord _rightBackCoord   = new ChunkCoord(1, -1);
         
         public int X;
         public int Y;

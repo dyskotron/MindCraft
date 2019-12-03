@@ -89,19 +89,12 @@ namespace MindCraft.View.Chunk
 
                                     for (var iL = 0; iL < 2; iL++)
                                     {
-//                                                if (iL == 0)
-//                                                {
-//                                                    lightLevel += 1;
-//                                                    continue;
-//                                                } 
-
                                         var lightNeighbour = VoxelLookups.Neighbours[lightNeighbours[iV][iL]];
                                         var lnX = nX + lightNeighbour.x;
                                         var lnY = nY + lightNeighbour.y;
                                         var lnZ = nZ + lightNeighbour.z;
 
                                         lightLevel += LightLevels[ArrayHelper.ToCluster1D(lnX, lnY, lnZ)];
-
                                         diagonal += lightNeighbour;
                                     }
 
@@ -113,10 +106,7 @@ namespace MindCraft.View.Chunk
                                     lightLevel += LightLevels[ArrayHelper.ToCluster1D(lnXDiagonal, lnYDiagonal, lnZDiagonal)];
 
 
-                                    Colors.Add(lightLevel * 0.25f); //multiply instead of divide by 3 as that's faster - but we can use >> 2 in the end
-
-
-                                   
+                                    Colors.Add(lightLevel * 0.25f); //multiply instead of divide by 4 as that's faster
                                 }
 
                                 //we still need 6 triangle vertices tho

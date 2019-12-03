@@ -98,60 +98,46 @@ namespace MindCraft.Model
             _chunkMaps[coords] = map;
 
             //update voxel in user player modifications map
-            //so that data can persist when we clean distant chunks from memory or can be used to save / load game
+            //so that data can persist when we clean distant chunks from memory and can be used to save / load game
             if (!_playerModifiedMaps.ContainsKey(coords))
                 _playerModifiedMaps[coords] = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
 
             _playerModifiedMaps[coords][x, y, z] = VoxelType;
 
             //TODO: chunks update should not be called directly from model!
-            WorldRenderer.UpdateChunkMesh(coords, _chunkMaps[coords]);
-
-            ChunkCoord neighbourCoords;
-
+            //Also get chunks list in less ugly way than this hardcoded shiat
+            var updateCoords = new List<ChunkCoord>();
+            updateCoords.Add(coords);
+            
             if (x <= 0)
-            {
-                // Update left neighbour
-                neighbourCoords = coords + ChunkCoord.Left;
-                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
-            }
+                updateCoords.Add(coords + ChunkCoord.Left);
             else if (x >= VoxelLookups.CHUNK_SIZE - 1)
-            {
-                // Update right neighbour
-                neighbourCoords = coords + ChunkCoord.Right;
-                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
-            }
+                updateCoords.Add(coords + ChunkCoord.Right);
 
             if (z <= 0)
             {
-                // Update back neighbour
-                neighbourCoords = coords + ChunkCoord.Back;
-                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                updateCoords.Add(coords + ChunkCoord.Back);
+                
+                if (x <= 0)
+                    updateCoords.Add(coords + ChunkCoord.LeftBack);
+                else if (x >= VoxelLookups.CHUNK_SIZE - 1)
+                    updateCoords.Add(coords + ChunkCoord.RightBack);
             }
             else if (z >= VoxelLookups.CHUNK_SIZE - 1)
             {
-                // Update forward neighbour
-                neighbourCoords = coords + ChunkCoord.Forward;
-                WorldRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                updateCoords.Add(coords + ChunkCoord.Front);
+                
+                if (x <= 0)
+                    updateCoords.Add(coords + ChunkCoord.LeftFront);
+                else if (x >= VoxelLookups.CHUNK_SIZE - 1)
+                    updateCoords.Add(coords + ChunkCoord.RightFront);
             }
+            
+            WorldRenderer.RenderChunks(updateCoords, updateCoords);
         }
 
         #region Terrain Generation
 
-        public void GenerateWorldAroundPlayer(ChunkCoord playerCords)
-        {
-            //create all map data within view distance
-            var coordsList = new List<ChunkCoord>();
-            foreach (var position in MapBoundsLookup.DataGeneration)
-            {
-                var coords = new ChunkCoord(playerCords.X + position.x, playerCords.Y + position.y);
-                if(!_chunkMaps.ContainsKey(coords))
-                    coordsList.Add(coords);
-            }
-
-            CreateChunkMaps(coordsList);
-        }
-        
         /// <summary>
         /// Generates Chunk Map based only on seed and generation algorithm
         /// </summary>

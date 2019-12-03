@@ -29,7 +29,7 @@ namespace MindCraft.View.Chunk
             }
         }
         
-        public void UpdateChunkMesh(ChunkCoord coords, NativeArray<byte> chunkMap)
+        public void UpdateChunkMesh(ChunkCoord coords)
         {
             var job = new CalculateLightRaysJob()
                       {
@@ -48,7 +48,6 @@ namespace MindCraft.View.Chunk
         {   
             // ============ Calculate Light Rays ============
             var jobArray = new NativeArray<JobHandle>(dataCords.Count, Allocator.Temp);
-            
             
             var i = 0;
             foreach (var coords in dataCords)
@@ -73,9 +72,15 @@ namespace MindCraft.View.Chunk
             foreach (var coords in renderChunks)
             {
                 //init chunks
-                var chunkView = InstanceProvider.GetInstance<ChunkView>();    
+                _chunks.TryGetValue(coords, out ChunkView chunkView);
+
+                if (chunkView == null)
+                {
+                    chunkView = InstanceProvider.GetInstance<ChunkView>(); 
+                    _chunks[coords] = chunkView;     
+                }
+                
                 chunkView.Init(coords);
-                _chunks[coords] = chunkView; 
                 
                 // process diffuse lights
                 // TODO
