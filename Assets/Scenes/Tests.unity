@@ -6714,7 +6714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de6e1e3f54d5949dca26e89b8db93c5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RoundCount: 100
+  RoundCount: 10000
 --- !u!4 &1712625439
 Transform:
   m_ObjectHideFlags: 0

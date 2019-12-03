@@ -8,6 +8,7 @@ using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.View;
+using MindCraft.View.Chunk;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
@@ -18,8 +19,7 @@ namespace MindCraft.Model
 {
     public interface IWorldModel : IBinarySerializable
     {
-        void GenerateWorldAroundPlayer(ChunkCoord coords);
-        void UpdateWorldAroundPlayer(ChunkCoord newCoords);
+        void CreateChunkMaps(List<ChunkCoord> coordsList);
         
         NativeArray<byte> GetMapByChunkCoords(ChunkCoord coords);
         bool CheckVoxelOnGlobalXyz(float x, float y, float z);
@@ -35,12 +35,13 @@ namespace MindCraft.Model
         byte GetVoxel(int x, int y, int z);
 
         int GetTerrainHeight(int x, int y);
+        void RemoveData(List<ChunkCoord> removeDataCords);
     }
 
     public class WorldModel : IWorldModel, IBinarySerializable, IDestroyable
     {
         [Inject] public IWorldSettings WorldSettings { get; set; }
-        [Inject] public ChunksRenderer ChunksRenderer { get; set; }
+        [Inject] public IWorldRenderer WorldRenderer { get; set; }
 
         //map for each generated chunk - only generated data which are always recreated the same
         private Dictionary<ChunkCoord, NativeArray<byte>> _chunkMaps = new Dictionary<ChunkCoord, NativeArray<byte>>();
@@ -98,86 +99,51 @@ namespace MindCraft.Model
             _chunkMaps[coords] = map;
 
             //update voxel in user player modifications map
-            //so that data can persist when we clean distant chunks from memory or can be used to save / load game
+            //so that data can persist when we clean distant chunks from memory and can be used to save / load game
             if (!_playerModifiedMaps.ContainsKey(coords))
                 _playerModifiedMaps[coords] = new byte[VoxelLookups.CHUNK_SIZE, VoxelLookups.CHUNK_HEIGHT, VoxelLookups.CHUNK_SIZE];
 
             _playerModifiedMaps[coords][x, y, z] = VoxelType;
 
             //TODO: chunks update should not be called directly from model!
-            ChunksRenderer.UpdateChunkMesh(coords, _chunkMaps[coords]);
-
-            ChunkCoord neighbourCoords;
-
+            //Also get chunks list in less ugly way than this hardcoded shiat
+            var updateCoords = new List<ChunkCoord>();
+            updateCoords.Add(coords);
+            
             if (x <= 0)
-            {
-                // Update left neighbour
-                neighbourCoords = coords + ChunkCoord.Left;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
-            }
+                updateCoords.Add(coords + ChunkCoord.Left);
             else if (x >= VoxelLookups.CHUNK_SIZE - 1)
-            {
-                // Update right neighbour
-                neighbourCoords = coords + ChunkCoord.Right;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
-            }
+                updateCoords.Add(coords + ChunkCoord.Right);
 
             if (z <= 0)
             {
-                // Update back neighbour
-                neighbourCoords = coords + ChunkCoord.Back;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                updateCoords.Add(coords + ChunkCoord.Back);
+                
+                if (x <= 0)
+                    updateCoords.Add(coords + ChunkCoord.LeftBack);
+                else if (x >= VoxelLookups.CHUNK_SIZE - 1)
+                    updateCoords.Add(coords + ChunkCoord.RightBack);
             }
             else if (z >= VoxelLookups.CHUNK_SIZE - 1)
             {
-                // Update forward neighbour
-                neighbourCoords = coords + ChunkCoord.Forward;
-                ChunksRenderer.UpdateChunkMesh(neighbourCoords, _chunkMaps[neighbourCoords]);
+                updateCoords.Add(coords + ChunkCoord.Front);
+                
+                if (x <= 0)
+                    updateCoords.Add(coords + ChunkCoord.LeftFront);
+                else if (x >= VoxelLookups.CHUNK_SIZE - 1)
+                    updateCoords.Add(coords + ChunkCoord.RightFront);
             }
+            
+            WorldRenderer.RenderChunks(updateCoords, updateCoords);
         }
 
         #region Terrain Generation
-
-        public void GenerateWorldAroundPlayer(ChunkCoord playerCords)
-        {
-            //create all map data within view distance
-            var coordsList = new List<ChunkCoord>();
-            foreach (var position in MapBoundsLookup.MapDataGeneration)
-            {
-                var coords = new ChunkCoord(playerCords.X + position.x, playerCords.Y + position.y);
-                if(!_chunkMaps.ContainsKey(coords))
-                    coordsList.Add(coords);
-            }
-
-            CreateChunkMaps(coordsList);
-        }
-        
-        public void UpdateWorldAroundPlayer(ChunkCoord newCoords)
-        {
-            //remove chunk data out of sight
-            /* TODO: dispose array properly
-            foreach (var position in MapBoundsLookup.MapDataRemove)
-            {
-                _chunkMaps.Remove(new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y));
-            }*/
-            
-            //create data for chunks coming into view distance
-            var coordsList = new List<ChunkCoord>();
-            foreach (var position in MapBoundsLookup.MapDataAdd)
-            {
-                var coords = new ChunkCoord(newCoords.X + position.x, newCoords.Y + position.y);
-                if(!_chunkMaps.ContainsKey(coords))
-                    coordsList.Add(coords);
-            }
-
-            CreateChunkMaps(coordsList);
-        }
 
         /// <summary>
         /// Generates Chunk Map based only on seed and generation algorithm
         /// </summary>
         /// <param name="coordsList"> List of Chunk coordinates></param>
-        private void CreateChunkMaps(List<ChunkCoord> coordsList)
+        public void CreateChunkMaps(List<ChunkCoord> coordsList)
         {
             var jobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
             var results = new NativeArray<byte>[coordsList.Count];
@@ -217,6 +183,15 @@ namespace MindCraft.Model
                 }
                 
                 _chunkMaps[coords] = results[i];
+            }
+        }
+        
+        public void RemoveData(List<ChunkCoord> removeDataCords)
+        {
+            foreach (var removeDataCord in removeDataCords)
+            {
+                _chunkMaps[removeDataCord].Dispose();
+                _chunkMaps.Remove(removeDataCord);
             }
         }
 

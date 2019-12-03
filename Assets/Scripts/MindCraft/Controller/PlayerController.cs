@@ -259,8 +259,9 @@ namespace MindCraft.Controller
         
         private void UpdateCursorsVisibility()
         {
-            _placeBlockCursor.SetActive(_isHit && !_collidesWithPlayer);
-            _placeBlockCursor.SetActive(_isHit && !_isMining);    
+            _placeBlockCursor.SetActive(_isHit && !_collidesWithPlayer && !_isMining);
+            _placeBlockCursor.SetActive(false);
+            _mineBlockCursor.SetActive(_isHit && _isHit);    
         }
     }
 }

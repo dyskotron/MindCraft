@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using Framewerk;
 using Framewerk.AppStateMachine;
@@ -7,11 +8,12 @@ using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
-using MindCraft.View;
+using MindCraft.View.Chunk;
 using MindCraft.View.Screen;
 using Temari.Common;
+using Unity.Mathematics;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
+using Random = UnityEngine.Random;
 
 namespace MindCraft.Controller.Fsm
 {
@@ -25,7 +27,7 @@ namespace MindCraft.Controller.Fsm
 
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
-        [Inject] public ChunksRenderer ChunksRenderer { get; set; }
+        [Inject] public IWorldRenderer WorldRenderer { get; set; }
 
         private PlayerView _playerView;
         private ChunkCoord _lastPlayerCoords;
@@ -57,8 +59,11 @@ namespace MindCraft.Controller.Fsm
 
         private void GenerateWorld(ChunkCoord playerPosition)
         {
-            WorldModel.GenerateWorldAroundPlayer(playerPosition);
-            ChunksRenderer.GenerateChunksAroundPlayer(playerPosition);
+            var dataCords = GetDataCoords(playerPosition, MapBoundsLookup.DataGeneration);
+            var renderCords = GetRenderCoords(playerPosition, MapBoundsLookup.RenderGeneration);
+            
+            WorldModel.CreateChunkMaps(dataCords);
+            WorldRenderer.RenderChunks(renderCords, dataCords);
             
             _lastPlayerCoords = playerPosition;
         }
@@ -68,28 +73,66 @@ namespace MindCraft.Controller.Fsm
             var newCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(_playerView.transform.position);
             if (newCoords == _lastPlayerCoords)
                 return;
-
-            //TODO: check new / old coords distance and generate full map around player when difference is bigger than 1 chunk
-            //Useful later on for teleporting or any other transport that is fast enough that player can move several chunks within frame
             
-            var watch = new Stopwatch();
-            watch.Start();
+            //Remove unused data + view
+            var removeDataCords = GetDataCoords(newCoords, MapBoundsLookup.MapDataRemove, true);
+            var removeRenderCords = GetRenderCoords(newCoords, MapBoundsLookup.ChunkRemove, true);
+            WorldModel.RemoveData(removeDataCords);
+            WorldRenderer.RemoveChunks(removeRenderCords, removeDataCords);
             
-            WorldModel.UpdateWorldAroundPlayer(newCoords);
+            //Create map data + queue chunk render for newly discovered chunks
+            var dataCords = GetDataCoords(newCoords, MapBoundsLookup.MapDataAdd);
+            var renderCords = GetRenderCoords(newCoords, MapBoundsLookup.ChunkAdd);
+            WorldModel.CreateChunkMaps(dataCords);
+            WorldRenderer.RenderChunks(renderCords, dataCords);
             
-            watch.Stop();
-
-            var elapsedMap = watch.ElapsedMilliseconds;
-            
-            watch.Restart();
-            ChunksRenderer.UpdateChunksAroundPlayer(newCoords);
-            
-            watch.Stop();
-            
-            Debug.LogWarning($"<color=\"aqua\">GameAppState.UpdateView() : elapsedData:{elapsedMap} : elapsedRender:{watch.ElapsedMilliseconds}</color>");
-
-
             _lastPlayerCoords = newCoords;
+        }
+        
+        /// <summary>
+        /// Temp shiat, move out from gamestate?
+        /// </summary>
+        private HashSet<ChunkCoord> _generatedData = new HashSet<ChunkCoord>();
+        private HashSet<ChunkCoord> _renderedChunks = new HashSet<ChunkCoord>();
+
+        private List<ChunkCoord> GetDataCoords(ChunkCoord cords, int2[] relativeCordsArray, bool remove = false)
+        {
+            var coordsList = new List<ChunkCoord>();
+            foreach (var position in relativeCordsArray)
+            {
+                var currentCoords = new ChunkCoord(cords.X + position.x, cords.Y + position.y);
+                if (_generatedData.Contains(currentCoords) == remove)
+                {
+                    if(remove)
+                        _generatedData.Remove(currentCoords);
+                    else
+                        _generatedData.Add(currentCoords);
+                    
+                    coordsList.Add(currentCoords);
+                }
+            }
+            
+            return coordsList;
+        }
+        
+        private List<ChunkCoord> GetRenderCoords(ChunkCoord cords, int2[] relativeCordsArray, bool remove = false)
+        {
+            var coordsList = new List<ChunkCoord>();
+            foreach (var position in relativeCordsArray)
+            {
+                var currentCoords = new ChunkCoord(cords.X + position.x, cords.Y + position.y);
+                if (_renderedChunks.Contains(currentCoords) == remove)
+                {
+                    if(remove)
+                        _renderedChunks.Remove(currentCoords);
+                    else
+                        _renderedChunks.Add(currentCoords);
+                    
+                    coordsList.Add(currentCoords);
+                }
+            }
+            
+            return coordsList;
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using MindCraft.MapGeneration.Utils;
 using MindCraft.Tests;
+using MindCraft.Tests.Iteration;
 using MindCraft.Tests.TestBounds;
 using Unity.Mathematics;
 using UnityEngine;
@@ -13,35 +15,14 @@ public class TestsRunner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        RunTest(new TestBoundsRadial());
-        RunTest(new TestBoundsRectangular());
-        RunTest(new TestBoundsRectangularPreinitedArray());
-        RunTest(new TestBoundsRectangularPreinitedArrayForeach());
+        RunTest(new TestTo3dDBasic());
+        RunTest(new TestTo3dBitwise());
+        RunTest(new TestTo1dBasic());
+        RunTest(new TestTo1dBitwise());
     }
 
     private void RunTest(IMindCraftTest test)
     {
-        
-        
-            
-            
-        for (var i = 0; i < 100; i++)
-        {
-            var val = noise.cnoise(new float2(i / 20f - 2, 0.5f));
-            var cube = transform.GetChild(i);
-            
-            //SetX(cube, Mathf.Floor(i / 10f));
-            //SetY(cube, Mathf.Floor(i % 10f));
-            
-            SetX(cube, i * 1.2f);
-            SetY(cube, 0);
-            
-            SetZ(cube, val * 10);
-        }
-        
-        
-        return;
-        
         test.Init();
 
         var watch = new Stopwatch();

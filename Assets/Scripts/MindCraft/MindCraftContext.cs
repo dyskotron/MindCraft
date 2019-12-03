@@ -11,6 +11,7 @@ using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
 using MindCraft.Physics;
 using MindCraft.View;
+using MindCraft.View.Chunk;
 using MindCraft.View.Inventory;
 using MindCraft.View.Screen;
 using strange.extensions.injector.api;
@@ -69,12 +70,12 @@ namespace MindCraft
             
             //Data
             injectionBinder.Bind<IWorldSettings>().To<WorldSettings>().ToSingleton();
-            injectionBinder.Bind<ChunksRenderer>().To<ChunksRenderer>().ToSingleton();
+            injectionBinder.Bind<IWorldRenderer>().To<WorldRenderer>().ToSingleton();
             injectionBinder.Bind<IBlockDefs>().To<BlockDefs>().ToSingleton();
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
 
             //View
-            injectionBinder.Bind<Chunk>().To<Chunk>();
+            injectionBinder.Bind<ChunkView>().To<ChunkView>();
             injectionBinder.Bind<BlockMarker>().To<BlockMarker>();
             
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
@@ -100,6 +101,7 @@ namespace MindCraft
 
             //Unbind everything using Native collections so we're not getting memory leak errors
             injectionBinder.Unbind<IWorldModel>();
+            injectionBinder.Unbind<IWorldRenderer>();
             injectionBinder.Unbind<IBlockDefs>();
             injectionBinder.Unbind<TextureLookup>();
         }
