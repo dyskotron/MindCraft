@@ -13,6 +13,7 @@ namespace MindCraft.View.Chunk
     public interface IWorldRenderer
     {
         void RenderChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords);
+        void RemoveChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords);
     }
 
     public class WorldRenderer : IWorldRenderer, IDestroyable
@@ -20,40 +21,25 @@ namespace MindCraft.View.Chunk
         [Inject] public IInstanceProvider InstanceProvider { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
-        
+
         private Dictionary<ChunkCoord, ChunkView> _chunks = new Dictionary<ChunkCoord, ChunkView>();
         private Dictionary<ChunkCoord, NativeArray<float>> _lightLevelsMaps = new Dictionary<ChunkCoord, NativeArray<float>>();
-        
+
         private List<ChunkView> _chunkPool = new List<ChunkView>();
-        
+
         public void Destroy()
         {
             foreach (var chunkLightLevels in _lightLevelsMaps.Values)
             {
-                chunkLightLevels.Dispose();    
+                chunkLightLevels.Dispose();
             }
-        }
-        
-        public void UpdateChunkMesh(ChunkCoord coords)
-        {
-            var job = new CalculateLightRaysJob()
-                      {
-                          MapData = WorldModel.GetMapByChunkCoords(coords),
-                          TransparencyLookup = BlockDefs.TransparencyLookup,
-                          LightLevels = _lightLevelsMaps[coords]
-                      };
-
-            var handle = job.Schedule();
-            handle.Complete();
-            
-            _chunks[coords].UpdateChunkMesh(GetDataForChunkWithNeighbours(coords), GetLightsForChunkWithNeighbours(coords));
         }
 
         public void RenderChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords)
-        {   
+        {
             // ============ Calculate Light Rays ============
             var jobArray = new NativeArray<JobHandle>(dataCords.Count, Allocator.Temp);
-            
+
             var i = 0;
             foreach (var coords in dataCords)
             {
@@ -68,11 +54,11 @@ namespace MindCraft.View.Chunk
                 jobArray[i] = job.Schedule();
                 i++;
             }
-            
+
             JobHandle.CompleteAll(jobArray);
-            
+
             jobArray.Dispose();
-            
+
             // ============ Diffuse Lights + Render ============
             foreach (var coords in renderChunks)
             {
@@ -82,19 +68,35 @@ namespace MindCraft.View.Chunk
                 if (chunkView == null)
                 {
                     //TODO: bring back pooling
-                    chunkView = InstanceProvider.GetInstance<ChunkView>(); 
-                    _chunks[coords] = chunkView;  
+                    chunkView = InstanceProvider.GetInstance<ChunkView>();
+                    _chunks[coords] = chunkView;
                     chunkView.Init(coords);
                 }
-                
+
                 // process diffuse lights
                 // TODO
-                
+
                 //render all chunks within view distance
-                chunkView.UpdateChunkMesh( GetDataForChunkWithNeighbours(coords), GetLightsForChunkWithNeighbours(coords));
-            } 
+                chunkView.UpdateChunkMesh(GetDataForChunkWithNeighbours(coords), GetLightsForChunkWithNeighbours(coords));
+            }
         }
-        
+
+        public void RemoveChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords)
+        {
+            //TODO: pooling
+            foreach (var coords in renderChunks)
+            {
+                _chunks[coords].IsActive = false;
+                _chunks.Remove(coords);
+            }
+
+            foreach (var coords in dataCords)
+            {
+                _lightLevelsMaps[coords].Dispose();
+                _lightLevelsMaps.Remove(coords);
+            }
+        }
+
         #region Data for jobs processing
 
         private NativeArray<byte> GetDataForChunkWithNeighbours(ChunkCoord coords)
@@ -130,7 +132,5 @@ namespace MindCraft.View.Chunk
         }
 
         #endregion
-
-        
     }
 }

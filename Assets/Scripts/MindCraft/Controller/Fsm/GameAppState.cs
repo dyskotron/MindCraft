@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Framewerk;
@@ -9,13 +8,11 @@ using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
-using MindCraft.View;
 using MindCraft.View.Chunk;
 using MindCraft.View.Screen;
 using Temari.Common;
 using Unity.Mathematics;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace MindCraft.Controller.Fsm
@@ -77,41 +74,40 @@ namespace MindCraft.Controller.Fsm
             if (newCoords == _lastPlayerCoords)
                 return;
             
-            var watch = new Stopwatch();
-            watch.Start();
+            //Remove unused data + view
+            var removeDataCords = GetDataCoords(newCoords, MapBoundsLookup.MapDataRemove, true);
+            var removeRenderCords = GetRenderCoords(newCoords, MapBoundsLookup.ChunkRemove, true);
+            WorldModel.RemoveData(removeDataCords);
+            WorldRenderer.RemoveChunks(removeRenderCords, removeDataCords);
             
+            //Create map data + queue chunk render for newly discovered chunks
             var dataCords = GetDataCoords(newCoords, MapBoundsLookup.MapDataAdd);
-            WorldModel.CreateChunkMaps(dataCords);
-            
-            watch.Stop();
-            var elapsedMap = watch.ElapsedMilliseconds;
-            watch.Restart();
-            
             var renderCords = GetRenderCoords(newCoords, MapBoundsLookup.ChunkAdd);
+            WorldModel.CreateChunkMaps(dataCords);
             WorldRenderer.RenderChunks(renderCords, dataCords);
             
-            watch.Stop();
-            
-            Debug.LogWarning($"<color=\"aqua\">GameAppState.UpdateView() : elapsedData:{elapsedMap} : elapsedRender:{watch.ElapsedMilliseconds}</color>");
-
             _lastPlayerCoords = newCoords;
         }
         
         /// <summary>
-        /// Temp shiat, move somewehere
+        /// Temp shiat, move out from gamestate?
         /// </summary>
         private HashSet<ChunkCoord> _generatedData = new HashSet<ChunkCoord>();
         private HashSet<ChunkCoord> _renderedChunks = new HashSet<ChunkCoord>();
 
-        private List<ChunkCoord> GetDataCoords(ChunkCoord cords, int2[] relativeCordsArray)
+        private List<ChunkCoord> GetDataCoords(ChunkCoord cords, int2[] relativeCordsArray, bool remove = false)
         {
             var coordsList = new List<ChunkCoord>();
             foreach (var position in relativeCordsArray)
             {
                 var currentCoords = new ChunkCoord(cords.X + position.x, cords.Y + position.y);
-                if (!_generatedData.Contains(currentCoords))
+                if (_generatedData.Contains(currentCoords) == remove)
                 {
-                    _generatedData.Add(currentCoords);
+                    if(remove)
+                        _generatedData.Remove(currentCoords);
+                    else
+                        _generatedData.Add(currentCoords);
+                    
                     coordsList.Add(currentCoords);
                 }
             }
@@ -119,15 +115,19 @@ namespace MindCraft.Controller.Fsm
             return coordsList;
         }
         
-        private List<ChunkCoord> GetRenderCoords(ChunkCoord cords, int2[] relativeCordsArray)
+        private List<ChunkCoord> GetRenderCoords(ChunkCoord cords, int2[] relativeCordsArray, bool remove = false)
         {
             var coordsList = new List<ChunkCoord>();
             foreach (var position in relativeCordsArray)
             {
                 var currentCoords = new ChunkCoord(cords.X + position.x, cords.Y + position.y);
-                if (!_renderedChunks.Contains(currentCoords))
+                if (_renderedChunks.Contains(currentCoords) == remove)
                 {
-                    _renderedChunks.Add(currentCoords);
+                    if(remove)
+                        _renderedChunks.Remove(currentCoords);
+                    else
+                        _renderedChunks.Add(currentCoords);
+                    
                     coordsList.Add(currentCoords);
                 }
             }

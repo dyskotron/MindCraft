@@ -35,6 +35,7 @@ namespace MindCraft.Model
         byte GetVoxel(int x, int y, int z);
 
         int GetTerrainHeight(int x, int y);
+        void RemoveData(List<ChunkCoord> removeDataCords);
     }
 
     public class WorldModel : IWorldModel, IBinarySerializable, IDestroyable
@@ -182,6 +183,15 @@ namespace MindCraft.Model
                 }
                 
                 _chunkMaps[coords] = results[i];
+            }
+        }
+        
+        public void RemoveData(List<ChunkCoord> removeDataCords)
+        {
+            foreach (var removeDataCord in removeDataCords)
+            {
+                _chunkMaps[removeDataCord].Dispose();
+                _chunkMaps.Remove(removeDataCord);
             }
         }
 
