@@ -40,7 +40,7 @@ namespace MindCraft.Model
     public class WorldModel : IWorldModel, IBinarySerializable, IDestroyable
     {
         [Inject] public IWorldSettings WorldSettings { get; set; }
-        [Inject] public WorldRenderer WorldRenderer { get; set; }
+        [Inject] public IWorldRenderer WorldRenderer { get; set; }
 
         //map for each generated chunk - only generated data which are always recreated the same
         private Dictionary<ChunkCoord, NativeArray<byte>> _chunkMaps = new Dictionary<ChunkCoord, NativeArray<byte>>();

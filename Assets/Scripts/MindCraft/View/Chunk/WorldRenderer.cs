@@ -10,7 +10,12 @@ using Unity.Jobs;
 
 namespace MindCraft.View.Chunk
 {
-    public class WorldRenderer : IDestroyable
+    public interface IWorldRenderer
+    {
+        void RenderChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords);
+    }
+
+    public class WorldRenderer : IWorldRenderer, IDestroyable
     {
         [Inject] public IInstanceProvider InstanceProvider { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
@@ -76,11 +81,11 @@ namespace MindCraft.View.Chunk
 
                 if (chunkView == null)
                 {
+                    //TODO: bring back pooling
                     chunkView = InstanceProvider.GetInstance<ChunkView>(); 
-                    _chunks[coords] = chunkView;     
+                    _chunks[coords] = chunkView;  
+                    chunkView.Init(coords);
                 }
-                
-                chunkView.Init(coords);
                 
                 // process diffuse lights
                 // TODO

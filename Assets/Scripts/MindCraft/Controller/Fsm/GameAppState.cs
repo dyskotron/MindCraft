@@ -30,7 +30,7 @@ namespace MindCraft.Controller.Fsm
 
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldModel WorldModel { get; set; }
-        [Inject] public WorldRenderer WorldRenderer { get; set; }
+        [Inject] public IWorldRenderer WorldRenderer { get; set; }
 
         private PlayerView _playerView;
         private ChunkCoord _lastPlayerCoords;

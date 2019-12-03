@@ -70,7 +70,7 @@ namespace MindCraft
             
             //Data
             injectionBinder.Bind<IWorldSettings>().To<WorldSettings>().ToSingleton();
-            injectionBinder.Bind<WorldRenderer>().To<WorldRenderer>().ToSingleton();
+            injectionBinder.Bind<IWorldRenderer>().To<WorldRenderer>().ToSingleton();
             injectionBinder.Bind<IBlockDefs>().To<BlockDefs>().ToSingleton();
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
 
@@ -101,6 +101,7 @@ namespace MindCraft
 
             //Unbind everything using Native collections so we're not getting memory leak errors
             injectionBinder.Unbind<IWorldModel>();
+            injectionBinder.Unbind<IWorldRenderer>();
             injectionBinder.Unbind<IBlockDefs>();
             injectionBinder.Unbind<TextureLookup>();
         }
