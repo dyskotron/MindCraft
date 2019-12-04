@@ -14,12 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
   Name: Mars
   _terrainScale: 1.26
+  Octaves: 3
+  Lunacrity: 4.22
+  Persistance: 0.53
+  Offset: 0.193
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.011633767
-      value: 0.8365454
+      time: 0.008776559
+      value: 0.92228454
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -27,26 +31,26 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.22174013
-      value: 0.8237552
-      inSlope: -0.031716373
-      outSlope: -0.031716373
+      time: 0.2201783
+      value: 0.91518223
+      inSlope: -0.2256428
+      outSlope: -0.2256428
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.33333334
+      outWeight: 0.62378883
     - serializedVersion: 3
-      time: 0.37456992
-      value: 0.842804
-      inSlope: 0.027707195
-      outSlope: 0.027707195
+      time: 0.3474115
+      value: 0.90241426
+      inSlope: -0.2681365
+      outSlope: -0.2681365
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.33333334
+      outWeight: 0.4620804
     - serializedVersion: 3
-      time: 0.42530692
-      value: 0.8215807
+      time: 0.5169817
+      value: 0.8207415
       inSlope: -0.11375606
       outSlope: -0.11375606
       tangentMode: 0
@@ -54,8 +58,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.5916941
-      value: 0.84876955
+      time: 0.6447642
+      value: 0.907367
       inSlope: -0.036850225
       outSlope: -0.036850225
       tangentMode: 0
@@ -63,8 +67,17 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
+      time: 0.80669
+      value: 0.9167944
+      inSlope: 0.23108494
+      outSlope: 0.23108494
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
       time: 0.9578563
-      value: 0.96932036
+      value: 0.9605122
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -73,7 +86,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.99853516
-      value: 0.96813965
+      value: 0.95251465
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -83,6 +96,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  TopBlock: 13
+  MiddleBlock: 7
+  BottomBlock: 7
   Lodes:
   - MinHeight: 0
     MaxHeight: 22
@@ -100,6 +116,3 @@ MonoBehaviour:
     _blockId: 20
     _blockMask: 1
     _scale: 1.41
-  TopBlock: 13
-  MiddleBlock: 12
-  BottomBlock: 7

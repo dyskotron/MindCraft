@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
   Name: Greenland
   _terrainScale: 0.68
+  Octaves: 2
+  Lunacrity: 5.46
+  Persistance: 0.215
+  Offset: 0.248
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
@@ -45,8 +49,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 1.0005431
-      value: 0.47471428
+      time: 1.0063415
+      value: 0.2954998
       inSlope: 2
       outSlope: 2
       tangentMode: 0
@@ -56,7 +60,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  Lodes: []
-  TopBlock: 4
+  TopBlock: 8
   MiddleBlock: 3
   BottomBlock: 7
+  Lodes: []

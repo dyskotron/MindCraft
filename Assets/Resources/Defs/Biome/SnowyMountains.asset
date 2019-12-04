@@ -14,12 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
   Name: Test
   _terrainScale: 0.68
+  Octaves: 3
+  Lunacrity: 2.05
+  Persistance: 0.578
+  Offset: 0.56
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: -0.0014457703
-      value: 0.2362976
+      time: -0.002822876
+      value: 0.1519165
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -27,116 +31,38 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.54811853
-      value: 0.22543034
-      inSlope: 0.7873095
-      outSlope: 0.7873095
+      time: 0.5266353
+      value: 0.28451383
+      inSlope: 0.48837876
+      outSlope: 0.48837876
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.12829661
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.79218733
+      value: 0.88057196
+      inSlope: 2.5644596
+      outSlope: 2.5644596
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.59099025
-      value: 0.29214537
-      inSlope: 0.11752587
-      outSlope: 0.11752587
+      time: 0.999992
+      value: 0.43461016
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.7176175
-      value: 0.16609356
-      inSlope: -0.32881635
-      outSlope: -0.32881635
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.8786148
-      value: 0.7131125
-      inSlope: 1.638307
-      outSlope: 1.638307
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 1
-    - serializedVersion: 3
-      time: 0.885012
-      value: 0.4735465
-      inSlope: Infinity
-      outSlope: Infinity
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.9016751
-      value: 0.42079753
-      inSlope: -5.906769
-      outSlope: -5.906769
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.91383684
-      value: 0.5087718
-      inSlope: 0.4524739
-      outSlope: 0.4524739
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 1
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.92594415
-      value: 0.50362563
-      inSlope: -0.09635739
-      outSlope: -0.09635739
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 1
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.93067074
-      value: 0.8387507
-      inSlope: -0.41227773
-      outSlope: -0.41227773
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.45464912
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.957939
-      value: 0.65477145
-      inSlope: -3.2213984
-      outSlope: -3.2213984
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.984034
-      value: 0.87801015
-      inSlope: 2.171976
-      outSlope: 2.171976
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1.0044767
-      value: 0.6117454
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  TopBlock: 4
+  MiddleBlock: 3
+  BottomBlock: 7
   Lodes:
   - MinHeight: 0
     MaxHeight: 22
@@ -178,6 +104,3 @@ MonoBehaviour:
     _blockId: 7
     _blockMask: 7
     _scale: 0.2
-  TopBlock: 4
-  MiddleBlock: 3
-  BottomBlock: 7

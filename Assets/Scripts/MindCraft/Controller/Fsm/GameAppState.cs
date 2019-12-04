@@ -13,6 +13,7 @@ using MindCraft.View.Screen;
 using Temari.Common;
 using Unity.Mathematics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace MindCraft.Controller.Fsm
@@ -62,7 +63,12 @@ namespace MindCraft.Controller.Fsm
             var dataCords = GetDataCoords(playerPosition, MapBoundsLookup.DataGeneration);
             var renderCords = GetRenderCoords(playerPosition, MapBoundsLookup.RenderGeneration);
             
+            var dataWatch = new Stopwatch();
+            dataWatch.Start();
             WorldModel.CreateChunkMaps(dataCords);
+            
+            dataWatch.Stop();
+            Debug.LogWarning($"<color=\"aqua\">GameAppState.GenerateWorld() : dataWatch.ElapsedMilliseconds: {dataWatch.ElapsedMilliseconds}</color>");
             WorldRenderer.RenderChunks(renderCords, dataCords);
             
             _lastPlayerCoords = playerPosition;

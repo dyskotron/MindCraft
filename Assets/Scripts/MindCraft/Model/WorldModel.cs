@@ -422,10 +422,7 @@ namespace MindCraft.Model
                 var blockId = changes[x, y, z];
 
                 if (blockId != BlockTypeByte.NONE)
-                {
-                    Debug.LogWarning($"<color=\"aqua\">WorldModel.To1DChangesOnlyDictionary() => blockId:{(BlockTypeId)blockId} x:{x} y:{y} z:{z} </color>");
                     dict[i] = blockId;
-                }
             }
             
             return dict;
