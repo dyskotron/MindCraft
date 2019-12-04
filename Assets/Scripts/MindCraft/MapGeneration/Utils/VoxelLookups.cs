@@ -9,8 +9,9 @@ namespace MindCraft.MapGeneration.Utils
         public const int CHUNK_HEIGHT = 128;
         public const int VOXELS_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT;
         public const int VIEW_DISTANCE = 100;
-        public const float LIGHT_FALL_OFF = 0.3f;
         public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
+        public const float LIGHT_FALL_OFF = 0.3f;
+        public const int MAX_OCTAVES = 10;
         
         //index of chunk in the center of concenated arrays we send to jobs that needs to know about neighbours
         //center chunk is what we care about, rest is just to get surrounding data

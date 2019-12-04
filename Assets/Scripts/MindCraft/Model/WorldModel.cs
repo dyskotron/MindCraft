@@ -14,6 +14,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using Random = Unity.Mathematics.Random;
 
 namespace MindCraft.Model
 {
@@ -50,14 +51,26 @@ namespace MindCraft.Model
         private Dictionary<ChunkCoord, byte[,,]> _playerModifiedMaps = new Dictionary<ChunkCoord, byte[,,]>();
 
         private BiomeDefData _biomeDef;
-
-        #region Getters / Helper methods
+        
+        private NativeArray<float2> _offsets;
 
         [PostConstruct]
         public void PostConstruct()
         {
             _biomeDef = WorldSettings.DefaultBiome;
+            
+            //generate octave offsets
+            var random = new Random();
+            random.InitState(928349238); // TODO fill with seed 
+            _offsets = new NativeArray<float2>(VoxelLookups.MAX_OCTAVES, Allocator.Persistent);
+            _offsets[0] = 0;
+            for (var i = 1; i < VoxelLookups.MAX_OCTAVES; i++)
+            {
+                _offsets[i] = random.NextFloat2(-1f, 1f);
+            }
         }
+        
+        #region Getters / Helper methods
         
         public void Destroy()
         {
@@ -65,6 +78,8 @@ namespace MindCraft.Model
             {
                 mapData.Dispose();
             } 
+            
+            _offsets.Dispose();
         }
 
         public NativeArray<byte> GetMapByChunkCoords(ChunkCoord coords)
@@ -151,7 +166,7 @@ namespace MindCraft.Model
             for (var i = 0; i < coordsList.Count; i++)
             {
                 results[i] = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
-                var handle = CreateMapJob(coordsList[i].X, coordsList[i].Y, _biomeDef, results[i]);
+                var handle = CreateMapJob(coordsList[i].X, coordsList[i].Y, _biomeDef,_offsets, results[i]);
                 jobArray[i] = handle;
             }
             
@@ -195,13 +210,14 @@ namespace MindCraft.Model
             }
         }
 
-        private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDefData biomeDef, NativeArray<byte> map)
+        private JobHandle CreateMapJob(int chunkX, int chunkY, BiomeDefData biomeDef, NativeArray<float2> offsets, NativeArray<byte> map)
         {
             var job = new GenerateMapJob()
                       {
                           ChunkX = chunkX,
                           ChunkY = chunkY,
                           BiomeDef = biomeDef,
+                          Offsets = offsets,
                           Map =  map
                       };
             
@@ -211,19 +227,16 @@ namespace MindCraft.Model
         [BurstCompile(CompileSynchronously = true)]
         public struct GenerateMapJob : IJobParallelFor
         {
-            [ReadOnly]
-            public int ChunkX;
-            [ReadOnly]
-            public int ChunkY;
-            
+            [ReadOnly] public int ChunkX;
+            [ReadOnly] public int ChunkY;
             [ReadOnly] public BiomeDefData BiomeDef;
-
+            [ReadOnly] public NativeArray<float2> Offsets;
             [WriteOnly] public NativeArray<byte> Map;
-            
+
             public void Execute(int index)
             {
                 ArrayHelper.To3D(index, out int x, out int y, out int z);
-                Map[index] = GenerateVoxel(x + ChunkX * VoxelLookups.CHUNK_SIZE, y, z + ChunkY * VoxelLookups.CHUNK_SIZE, BiomeDef);
+                Map[index] = GenerateVoxel(x + ChunkX * VoxelLookups.CHUNK_SIZE, y, z + ChunkY * VoxelLookups.CHUNK_SIZE, BiomeDef, Offsets);
             }
         }
 
@@ -251,22 +264,17 @@ namespace MindCraft.Model
 
             var index = ArrayHelper.To1D(x - coords.X * VoxelLookups.CHUNK_SIZE, y, z - coords.Y * VoxelLookups.CHUNK_SIZE);
             
-            if (map != null)
-                return map[index];
-
-            // ======== BASIC PASS ========
-
-            return GenerateVoxel(x, y, z, _biomeDef);
+            return map[index];
         }
 
         public int GetTerrainHeight(int x, int y)
         {
-            return GetTerrainHeight(x, y, _biomeDef);
+            return GetTerrainHeight(x, y, _biomeDef, _offsets);
         }
 
-        public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef)
+        public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef, NativeArray<float2> offsets)
         {
-            var sampleNoise = Noise.Get2DPerlin(x, y, biomeDef.Octaves, biomeDef.Lunacrity, biomeDef.Persistance, biomeDef.TerrainScale, biomeDef.Offset);
+            var sampleNoise = Noise.Get2DPerlin(x, y, biomeDef.Octaves, biomeDef.Lacunarity, biomeDef.Persistance, biomeDef.Frequency, offsets, biomeDef.Offset);
             var heightFromNoise = Mathf.FloorToInt(VoxelLookups.CHUNK_HEIGHT * sampleNoise);
             return math.clamp(biomeDef.TerrainCurve[heightFromNoise], 0, VoxelLookups.CHUNK_HEIGHT - 1);
         }
@@ -279,8 +287,9 @@ namespace MindCraft.Model
         /// <param name="y"></param>
         /// <param name="z"></param>
         /// <param name="biomeDef"></param>
+        /// <param name="offsets"></param>
         /// <returns></returns>
-        private static byte GenerateVoxel(int x, int y, int z, BiomeDefData biomeDef)
+        private static byte GenerateVoxel(int x, int y, int z, BiomeDefData biomeDef, NativeArray<float2> offsets)
         {
             // ======== STATIC RULES ========
 
@@ -289,7 +298,7 @@ namespace MindCraft.Model
 
             // ======== BASIC PASS ========
 
-            var terrainHeight = GetTerrainHeight(x, z, biomeDef);
+            var terrainHeight = GetTerrainHeight(x, z, biomeDef, offsets);
 
             byte voxelValue = 0;
             //everything higher then terrainHeight is air

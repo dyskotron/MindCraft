@@ -1,25 +1,49 @@
 using System;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.Data.Defs
 {
     public struct BiomeDefData
     {
-        public float TerrainScale;
-        
-        public NativeArray<int> TerrainCurve { get; set; }
-        public int Octaves { get; set; }
-        public float Lunacrity { get; set; }
-        public float Persistance { get; set; }
-        public float Offset { get; set; }
+        public readonly float Frequency;
 
-        public byte TopBlock;
-        public byte MiddleBlock;
-        public byte BottomBlock;
+        public readonly NativeArray<int> TerrainCurve;
+        public readonly int Octaves;
+        public readonly float Lacunarity;
+        public readonly float Persistance;
+        public readonly float2 Offset;
+
+        public readonly byte TopBlock;
+        public readonly byte MiddleBlock;
+        public readonly byte BottomBlock;
         
-        public NativeArray<Lode> Lodes;
+        public readonly NativeArray<Lode> Lodes;
+
+        public BiomeDefData(float frequency,
+                            NativeArray<int> terrainCurve, 
+                            int octaves,
+                            float lacunarity,
+                            float persistance,
+                            float2 offset,
+                            byte topBlock,
+                            byte middleBlock,
+                            byte bottomBlock,
+                            NativeArray<Lode> lodes)
+        {
+            Frequency = frequency;
+            TerrainCurve = terrainCurve;
+            Octaves = octaves;
+            Lacunarity = lacunarity;
+            Persistance = persistance;
+            Offset = offset;
+            TopBlock = topBlock;
+            MiddleBlock = middleBlock;
+            BottomBlock = bottomBlock;
+            Lodes = lodes;
+        }
     }
     
     [CreateAssetMenu(menuName = "Defs/Biome definition")]
@@ -27,21 +51,20 @@ namespace MindCraft.Data.Defs
     {
         public string Name;
 
-        //invert scale as smaller number for bigger terrain seems counterintuitive + scale to human-easy numbers
-        public float TerrainScale => 0.01f / _terrainScale; 
+        public float Frequency => _frequency * 0.01f;
+        [SerializeField] [Range(0, 5f)]
+        private float _frequency = 1;
         
-        [SerializeField][Range(0,5f)]
-        private float _terrainScale;
+        public AnimationCurve TerrainCurve;
 
         [Range(0,10)]
-        public int Octaves;
+        public int Octaves = 3;
         [Range(1f, 10f)]
-        public float Lunacrity;
+        public float Lacunarity = 2.1f;
         [Range(0.1f, 1f)]
-        public float Persistance;
-        [Range(0, 1f)]
-        public float Offset;
-        public AnimationCurve TerrainCurve;
+        public float Persistance = 0.5f;
+        
+        public float2 Offset;
         
         public BlockTypeId TopBlock;
         public BlockTypeId MiddleBlock;
@@ -56,35 +79,32 @@ namespace MindCraft.Data.Defs
 
         private void OnEnable()
         {
-            BiomeDefData = new BiomeDefData();
-            BiomeDefData.TerrainScale = TerrainScale; 
-            BiomeDefData.Octaves = Octaves; 
-            BiomeDefData.Lunacrity = Lunacrity; 
-            BiomeDefData.Persistance = Persistance; 
-            BiomeDefData.Offset = Offset; 
-
-            _lodes = new NativeArray<Lode>(Lodes.Length, Allocator.Persistent);
-
-            //popuplate native array
-            for (var i = 0; i < Lodes.Length; i++)
-            {
-                _lodes[i] = Lodes[i];
-            }
-            
             //sample terrain curve
             _terrainCurveSampled = new NativeArray<int>(VoxelLookups.CHUNK_HEIGHT, Allocator.Persistent);
             for (var i = 0; i < VoxelLookups.CHUNK_HEIGHT; i++)
             {
                 _terrainCurveSampled[i] = (int)(TerrainCurve.Evaluate(i / (float)VoxelLookups.CHUNK_HEIGHT) * VoxelLookups.CHUNK_HEIGHT);
             }
-
-            BiomeDefData.TerrainCurve = _terrainCurveSampled;
-
-            BiomeDefData.TopBlock = (byte)TopBlock;            
-            BiomeDefData.MiddleBlock = (byte)MiddleBlock;            
-            BiomeDefData.BottomBlock = (byte)BottomBlock;            
             
-            BiomeDefData.Lodes = _lodes;
+            //populate lodes array
+            _lodes = new NativeArray<Lode>(Lodes.Length, Allocator.Persistent);
+            for (var i = 0; i < Lodes.Length; i++)
+            {
+                _lodes[i] = Lodes[i];
+            }
+            
+            BiomeDefData = new BiomeDefData(
+                               Frequency,
+                               _terrainCurveSampled,
+                               Octaves,
+                               Lacunarity,
+                               Persistance,
+                               Offset,
+                               (byte)TopBlock,
+                               (byte)MiddleBlock,
+                               (byte)BottomBlock,
+                               _lodes
+                           );
         }
 
         private void OnDisable()
@@ -108,20 +128,20 @@ namespace MindCraft.Data.Defs
 
         public byte BlockMask => (byte) _blockMask;
         
-        [UnityEngine.Range(0,VoxelLookups.CHUNK_HEIGHT)]
+        [Range(0,VoxelLookups.CHUNK_HEIGHT)]
         public int MinHeight;
         
-        [UnityEngine.Range(0,VoxelLookups.CHUNK_HEIGHT)]
+        [Range(0,VoxelLookups.CHUNK_HEIGHT)]
         public int MaxHeight;
 
         public float Scale => 0.01f / _scale; //invert + multiply scale
         
-        [UnityEngine.Range(0,1f)]
+        [Range(0,1f)]
         public float Treshold;
 
         public ScaleTresholdByHeight ScaleTresholdByHeight;
         
-        [UnityEngine.Range(0,1f)]
+        [Range(0,1f)]
         public float Offset;
         
         public byte BlockId => (byte)_blockId;
@@ -133,7 +153,7 @@ namespace MindCraft.Data.Defs
         [SerializeField]
         private BlockMaskId _blockMask;
         
-        [SerializeField][UnityEngine.Range(0,2f)]
+        [SerializeField][Range(0,2f)]
         private float _scale;
     }
 }

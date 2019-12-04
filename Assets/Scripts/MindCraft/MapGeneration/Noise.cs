@@ -5,34 +5,16 @@ namespace MindCraft.MapGeneration
 {
     public static class Noise
     {
-        private static readonly NativeArray<float2> _offsets;
-        private const int MAX_OCTAVES = 10;
-
-        static Noise()
-        {
-            var random = new Random();
-            random.InitState(928349238); // TODO fill with seed 
-            _offsets = new NativeArray<float2>(MAX_OCTAVES, Allocator.Persistent);
-            _offsets[0] = 0;
-            for (var i = 1; i < MAX_OCTAVES; i++)
-            {
-                _offsets[i] = random.NextFloat2(-1f, 1f);
-            }
-        }
-
-        public static float Get2DPerlin(float x, float y, int octaves, float lacunarity, float persistance, float scale, float offset)
+        public static float Get2DPerlin(float x, float y, int octaves, float lacunarity, float persistance, float startFrequency, NativeArray<float2> octaveOffsets, float2 offset)
         {
             float value = 0;
             float amplitude = 1f;
-            float frequency = 1f;
+            float frequency = startFrequency;
             float maxAmplitude = 0;
 
             for (var i = 0; i < octaves; i++)
             {
-                value += amplitude * noise.cnoise( 
-                                                   _offsets[i] + 
-                                                  new float2(+x * scale * frequency + offset,
-                                                             -y * scale * frequency + offset));
+                value += amplitude * noise.cnoise( octaveOffsets[i] +  offset + new float2(x * frequency, y * frequency));
 
                 //keep track of max amplitude
                 maxAmplitude += amplitude;
