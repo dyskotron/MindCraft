@@ -13,13 +13,13 @@ MonoBehaviour:
   m_Name: SnowyMountains
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
   Name: Test
-  _frequency: 1
+  _frequency: 0.91
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: -0.002822876
-      value: 0.1519165
+      time: 0.0039679166
+      value: 0.21670894
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -27,28 +27,46 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.5266353
-      value: 0.28451383
-      inSlope: 0.48837876
-      outSlope: 0.48837876
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.12829661
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.79218733
-      value: 0.88057196
-      inSlope: 2.5644596
-      outSlope: 2.5644596
-      tangentMode: 0
+      time: 0.16684453
+      value: 0.25408304
+      inSlope: -0.00620177
+      outSlope: -0.00620177
+      tangentMode: 1
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.999992
-      value: 0.43461016
-      inSlope: 2
-      outSlope: 2
+      time: 0.7753446
+      value: 0.36403054
+      inSlope: 0.48837876
+      outSlope: 1.2900587
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.12829661
+      outWeight: 0.22248463
+    - serializedVersion: 3
+      time: 0.9141145
+      value: 0.84529704
+      inSlope: 3.8699577
+      outSlope: 1.8497206
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.1217478
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.92550695
+      value: 0.82448196
+      inSlope: 4.595792
+      outSlope: 0.8956763
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.8489489
+      outWeight: 0.5195275
+    - serializedVersion: 3
+      time: 1.0026886
+      value: 0.9909877
+      inSlope: 2.5644596
+      outSlope: 2.5644596
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
@@ -60,7 +78,7 @@ MonoBehaviour:
   Lacunarity: 2.1
   Persistance: 0.578
   Offset:
-    x: 0
+    x: 3.24
     y: 0
   TopBlock: 4
   MiddleBlock: 3
@@ -69,4 +87,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9be936ff65880442eb1868815ca7ef47, type: 2}
   - {fileID: 11400000, guid: f2a276be0752846e1951e64d98a79fe7, type: 2}
   - {fileID: 11400000, guid: ad42e2c0e5e7a44788112772951103c4, type: 2}
+  - {fileID: 11400000, guid: ae3bdfc01909d4b47a17d363fc98d26f, type: 2}
   - {fileID: 11400000, guid: 98012633c031847e4b724f5080842fda, type: 2}

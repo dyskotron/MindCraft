@@ -16,7 +16,7 @@ namespace MindCraft.MapGeneration
 
             for (var i = 0; i < octaves; i++)
             {
-                value += amplitude * noise.cnoise( octaveOffsets[i] +  offset + new float2(x * frequency, y * frequency));
+                value += amplitude * noise.snoise( octaveOffsets[i] +  offset + new float2(x * frequency, y * frequency));
 
                 //keep track of max amplitude
                 maxAmplitude += amplitude;
