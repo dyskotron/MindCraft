@@ -10,57 +10,59 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
-  m_Name: Greenland
+  m_Name: HillySavana
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
-  Name: Greenland
-  _terrainScale: 0.68
-  Octaves: 2
-  Lunacrity: 5.46
-  Persistance: 0.215
-  Offset: 0.248
+  Name: HillySavana
+  _frequency: 0.54
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: -0.0014457703
-      value: 0.2362976
-      inSlope: 0
-      outSlope: 0
+      time: 0.004619539
+      value: 0.27923587
+      inSlope: 0.4512212
+      outSlope: 0.4512212
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.33333334
+      outWeight: 0.051935878
     - serializedVersion: 3
-      time: 0.54811853
-      value: 0.22543034
-      inSlope: 0.7873095
-      outSlope: 0.7873095
+      time: 0.42213798
+      value: 0.40116215
+      inSlope: 0.015978673
+      outSlope: 0.015978673
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.33333334
+      outWeight: 0.25227177
     - serializedVersion: 3
-      time: 0.85939854
-      value: 0.24294901
-      inSlope: 0.92889404
-      outSlope: 0.92889404
+      time: 0.9071633
+      value: 0.49549365
+      inSlope: 0.06403899
+      outSlope: 0.06403899
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.33333334
+      outWeight: 1
     - serializedVersion: 3
-      time: 1.0063415
-      value: 0.2954998
-      inSlope: 2
-      outSlope: 2
+      time: 0.99579763
+      value: 0.5598932
+      inSlope: 0.30723804
+      outSlope: 0.30723804
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
+      inWeight: 0.21244894
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  Octaves: 3
+  Lacunarity: 3.67
+  Persistance: 0.429
+  Offset:
+    x: 0
+    y: 0
   TopBlock: 8
   MiddleBlock: 3
   BottomBlock: 7
-  Lodes: []
+  lodesDef: []

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
   m_Name: SnowyMountains
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
-  Name: Test
+  Name: SnowyMountains
   _frequency: 0.91
   TerrainCurve:
     serializedVersion: 2

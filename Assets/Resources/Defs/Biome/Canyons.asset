@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
+  m_Name: Desert
+  m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
+  Name: Desert
+  _frequency: 0.59
+  TerrainCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.008776559
+      value: 0.9321112
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.2201783
+      value: 0.91518223
+      inSlope: -0.2256428
+      outSlope: -0.2256428
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.62378883
+    - serializedVersion: 3
+      time: 0.3474115
+      value: 0.90241426
+      inSlope: -0.2681365
+      outSlope: -0.2681365
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.4620804
+    - serializedVersion: 3
+      time: 0.5169817
+      value: 0.8207415
+      inSlope: -0.11375606
+      outSlope: -0.11375606
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.6447642
+      value: 0.907367
+      inSlope: -0.036850225
+      outSlope: -0.036850225
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.9578563
+      value: 0.9605122
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.99853516
+      value: 0.95251465
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  Octaves: 3
+  Lacunarity: 2.35
+  Persistance: 0.522
+  Offset:
+    x: 0
+    y: 0
+  TopBlock: 5
+  MiddleBlock: 3
+  BottomBlock: 7
+  lodesDef: []
