@@ -13,11 +13,7 @@ MonoBehaviour:
   m_Name: SnowyMountains
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
   Name: Test
-  _terrainScale: 0.68
-  Octaves: 3
-  Lunacrity: 2.05
-  Persistance: 0.578
-  Offset: 0.56
+  _frequency: 1
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
@@ -60,47 +56,17 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  Octaves: 3
+  Lacunarity: 2.1
+  Persistance: 0.578
+  Offset:
+    x: 0
+    y: 0
   TopBlock: 4
   MiddleBlock: 3
   BottomBlock: 7
-  Lodes:
-  - MinHeight: 0
-    MaxHeight: 22
-    Treshold: 0.46
-    ScaleTresholdByHeight: 0
-    Offset: 0.75
-    _blockId: 5
-    _blockMask: 1
-    _scale: 2
-  - MinHeight: 67
-    MaxHeight: 128
-    Treshold: 0.4
-    ScaleTresholdByHeight: 0
-    Offset: 0.422
-    _blockId: 10
-    _blockMask: 1
-    _scale: 0.33
-  - MinHeight: 74
-    MaxHeight: 128
-    Treshold: 0.505
-    ScaleTresholdByHeight: 2
-    Offset: 0.816
-    _blockId: 17
-    _blockMask: 7
-    _scale: 0.09
-  - MinHeight: 80
-    MaxHeight: 128
-    Treshold: 0.56
-    ScaleTresholdByHeight: 0
-    Offset: 0.81
-    _blockId: 18
-    _blockMask: 7
-    _scale: 1.48
-  - MinHeight: 54
-    MaxHeight: 128
-    Treshold: 0
-    ScaleTresholdByHeight: 0
-    Offset: 0.816
-    _blockId: 7
-    _blockMask: 7
-    _scale: 0.2
+  lodesDef:
+  - {fileID: 11400000, guid: 9be936ff65880442eb1868815ca7ef47, type: 2}
+  - {fileID: 11400000, guid: f2a276be0752846e1951e64d98a79fe7, type: 2}
+  - {fileID: 11400000, guid: ad42e2c0e5e7a44788112772951103c4, type: 2}
+  - {fileID: 11400000, guid: 98012633c031847e4b724f5080842fda, type: 2}

@@ -274,7 +274,7 @@ namespace MindCraft.Model
 
         public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef, NativeArray<float2> offsets)
         {
-            var sampleNoise = Noise.Get2DPerlin(x, y, biomeDef.Octaves, biomeDef.Lacunarity, biomeDef.Persistance, biomeDef.Frequency, offsets, biomeDef.Offset);
+            var sampleNoise = Noise.GetHeight(x, y, biomeDef.Octaves, biomeDef.Lacunarity, biomeDef.Persistance, biomeDef.Frequency, offsets, biomeDef.Offset);
             var heightFromNoise = Mathf.FloorToInt(VoxelLookups.CHUNK_HEIGHT * sampleNoise);
             return math.clamp(biomeDef.TerrainCurve[heightFromNoise], 0, VoxelLookups.CHUNK_HEIGHT - 1);
         }
@@ -327,18 +327,11 @@ namespace MindCraft.Model
                 
                 if (y > lode.MinHeight && y < lode.MaxHeight)
                 {
-                    var treshold = lode.Treshold;
-                    switch (lode.ScaleTresholdByHeight)
-                    {
-                        case ScaleTresholdByHeight.HighestTop:
-                            treshold *= (y - lode.MinHeight) / (float) lode.HeightRange;
-                            break;
-                        case ScaleTresholdByHeight.HighestBottom:
-                            treshold *= (lode.MaxHeight - y) / (float) lode.HeightRange;
-                            break;
-                    }
-
-                    if (Noise.Get3DPerlin(x, y, z, lode.Offset, lode.Scale, treshold))
+                    var treshold = biomeDef.GetLodeTreshold(i, y);
+                    
+                    //if (Noise.Get3DPerlin(x, y, z, lode.Offset, lode.Frequency, treshold))
+                    //TODO make noise 2d/3d lode option
+                    if (Noise.GetLodePresence(lode.Algorithm, x, y, z, lode.Offset, lode.Frequency, treshold))
                     {
                         voxelValue = lode.BlockId;
                         lodesPassResolved = true;
@@ -365,7 +358,6 @@ namespace MindCraft.Model
                         break;
                 }
             }
-
 
             return voxelValue;
         }
