@@ -1,6 +1,7 @@
 using System;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -34,8 +35,7 @@ namespace MindCraft.Data.Defs
         
         public LodeAlgorithm Algorithm;
         
-        [Range(0,1f)]
-        public float Offset;
+        public float3 Offset;
     }
     
     public struct LodeDefData
@@ -51,9 +51,8 @@ namespace MindCraft.Data.Defs
         public readonly int MaxHeight;
         
         public readonly LodeAlgorithm Algorithm;
-
         
-        public readonly float Offset;
+        public readonly float3 Offset;
         
         public LodeDefData(LodeDef lodeDef)
         {

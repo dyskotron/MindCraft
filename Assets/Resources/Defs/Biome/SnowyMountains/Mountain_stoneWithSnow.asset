@@ -30,14 +30,14 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.21950051
-      value: 0.6401433
-      inSlope: -2.3161743
-      outSlope: -2.3161743
+      time: 0.45009995
+      value: 0.64600104
+      inSlope: -4.290619
+      outSlope: -4.290619
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.07538866
+      outWeight: 0.06807036
     - serializedVersion: 3
       time: 0.6832914
       value: 0.028037846
@@ -51,4 +51,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   Algorithm: 2
-  Offset: 0.321
+  Offset:
+    x: 0
+    y: 0
+    z: 0

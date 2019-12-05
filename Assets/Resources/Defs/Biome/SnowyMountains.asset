@@ -18,58 +18,40 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.0039679166
-      value: 0.21670894
-      inSlope: 0
-      outSlope: 0
+      time: 0.00055757724
+      value: 0.2969702
+      inSlope: 0.00049013365
+      outSlope: 0.00049013365
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
+      outWeight: 0.1681751
+    - serializedVersion: 3
+      time: 0.2663002
+      value: 0.29411268
+      inSlope: 0.010815117
+      outSlope: 0.21066342
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.17234103
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.16684453
-      value: 0.25408304
-      inSlope: -0.00620177
-      outSlope: -0.00620177
+      time: 0.5992582
+      value: 0.36927956
+      inSlope: 0.06987235
+      outSlope: 2.6358957
       tangentMode: 1
       weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
+      inWeight: 0.07554794
+      outWeight: 0.068323985
     - serializedVersion: 3
-      time: 0.7753446
-      value: 0.36403054
-      inSlope: 0.48837876
-      outSlope: 1.2900587
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.12829661
-      outWeight: 0.22248463
-    - serializedVersion: 3
-      time: 0.9141145
-      value: 0.84529704
-      inSlope: 3.8699577
-      outSlope: 1.8497206
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.1217478
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.92550695
-      value: 0.82448196
-      inSlope: 4.595792
-      outSlope: 0.8956763
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.8489489
-      outWeight: 0.5195275
-    - serializedVersion: 3
-      time: 1.0026886
-      value: 0.9909877
-      inSlope: 2.5644596
-      outSlope: 2.5644596
+      time: 0.90398836
+      value: 0.9966869
+      inSlope: 2.914905
+      outSlope: 2.914905
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
+      inWeight: 0.06038622
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2

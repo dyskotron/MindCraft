@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BlockId: 7
   BlockMask: 7
-  Frequency: 23.9
-  MinHeight: 40
+  Frequency: 14.7
+  MinHeight: 45
   MaxHeight: 128
   TresholdByY:
     serializedVersion: 2
@@ -30,8 +30,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.24954903
-      value: 0.7252233
+      time: 0.3755256
+      value: 0.74327445
       inSlope: -4.4538717
       outSlope: -4.4538717
       tangentMode: 0
@@ -39,20 +39,11 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.061190315
     - serializedVersion: 3
-      time: 0.39922976
-      value: 0.30248743
+      time: 0.455199
+      value: 0.004818976
       inSlope: -3.773412
       outSlope: -3.773412
       tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.40052646
-      value: -0.0035997173
-      inSlope: -1.522086
-      outSlope: Infinity
-      tangentMode: 97
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
@@ -60,4 +51,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   Algorithm: 0
-  Offset: 0
+  Offset:
+    x: 0
+    y: 0
+    z: 0

@@ -29,27 +29,19 @@ namespace MindCraft.MapGeneration
             return 0.5f + 0.5f * value / maxAmplitude;
         }
 
-        public static bool GetLodePresence(LodeAlgorithm algorithm, float x, float y, float z, float offset, float scale, float threshold)
+        public static bool GetLodePresence(LodeAlgorithm algorithm, float x, float y, float z, float3 offset, float scale, float threshold)
         {
 
             switch (algorithm)
             {
                 case LodeAlgorithm.Perlin2d:
-                    return threshold < (0.5f + 0.5f * noise.cnoise(new float2(x * scale + offset, z * scale + offset)));
-                    break;
+                    return threshold < (0.5f + 0.5f * noise.cnoise(offset.xy + new float2(x, z) * scale));
                 case LodeAlgorithm.Perlin3d:
-                    return threshold < (0.5f + 0.5f * noise.cnoise(new float3(x * scale + offset,
-                                                                              y * scale + offset,
-                                                                              z * scale + offset)));
-                    break;
+                    return threshold < (0.5f + 0.5f * noise.cnoise(offset + new float3(x, y, z) * scale));
                 case LodeAlgorithm.Simplex2d:
-                    return threshold < (0.5f + 0.5f * noise.snoise(new float2(x * scale + offset, z * scale + offset)));
-                    break;
+                    return threshold < (0.5f + 0.5f * noise.snoise(offset.xy + new float2(x, z) * scale));
                 case LodeAlgorithm.Simplex3d:
-                    return threshold < (0.5f + 0.5f * noise.snoise(new float3(x * scale + offset,
-                                                                              y * scale + offset,
-                                                                              z * scale + offset)));
-                    break;
+                    return threshold < (0.5f + 0.5f * noise.snoise(offset + new float3(x, y, z) * scale));
                 default:
                     throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null);
             }
