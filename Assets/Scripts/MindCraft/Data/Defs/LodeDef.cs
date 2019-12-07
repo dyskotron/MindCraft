@@ -31,7 +31,7 @@ namespace MindCraft.Data.Defs
         [Range(0,VoxelLookups.CHUNK_HEIGHT)]
         public int MaxHeight;
 
-        public AnimationCurve TresholdByY;
+        [FormerlySerializedAs("TresholdByY")] public AnimationCurve ThresholdByY;
         
         public LodeAlgorithm Algorithm;
         

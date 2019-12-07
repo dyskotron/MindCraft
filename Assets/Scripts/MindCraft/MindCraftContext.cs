@@ -71,6 +71,7 @@ namespace MindCraft
             //Data
             injectionBinder.Bind<IWorldSettings>().To<WorldSettings>().ToSingleton();
             injectionBinder.Bind<IWorldRenderer>().To<WorldRenderer>().ToSingleton();
+            injectionBinder.Bind<IBiomeDefs>().To<BiomeDefs>().ToSingleton();
             injectionBinder.Bind<IBlockDefs>().To<BlockDefs>().ToSingleton();
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
 
@@ -103,6 +104,7 @@ namespace MindCraft
             injectionBinder.Unbind<IWorldModel>();
             injectionBinder.Unbind<IWorldRenderer>();
             injectionBinder.Unbind<IBlockDefs>();
+            injectionBinder.Unbind<IBiomeDefs>();
             injectionBinder.Unbind<TextureLookup>();
         }
     }

@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b53fdd9027314a75913e6adecb11f770, type: 3}
   m_Name: Mountain_stoneWithGrass
   m_EditorClassIdentifier: 
-  BlockId: 8
+  BlockId: 7
   BlockMask: 1
   Frequency: 14.7
   MinHeight: 45
-  MaxHeight: 60
-  TresholdByY:
+  MaxHeight: 128
+  ThresholdByY:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -30,8 +30,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.3981086
-      value: 0.70299125
+      time: 0.49998474
+      value: 0.40235585
       inSlope: -4.4538717
       outSlope: -4.4538717
       tangentMode: 0
@@ -39,8 +39,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.061190315
     - serializedVersion: 3
-      time: 0.44726443
-      value: -0.0018948913
+      time: 0.55041385
+      value: -0.011095941
       inSlope: -3.773412
       outSlope: -3.773412
       tangentMode: 1

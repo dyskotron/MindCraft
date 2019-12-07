@@ -17,12 +17,12 @@ MonoBehaviour:
   Frequency: 11.1
   MinHeight: 45
   MaxHeight: 128
-  TresholdByY:
+  ThresholdByY:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: -0.00045756996
-      value: 0.9959142
+      value: 0.9977237
       inSlope: 0
       outSlope: Infinity
       tangentMode: 101
@@ -31,7 +31,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 0.52000713
-      value: 0.99917114
+      value: 1.0009872
       inSlope: -2.3161743
       outSlope: -2.3161743
       tangentMode: 0
@@ -39,7 +39,16 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.07538866
     - serializedVersion: 3
-      time: 0.8882233
+      time: 0.52194047
+      value: 0.7213453
+      inSlope: -2.7071924
+      outSlope: -2.7071924
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.8240143
       value: 0.08931433
       inSlope: -0.15832677
       outSlope: Infinity

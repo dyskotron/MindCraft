@@ -1,3 +1,5 @@
+using System;
+
 namespace MindCraft.Data
 {
     public enum BlockTypeId
@@ -30,6 +32,8 @@ namespace MindCraft.Data
     
     public static class BlockTypeByte
     {
+        public static readonly int TypeCount = 5;// Enum.GetValues(typeof(BlockTypeId)).Length;
+        
         public const byte NONE = (byte)BlockTypeId.None;
         public const byte AIR = (byte)BlockTypeId.Air;
         public const byte GREY_STONE = (byte)BlockTypeId.GreyStone;

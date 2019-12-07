@@ -17,7 +17,7 @@ MonoBehaviour:
   Frequency: 11.1
   MinHeight: 45
   MaxHeight: 128
-  TresholdByY:
+  ThresholdByY:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -30,8 +30,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.45009995
-      value: 0.64600104
+      time: 0.51607966
+      value: 0.56803083
       inSlope: -4.290619
       outSlope: -4.290619
       tangentMode: 0

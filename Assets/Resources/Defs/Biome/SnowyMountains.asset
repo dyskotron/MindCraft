@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
   m_Name: SnowyMountains
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
-  Name: SnowyMountains
+  Id: 0
+  Temperature: 0.342
   _frequency: 0.91
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.00055757724
-      value: 0.2969702
+      time: -0.00084373145
+      value: 0.37905765
       inSlope: 0.00049013365
       outSlope: 0.00049013365
       tangentMode: 0
@@ -28,7 +29,7 @@ MonoBehaviour:
       outWeight: 0.1681751
     - serializedVersion: 3
       time: 0.2663002
-      value: 0.29411268
+      value: 0.41729173
       inSlope: 0.010815117
       outSlope: 0.21066342
       tangentMode: 1
@@ -37,7 +38,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.5992582
-      value: 0.36927956
+      value: 0.5014663
       inSlope: 0.06987235
       outSlope: 2.6358957
       tangentMode: 1
@@ -65,9 +66,9 @@ MonoBehaviour:
   TopBlock: 4
   MiddleBlock: 3
   BottomBlock: 7
-  lodesDef:
+  lodeDefs:
   - {fileID: 11400000, guid: 9be936ff65880442eb1868815ca7ef47, type: 2}
   - {fileID: 11400000, guid: f2a276be0752846e1951e64d98a79fe7, type: 2}
   - {fileID: 11400000, guid: ad42e2c0e5e7a44788112772951103c4, type: 2}
-  - {fileID: 11400000, guid: ae3bdfc01909d4b47a17d363fc98d26f, type: 2}
+  - {fileID: 11400000, guid: 3fd00dd592eb746b58f707fe14eb63ba, type: 2}
   - {fileID: 11400000, guid: 98012633c031847e4b724f5080842fda, type: 2}

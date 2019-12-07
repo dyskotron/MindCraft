@@ -41,7 +41,7 @@ namespace MindCraft.Controller.Fsm
 
             //create player
             _playerView = AssetManager.GetGameObject<PlayerView>(ResourcePath.PLAYER_PREFAB);
-            _playerView.transform.position = new Vector3(0f, WorldModel.GetTerrainHeight(0, 0) + 5, 0f);
+            _playerView.transform.position = new Vector3(0f, VoxelLookups.CHUNK_HEIGHT - 10, 0f);
 
             //Generate World
             var watch = new Stopwatch();

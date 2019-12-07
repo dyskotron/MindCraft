@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: Mountain_stone
   m_EditorClassIdentifier: 
   BlockId: 7
-  BlockMask: 7
+  BlockMask: 2
   Frequency: 14.7
   MinHeight: 45
   MaxHeight: 128
-  TresholdByY:
+  ThresholdByY:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
@@ -30,8 +30,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.3755256
-      value: 0.74327445
+      time: 0.49998474
+      value: 0.40235585
       inSlope: -4.4538717
       outSlope: -4.4538717
       tangentMode: 0
@@ -39,8 +39,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.061190315
     - serializedVersion: 3
-      time: 0.455199
-      value: 0.004818976
+      time: 0.55041385
+      value: -0.011095941
       inSlope: -3.773412
       outSlope: -3.773412
       tangentMode: 1
