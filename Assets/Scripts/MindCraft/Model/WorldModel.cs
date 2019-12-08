@@ -7,6 +7,7 @@ using MindCraft.Data;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
+using MindCraft.Model.Jobs;
 using MindCraft.View.Chunk;
 using Unity.Collections;
 using Unity.Jobs;
@@ -165,11 +166,27 @@ namespace MindCraft.Model
         {
             var jobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
             var results = new NativeArray<byte>[coordsList.Count];
+            
+            var biomes = new NativeArray<byte>[coordsList.Count];
+            var heights = new NativeArray<int>[coordsList.Count];
 
             for (var i = 0; i < coordsList.Count; i++)
             {
                 results[i] = new NativeArray<byte>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
-                var job = new GenerateMapJob()
+                biomes[i] = new NativeArray<byte>(VoxelLookups.CHUNK_SIZE_POW2, Allocator.Persistent);
+                heights[i] = new NativeArray<int>(VoxelLookups.CHUNK_SIZE_POW2, Allocator.Persistent);
+
+                
+                for (int j = 0; j < VoxelLookups.CHUNK_SIZE_POW2; j++)
+                {
+                    var x = Mathf.FloorToInt(j / VoxelLookups.CHUNK_SIZE);
+                    var z = j % VoxelLookups.CHUNK_SIZE;
+
+                    biomes[i][j] = GenerationHelper.GetBiomeForColumn(x + coordsList[i].X * VoxelLookups.CHUNK_SIZE ,z + coordsList[i].Y * VoxelLookups.CHUNK_SIZE, _biomeDefs, _offsets, _terrainCurvesSampled, out int height);
+                    heights[i][j] = height;
+                }
+                
+                var generateDataJob = new GenerateChunkDataJob()
                           {
                               ChunkX = coordsList[i].X,
                               ChunkY = coordsList[i].Y,
@@ -178,10 +195,12 @@ namespace MindCraft.Model
                               TerrainCurves = _terrainCurvesSampled,
                               Lodes = _lodes,
                               LodeTresholds = _lodeThresholds,
-                              Map = results[i]
+                              Map = results[i],
+                              Biomes = biomes[i],
+                              Heights = heights[i]
                           };
 
-                jobArray[i] =  job.Schedule(VoxelLookups.VOXELS_PER_CHUNK, 64);
+                jobArray[i] =  generateDataJob.Schedule(VoxelLookups.VOXELS_PER_CHUNK, 64);
             }
 
             JobHandle.CompleteAll(jobArray);

@@ -6,6 +6,7 @@ namespace MindCraft.MapGeneration.Utils
     public static class VoxelLookups
     {
         public const int CHUNK_SIZE = 8; 
+        public const int CHUNK_SIZE_POW2 = CHUNK_SIZE * CHUNK_SIZE; 
         public const int CHUNK_HEIGHT = 128;
         public const int VOXELS_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT;
         public const int VIEW_DISTANCE = 100;
