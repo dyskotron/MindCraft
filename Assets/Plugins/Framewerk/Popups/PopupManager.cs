@@ -5,7 +5,6 @@ using strange.extensions.injector.api;
 using strange.extensions.injector.impl;
 using strange.extensions.promise.api;
 using strange.extensions.promise.impl;
-using Temari.Common;
 using UnityEngine;
 
 namespace Framewerk.Popups

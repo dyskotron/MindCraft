@@ -1,21 +1,23 @@
 using System;
 using Framewerk;
+using Framewerk.StrangeCore;
 using MindCraft.Data;
 using MindCraft.Data.Defs;
 using MindCraft.Model;
 using MindCraft.Physics;
 using MindCraft.View;
 using strange.framework.api;
-using Temari.Common;
 using UnityEngine;
 
 namespace MindCraft.Controller
 {
-    public interface IPlayerController
+    public interface IPlayerController : IDestroyable
     {
         void Init(VoxelRigidBody playerBody, Transform camera, Transform pick);
         void SetEnabled(bool value);
-        void Destroy();
+        Vector3 PlayerPosition { get; }
+        float Yaw { get; }
+        float CameraPitch { get; }
     }
 
     public class PlayerController : IPlayerController
@@ -27,10 +29,15 @@ namespace MindCraft.Controller
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public IWorldRaycaster WorldRaycaster { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
+        [Inject] public ISaveLoadManager SaveLoadManager { get; set; }
         
         [Inject] public BlockTypeSelectedSignal BlockTypeSelectedSignal { get; set; }
 
         public bool Enabled => _enabled;
+        public Vector3 PlayerPosition => _playerBody.Transform.position;
+        public float Yaw => _yaw;
+        public float CameraPitch => _cameraPitch;
+
         private bool _enabled;
 
         private PlayerSettings _playerSettings;
@@ -46,10 +53,11 @@ namespace MindCraft.Controller
         private VoxelRigidBody _playerBody;
         private Transform _camera;
         
-        private float yaw = 0f;
-        private float _cameraPitchpitch = 0f;
-        private float minPitch = -90f;
-        private float maxPitch = 90f;
+        private float _yaw = 0f;
+        
+        private float _cameraPitch = 0f;
+        private float _minPitch = -90f;
+        private float _maxPitch = 90f;
 
         [PostConstruct]
         public void PostConstruct()
@@ -62,6 +70,15 @@ namespace MindCraft.Controller
             _playerBody = playerBody;
             _pick = pick;
             _camera = camera;
+            
+            if (SaveLoadManager.LoadedGame.IsLoaded)
+            {
+                _yaw = SaveLoadManager.LoadedGame.Yaw;
+                _cameraPitch = SaveLoadManager.LoadedGame.CameraPitch;
+                
+                _playerBody.Transform.rotation = Quaternion.Euler(_yaw * Vector3.up);
+                _camera.transform.localEulerAngles = new Vector3(_cameraPitch, 0f, 0f);
+            }
 
             SetEnabled(true);
         }
@@ -110,10 +127,12 @@ namespace MindCraft.Controller
             if (_jumpRequest)
                 Jump();
 
-            _playerBody.Transform.Rotate(_mouseHorizontal * _playerSettings.LookSpeed * Vector3.up);
-            _cameraPitchpitch -= _mouseVertical * _playerSettings.LookSpeed;
-            _cameraPitchpitch = Mathf.Clamp(_cameraPitchpitch, minPitch, maxPitch); 
-            _camera.transform.localEulerAngles = new Vector3(_cameraPitchpitch, 0f, 0f);
+            _yaw += _mouseHorizontal * _playerSettings.LookSpeed;
+            _cameraPitch -= _mouseVertical * _playerSettings.LookSpeed;
+            _cameraPitch = Mathf.Clamp(_cameraPitch, _minPitch, _maxPitch); 
+            
+            _playerBody.Transform.rotation = Quaternion.Euler(_yaw * Vector3.up);
+            _camera.transform.localEulerAngles = new Vector3(_cameraPitch, 0f, 0f);
 
             //walk / sprint
             _playerBody.Velocity = ((_playerBody.Transform.forward * _vertical) + (_playerBody.Transform.right * _horizontal)) * Time.deltaTime * _moveSpeed;
@@ -124,8 +143,7 @@ namespace MindCraft.Controller
             _playerBody.VerticalMomentum = _playerSettings.JumpForce;
             _jumpRequest = false;
         }
-
-
+        
         /// TODO: separate controller just for block build / erase blocks
         
         [Inject] public IInventoryModel InventoryModel { get; set; }

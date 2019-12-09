@@ -2,8 +2,8 @@ using Framewerk.UI;
 using MindCraft.Controller;
 using MindCraft.Data;
 using MindCraft.Physics;
+using Plugins.Framewerk;
 using strange.extensions.mediation.impl;
-using Temari.Common;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -36,15 +36,15 @@ public class PlayerMediator : ExtendedMediator
                                             WorldSettings.PlayerSettings.Height, 
                                             View.transform);
         //Register player to Physics
-        Physics.AddRigidBody(_playerBody);
+        Physics.AddRigidBody(_playerBody); 
             
-        //Start PlayerController
-        PlayerController.Init(_playerBody, View.CameraContainer, View.PlayerPick);
-        
         //Reparent the camera under player
         var cameraTransform = ViewConfig.Camera3d.transform;
         cameraTransform.SetParent(View.CameraContainer);
         cameraTransform.localPosition = Vector3.zero;
+        
+        //Start PlayerController
+        PlayerController.Init(_playerBody, View.CameraContainer, View.PlayerPick);
     }
     
 #if UNITY_EDITOR

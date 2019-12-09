@@ -221,6 +221,22 @@ namespace MindCraft.Common.Serialization
             }
         }
         
+        // Position / Rotation
+        public void Write(Vector3 value)
+        {
+            Write(value.x);
+            Write(value.y);
+            Write(value.z);
+        }
+        
+        public void Write(Quaternion value)
+        {
+            Write(value.x);
+            Write(value.y);
+            Write(value.z);
+            Write(value.w);
+        }
+        
         // Custom
         public void Write(IBinarySerializable data)
         {

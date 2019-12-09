@@ -294,8 +294,6 @@ namespace MindCraft.Model
             WorldModelHelper.GetLocalXyzFromWorldPosition(position, out int x, out int y, out int z);
             var coords = WorldModelHelper.GetChunkCoordsFromWorldPosition(position);
 
-
-
             return _heights[coords][x * VoxelLookups.CHUNK_SIZE + z];
         }
 
@@ -303,7 +301,6 @@ namespace MindCraft.Model
 
         public void Serialize(BinaryWriter writer)
         {
-            writer.Begin();
             writer.Write(_playerModifiedMaps.Count);
 
             foreach (var playerModifiedMap in _playerModifiedMaps)
@@ -319,8 +316,6 @@ namespace MindCraft.Model
                     writer.Write(keyValuePair.Value);
                 }
             }
-
-            writer.End();
         }
 
         public void Deserialize(BinaryReader reader)

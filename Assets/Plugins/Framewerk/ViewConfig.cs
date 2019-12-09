@@ -1,9 +1,8 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace Temari.Common
+namespace Plugins.Framewerk
 {
-    public class ViewConfig : MonoBehaviour
+    public partial class ViewConfig : MonoBehaviour
     {
         public Camera Camera3d;
         public Camera UICamera;
