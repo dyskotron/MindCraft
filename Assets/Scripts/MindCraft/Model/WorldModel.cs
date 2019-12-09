@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Framewerk.StrangeCore;
 using MindCraft.Common;
@@ -164,7 +163,8 @@ namespace MindCraft.Model
         /// <param name="coordsList"> List of Chunk coordinates></param>
         public void CreateChunkMaps(List<ChunkCoord> coordsList)
         {
-            var jobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
+            var biomeJobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
+            var generateJobArray = new NativeArray<JobHandle>(coordsList.Count, Allocator.Temp);
             var results = new NativeArray<byte>[coordsList.Count];
             
             var biomes = new NativeArray<byte>[coordsList.Count];
@@ -177,22 +177,34 @@ namespace MindCraft.Model
                 heights[i] = new NativeArray<int>(VoxelLookups.CHUNK_SIZE_POW2, Allocator.Persistent);
 
                 
+                /*
                 for (int j = 0; j < VoxelLookups.CHUNK_SIZE_POW2; j++)
                 {
                     var x = Mathf.FloorToInt(j / VoxelLookups.CHUNK_SIZE);
                     var z = j % VoxelLookups.CHUNK_SIZE;
 
                     biomes[i][j] = GenerationHelper.GetBiomeForColumn(x + coordsList[i].X * VoxelLookups.CHUNK_SIZE ,z + coordsList[i].Y * VoxelLookups.CHUNK_SIZE, _biomeDefs, _offsets, _terrainCurvesSampled, out int height);
-                    heights[i][j] = height;
-                }
+                    heights[i][j] = height; 
+                }*/
+                
+                var biomeAndHeightJob = new GetBiomeAndHeightJob()
+                                      {
+                                          ChunkX = coordsList[i].X,
+                                          ChunkY = coordsList[i].Y,
+                                          BiomeDefs = _biomeDefs,
+                                          Offsets = _offsets,
+                                          TerrainCurves = _terrainCurvesSampled,
+                                          Biomes = biomes[i],
+                                          Heights = heights[i]
+                                      };
+
+                var handle = biomeAndHeightJob.Schedule(VoxelLookups.CHUNK_SIZE_POW2, 64);
                 
                 var generateDataJob = new GenerateChunkDataJob()
                           {
                               ChunkX = coordsList[i].X,
                               ChunkY = coordsList[i].Y,
                               BiomeDefs = _biomeDefs,
-                              Offsets = _offsets,
-                              TerrainCurves = _terrainCurvesSampled,
                               Lodes = _lodes,
                               LodeTresholds = _lodeThresholds,
                               Map = results[i],
@@ -200,11 +212,11 @@ namespace MindCraft.Model
                               Heights = heights[i]
                           };
 
-                jobArray[i] =  generateDataJob.Schedule(VoxelLookups.VOXELS_PER_CHUNK, 64);
+                generateJobArray[i] =  generateDataJob.Schedule(VoxelLookups.VOXELS_PER_CHUNK, 64, handle);
             }
 
-            JobHandle.CompleteAll(jobArray);
-            jobArray.Dispose();
+            JobHandle.CompleteAll(generateJobArray);
+            generateJobArray.Dispose();
 
             for (var i = 0; i < results.Length; i++)
             {

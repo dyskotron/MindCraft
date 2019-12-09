@@ -255,7 +255,6 @@ namespace MindCraft.MapGeneration
         {
             // ======== BIOME PASS ========
 
-            BiomeDefData biome = biomeDefs[0];
             int biomeId = 0;
 
             float closest = 300;
@@ -263,31 +262,16 @@ namespace MindCraft.MapGeneration
             float totalHeight = 0;
             float totalWeight = 0;
 
-            //hardcoded noise function to get biome temperature
-            var temperature = 0.5f + noise.snoise(new float2(x * 0.0012523f, z * 0.000932f)) / 2f;
-            temperature += 0.1f * (0.5f + noise.snoise(new float2(x * 0.042523f, z * 0.03932f)) / 2f);
-            temperature /= 1.1f;
-            
-            //var cellular = noise.cellular2x2(new float2(x * 0.022523f, z * 0.0232f));
-            //var temperature = cellular.x;
-            //var temperature = 0.5f + noise.cnoise(noise.cellular(new float2(x * 0.0062523f , z  * 0.00432f ))) / 2f;
-
-            //var id = (byte) math.max((cellular.y * (BlockTypeByte.TypeCount - 1)), 1);
-            //id = (byte)math.clamp(id, 2, BlockTypeByte.TypeCount - 1);
-
-            //return y > temperature * VoxelLookups.CHUNK_HEIGHT ? BlockTypeByte.AIR : BlockTypeByte.STONE;
-
-            float difference = 0;
+            //noise function to get biome temperature
+            //todo parametrize & make tweakable in world settings
+            var temperature = noise.snoise(new float2(x * 0.0012523f, z * 0.000932f)) / 2f;
+            temperature += 0.1f * noise.snoise(new float2(x * 0.042523f, z * 0.03932f)) / 2f;
+            temperature = math.unlerp(-1.1f, 1.1f, temperature);
 
             for (var i = 0; i < biomeDefs.Length; i++)
             {
                 var currentDef = biomeDefs[i];
-                //var temperatureMap = (noise.cellular(new float2(x * currentDef.Frequency, z * currentDef.Frequency)));
-                //var temperature = 0.5f + temperatureMap.x / 2;
-
-                // var biomeTemperature = i / (float) biomeDefs.Length;
-
-                difference = math.abs(currentDef.Temperature - temperature);
+                var difference = math.abs(currentDef.Temperature - temperature);
 
                 var weight = (float) Math.Pow(biomeDefs.Length - math.min(difference, biomeDefs.Length), 50);
 
@@ -297,14 +281,12 @@ namespace MindCraft.MapGeneration
                 if (difference < closest)
                 {
                     closest = difference;
-                    biome = currentDef;
                     biomeId = i;
                 }
             }
 
             terrainHeight = Mathf.FloorToInt(totalHeight / totalWeight);
-            //var terrainHeight = GetTerrainHeight(x, z, biome, offsets, terrainCurves);
-
+            
             return (byte)biomeId;
         }
         
