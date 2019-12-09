@@ -3,10 +3,9 @@ using MindCraft.Data;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Mathematics;
 using UnityEngine;
 
-namespace MindCraft.View.Chunk
+namespace MindCraft.View.Chunk.Jobs
 {
     public struct CalculateLightRaysJob : IJob
     {

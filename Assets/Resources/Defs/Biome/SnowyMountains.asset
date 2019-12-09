@@ -12,172 +12,63 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
   m_Name: SnowyMountains
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
-  Name: Test
-  _terrainScale: 0.68
+  Id: 0
+  Temperature: 0.342
+  _frequency: 0.91
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: -0.0014457703
-      value: 0.2362976
-      inSlope: 0
-      outSlope: 0
+      time: -0.00084373145
+      value: 0.37905765
+      inSlope: 0.00049013365
+      outSlope: 0.00049013365
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
+      outWeight: 0.1681751
+    - serializedVersion: 3
+      time: 0.2663002
+      value: 0.41729173
+      inSlope: 0.010815117
+      outSlope: 0.21066342
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.17234103
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.54811853
-      value: 0.22543034
-      inSlope: 0.7873095
-      outSlope: 0.7873095
+      time: 0.5992582
+      value: 0.5014663
+      inSlope: 0.06987235
+      outSlope: 2.6358957
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.07554794
+      outWeight: 0.068323985
+    - serializedVersion: 3
+      time: 0.90398836
+      value: 0.9966869
+      inSlope: 2.914905
+      outSlope: 2.914905
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
+      inWeight: 0.06038622
       outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.59099025
-      value: 0.29214537
-      inSlope: 0.11752587
-      outSlope: 0.11752587
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.7176175
-      value: 0.16609356
-      inSlope: -0.32881635
-      outSlope: -0.32881635
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.8786148
-      value: 0.7131125
-      inSlope: 1.638307
-      outSlope: 1.638307
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 1
-    - serializedVersion: 3
-      time: 0.885012
-      value: 0.4735465
-      inSlope: Infinity
-      outSlope: Infinity
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.9016751
-      value: 0.42079753
-      inSlope: -5.906769
-      outSlope: -5.906769
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.91383684
-      value: 0.5087718
-      inSlope: 0.4524739
-      outSlope: 0.4524739
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 1
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.92594415
-      value: 0.50362563
-      inSlope: -0.09635739
-      outSlope: -0.09635739
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 1
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.93067074
-      value: 0.8387507
-      inSlope: -0.41227773
-      outSlope: -0.41227773
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.45464912
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.957939
-      value: 0.65477145
-      inSlope: -3.2213984
-      outSlope: -3.2213984
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.984034
-      value: 0.87801015
-      inSlope: 2.171976
-      outSlope: 2.171976
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1.0044767
-      value: 0.6117454
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  Lodes:
-  - MinHeight: 0
-    MaxHeight: 22
-    Treshold: 0.46
-    ScaleTresholdByHeight: 0
-    Offset: 0.75
-    _blockId: 5
-    _blockMask: 1
-    _scale: 2
-  - MinHeight: 67
-    MaxHeight: 128
-    Treshold: 0.4
-    ScaleTresholdByHeight: 0
-    Offset: 0.422
-    _blockId: 10
-    _blockMask: 1
-    _scale: 0.33
-  - MinHeight: 74
-    MaxHeight: 128
-    Treshold: 0.505
-    ScaleTresholdByHeight: 2
-    Offset: 0.816
-    _blockId: 17
-    _blockMask: 7
-    _scale: 0.09
-  - MinHeight: 80
-    MaxHeight: 128
-    Treshold: 0.56
-    ScaleTresholdByHeight: 0
-    Offset: 0.81
-    _blockId: 18
-    _blockMask: 7
-    _scale: 1.48
-  - MinHeight: 54
-    MaxHeight: 128
-    Treshold: 0
-    ScaleTresholdByHeight: 0
-    Offset: 0.816
-    _blockId: 7
-    _blockMask: 7
-    _scale: 0.2
+  Octaves: 3
+  Lacunarity: 2.1
+  Persistance: 0.578
+  Offset:
+    x: 3.24
+    y: 0
   TopBlock: 4
   MiddleBlock: 3
   BottomBlock: 7
+  lodeDefs:
+  - {fileID: 11400000, guid: 76ecf24b21e8340ba8437b2e0e20005c, type: 2}
+  - {fileID: 11400000, guid: f2a276be0752846e1951e64d98a79fe7, type: 2}
+  - {fileID: 11400000, guid: ad42e2c0e5e7a44788112772951103c4, type: 2}
+  - {fileID: 11400000, guid: 3fd00dd592eb746b58f707fe14eb63ba, type: 2}
+  - {fileID: 11400000, guid: 98012633c031847e4b724f5080842fda, type: 2}

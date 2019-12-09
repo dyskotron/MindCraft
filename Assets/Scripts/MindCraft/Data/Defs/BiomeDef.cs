@@ -1,139 +1,97 @@
-using System;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.Data.Defs
 {
-    public struct BiomeDefData
-    {
-        public float TerrainScale;
-        
-        public NativeArray<int> TerrainCurve { get; set; }
-        public int Octaves { get; set; }
-        public float Lunacrity { get; set; }
-        public float Persistance { get; set; }
-        public float Offset { get; set; }
-
-        public byte TopBlock;
-        public byte MiddleBlock;
-        public byte BottomBlock;
-        
-        public NativeArray<Lode> Lodes;
-    }
-    
     [CreateAssetMenu(menuName = "Defs/Biome definition")]
-    public class BiomeDef : ScriptableObject
+    public class BiomeDef : DefinitionSO<BiomeDefId>
     {
-        public string Name;
-
-        //invert scale as smaller number for bigger terrain seems counterintuitive + scale to human-easy numbers
-        public float TerrainScale => 0.01f / _terrainScale; 
+        [Range(0f, 1f)] 
+        public float Temperature;
         
-        [SerializeField][Range(0,5f)]
-        private float _terrainScale;
+        public float Frequency => _frequency * 0.01f;
+
+        [SerializeField] [Range(0, 5f)]
+        private float _frequency = 1;
+        
+        public AnimationCurve TerrainCurve;
 
         [Range(0,10)]
-        public int Octaves;
+        public int Octaves = 3;
         [Range(1f, 10f)]
-        public float Lunacrity;
+        public float Lacunarity = 2.1f;
         [Range(0.1f, 1f)]
-        public float Persistance;
-        [Range(0, 1f)]
-        public float Offset;
-        public AnimationCurve TerrainCurve;
+        public float Persistance = 0.5f;
+        
+        public float2 Offset;
         
         public BlockTypeId TopBlock;
         public BlockTypeId MiddleBlock;
         public BlockTypeId BottomBlock;
         
-        public Lode[] Lodes;
+        public LodeDef[] lodeDefs;
         
-        // BiomeDefData we can pass to terrain generating jobs
-        public BiomeDefData BiomeDefData;
-        private NativeArray<Lode> _lodes;
-        private NativeArray<int> _terrainCurveSampled;
+        private NativeArray<LodeDefData> _lodes;
+        private NativeArray<float> _lodeTresholds;
 
         private void OnEnable()
         {
-            BiomeDefData = new BiomeDefData();
-            BiomeDefData.TerrainScale = TerrainScale; 
-            BiomeDefData.Octaves = Octaves; 
-            BiomeDefData.Lunacrity = Lunacrity; 
-            BiomeDefData.Persistance = Persistance; 
-            BiomeDefData.Offset = Offset; 
-
-            _lodes = new NativeArray<Lode>(Lodes.Length, Allocator.Persistent);
-
-            //popuplate native array
-            for (var i = 0; i < Lodes.Length; i++)
-            {
-                _lodes[i] = Lodes[i];
-            }
+            //populate lodes array
+            _lodes = new NativeArray<LodeDefData>(lodeDefs.Length, Allocator.Persistent);
+            _lodeTresholds = new NativeArray<float>(lodeDefs.Length * VoxelLookups.CHUNK_HEIGHT, Allocator.Persistent);
             
-            //sample terrain curve
-            _terrainCurveSampled = new NativeArray<int>(VoxelLookups.CHUNK_HEIGHT, Allocator.Persistent);
-            for (var i = 0; i < VoxelLookups.CHUNK_HEIGHT; i++)
+            for (var i = 0; i < lodeDefs.Length; i++)
             {
-                _terrainCurveSampled[i] = (int)(TerrainCurve.Evaluate(i / (float)VoxelLookups.CHUNK_HEIGHT) * VoxelLookups.CHUNK_HEIGHT);
+                _lodes[i] = new LodeDefData(lodeDefs[i]);
+                CurveHelper.SampleCurve(lodeDefs[i].ThresholdByY, _lodeTresholds, i * VoxelLookups.CHUNK_HEIGHT);
             }
-
-            BiomeDefData.TerrainCurve = _terrainCurveSampled;
-
-            BiomeDefData.TopBlock = (byte)TopBlock;            
-            BiomeDefData.MiddleBlock = (byte)MiddleBlock;            
-            BiomeDefData.BottomBlock = (byte)BottomBlock;            
-            
-            BiomeDefData.Lodes = _lodes;
         }
 
         private void OnDisable()
         {
             _lodes.Dispose();
-            _terrainCurveSampled.Dispose();
+            _lodeTresholds.Dispose();
         }
     }
-
-    public enum ScaleTresholdByHeight
+    
+    public struct BiomeDefData
     {
-        None,
-        HighestTop, //highest scale is at Lode max height 
-        HighestBottom //highest scale is at top of Lode min height
-    }
+        public readonly float Temperature;
+        public readonly float Frequency;
+        //public readonly NativeArray<int> TerrainCurve;
+        public readonly int TerrainCurveStartPos;
+        public readonly int LodesStartPos;
+        public readonly int LodesCount;
+        
+        public readonly int Octaves;
+        public readonly float Lacunarity;
+        public readonly float Persistance;
+        public readonly float2 Offset;
 
-    [Serializable]
-    public struct Lode
-    {
-        public int HeightRange => MaxHeight - MinHeight;
+        public readonly byte TopBlock;
+        public readonly byte MiddleBlock;
+        public readonly byte BottomBlock;
+        
+        //public readonly NativeArray<LodeDefData> Lodes;
+        //public readonly NativeArray<float> LodeTresholds;
 
-        public byte BlockMask => (byte) _blockMask;
-        
-        [UnityEngine.Range(0,VoxelLookups.CHUNK_HEIGHT)]
-        public int MinHeight;
-        
-        [UnityEngine.Range(0,VoxelLookups.CHUNK_HEIGHT)]
-        public int MaxHeight;
-
-        public float Scale => 0.01f / _scale; //invert + multiply scale
-        
-        [UnityEngine.Range(0,1f)]
-        public float Treshold;
-
-        public ScaleTresholdByHeight ScaleTresholdByHeight;
-        
-        [UnityEngine.Range(0,1f)]
-        public float Offset;
-        
-        public byte BlockId => (byte)_blockId;
-        
-        
-        [SerializeField]
-        private BlockTypeId _blockId;
-
-        [SerializeField]
-        private BlockMaskId _blockMask;
-        
-        [SerializeField][UnityEngine.Range(0,2f)]
-        private float _scale;
+        public BiomeDefData(BiomeDef def, int lodeStartPos)
+        {
+            Temperature = def.Temperature;
+            Frequency = def.Frequency;
+            Octaves = def.Octaves;
+            Lacunarity = def.Lacunarity;
+            Persistance = def.Persistance;
+            Offset = def.Offset;
+            TopBlock = (byte)def.TopBlock;
+            MiddleBlock = (byte)def.MiddleBlock;
+            BottomBlock = (byte)def.BottomBlock;
+            TerrainCurveStartPos = (int) def.Id * VoxelLookups.CHUNK_HEIGHT;
+            
+            LodesStartPos = lodeStartPos;
+            LodesCount = def.lodeDefs.Length;
+        }
     }
 }

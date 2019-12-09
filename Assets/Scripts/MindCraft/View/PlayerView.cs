@@ -9,7 +9,7 @@ using UnityEngine.Serialization;
 
 public class PlayerView : View
 {
-    [FormerlySerializedAs("CameraPlaceholder")] public Transform CameraContainer;
+    public Transform CameraContainer;
     public Transform PlayerPick;
     public bool Grounded;
     public float VerticalMomentum;

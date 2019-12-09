@@ -6,7 +6,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace MindCraft.View.Chunk
+namespace MindCraft.View.Chunk.Jobs
 {
     public struct RenderChunkMeshJob : IJob
     {

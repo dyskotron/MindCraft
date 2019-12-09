@@ -1,30 +1,57 @@
+using System;
+using MindCraft.Data.Defs;
+using Unity.Collections;
 using Unity.Mathematics;
 
 namespace MindCraft.MapGeneration
 {
     public static class Noise
     {
-        public static float Get2DPerlin(float x, float y, int octaves, float lacunarity, float persistance, float scale, float offset)
+        public static float GetHeight(float x, float y, int octaves, float lacunarity, float persistance, float startFrequency, NativeArray<float2> octaveOffsets, float2 offset)
         {
             float value = 0;
-            float currentPersistance = 1f;
-            float totalPersistance = 0;
+            float amplitude = 1f;
+            float frequency = startFrequency;
+            float maxAmplitude = 0;
+
             for (var i = 0; i < octaves; i++)
             {
-                totalPersistance += currentPersistance;
-                value += currentPersistance * noise.cnoise(new float2(+x * scale + offset, -y * scale + offset)); 
-                scale *= lacunarity;
-                currentPersistance *= persistance;
+                value += amplitude * noise.snoise( octaveOffsets[i] +  offset + new float2(x * frequency, y * frequency));
+
+                //keep track of max amplitude
+                maxAmplitude += amplitude;
+
+                //adjust params for next octave
+                amplitude *= persistance;
+                frequency *= lacunarity;
             }
 
-            return 0.5f + 0.5f * value / totalPersistance; 
+            return 0.5f + 0.5f * value / maxAmplitude;
         }
 
-        public static bool Get3DPerlin(float x, float y, float z, float offset, float scale, float threshold)
+        public static bool GetLodePresence(LodeAlgorithm algorithm, float x, float y, float z, float3 offset, float scale, float threshold)
         {
-            return threshold < (0.5f + 0.5f * noise.cnoise( new float3(x   * scale + offset, 
-                                                           y  * scale + offset, 
-                                                           z  * scale + offset)));
+            //for min / max threshold we dont need to run noise algorithm to determine lode presence
+            if (threshold >= 1)
+                return false;
+
+            if (threshold <= 0)
+                return true;
+            
+            switch (algorithm)
+            {
+                case LodeAlgorithm.Perlin2d:
+                    return threshold < (0.5f + 0.5f * noise.cnoise(offset.xy + new float2(x, z) * scale));
+                case LodeAlgorithm.Perlin3d:
+                    return threshold < (0.5f + 0.5f * noise.cnoise(offset + new float3(x, y, z) * scale));
+                case LodeAlgorithm.Simplex2d:
+                    return threshold < (0.5f + 0.5f * noise.snoise(offset.xy + new float2(x, z) * scale));
+                case LodeAlgorithm.Simplex3d:
+                    return threshold < (0.5f + 0.5f * noise.snoise(offset + new float3(x, y, z) * scale));
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(algorithm), algorithm, null);
+            }
+            
         }
     }
 }

@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b53fdd9027314a75913e6adecb11f770, type: 3}
+  m_Name: Mountain_ice
+  m_EditorClassIdentifier: 
+  BlockId: 18
+  BlockMask: 3
+  Frequency: 11.1
+  MinHeight: 45
+  MaxHeight: 128
+  ThresholdByY:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: -0.00045756996
+      value: 0.9977237
+      inSlope: 0
+      outSlope: Infinity
+      tangentMode: 101
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 0.52000713
+      value: 1.0009872
+      inSlope: -2.3161743
+      outSlope: -2.3161743
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.07538866
+    - serializedVersion: 3
+      time: 0.5267012
+      value: 0.8851179
+      inSlope: -2.7071924
+      outSlope: -2.7071924
+      tangentMode: 1
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.82041323
+      value: 0.41139686
+      inSlope: -0.15832677
+      outSlope: Infinity
+      tangentMode: 97
+      weightedMode: 0
+      inWeight: 0.8233599
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  Algorithm: 2
+  Offset:
+    x: 0
+    y: 0
+    z: 0

@@ -10,20 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f2669d04c8ef41f5afc01c1fd2818920, type: 3}
-  m_Name: Mars
+  m_Name: Canyons
   m_EditorClassIdentifier: Assembly-CSharp:MapGeneration.Defs:BiomeDef
-  Name: Mars
-  _terrainScale: 1.26
-  Octaves: 3
-  Lunacrity: 4.22
-  Persistance: 0.53
-  Offset: 0.193
+  Id: 0
+  Temperature: 0.75
+  _frequency: 0.59
   TerrainCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0.008776559
-      value: 0.92228454
+      time: -0.0073766354
+      value: 0.5678922
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -31,8 +28,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.2201783
-      value: 0.91518223
+      time: 0.20402512
+      value: 0.5509633
       inSlope: -0.2256428
       outSlope: -0.2256428
       tangentMode: 0
@@ -40,8 +37,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.62378883
     - serializedVersion: 3
-      time: 0.3474115
-      value: 0.90241426
+      time: 0.33125833
+      value: 0.53819525
       inSlope: -0.2681365
       outSlope: -0.2681365
       tangentMode: 0
@@ -49,8 +46,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.4620804
     - serializedVersion: 3
-      time: 0.5169817
-      value: 0.8207415
+      time: 0.5008285
+      value: 0.4565225
       inSlope: -0.11375606
       outSlope: -0.11375606
       tangentMode: 0
@@ -58,8 +55,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.6447642
-      value: 0.907367
+      time: 0.62861097
+      value: 0.54314804
       inSlope: -0.036850225
       outSlope: -0.036850225
       tangentMode: 0
@@ -67,17 +64,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.80669
-      value: 0.9167944
-      inSlope: 0.23108494
-      outSlope: 0.23108494
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 0.9578563
-      value: 0.9605122
+      time: 0.9417031
+      value: 0.5962932
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -85,8 +73,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.99853516
-      value: 0.95251465
+      time: 0.982382
+      value: 0.5882957
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -96,23 +84,13 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  TopBlock: 13
-  MiddleBlock: 7
+  Octaves: 3
+  Lacunarity: 2.35
+  Persistance: 0.522
+  Offset:
+    x: 0
+    y: 0
+  TopBlock: 5
+  MiddleBlock: 3
   BottomBlock: 7
-  Lodes:
-  - MinHeight: 0
-    MaxHeight: 22
-    Treshold: 0.203
-    ScaleTresholdByHeight: 0
-    Offset: 0.75
-    _blockId: 1
-    _blockMask: 6
-    _scale: 0.51
-  - MinHeight: 0
-    MaxHeight: 22
-    Treshold: 0.203
-    ScaleTresholdByHeight: 0
-    Offset: 0.75
-    _blockId: 20
-    _blockMask: 1
-    _scale: 1.41
+  lodeDefs: []

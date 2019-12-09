@@ -13,6 +13,7 @@ using MindCraft.View.Screen;
 using Temari.Common;
 using Unity.Mathematics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 namespace MindCraft.Controller.Fsm
@@ -38,15 +39,15 @@ namespace MindCraft.Controller.Fsm
 
             Random.InitState(WorldSettings.Seed);
 
-            //create player
-            _playerView = AssetManager.GetGameObject<PlayerView>(ResourcePath.PLAYER_PREFAB);
-            _playerView.transform.position = new Vector3(0f, WorldModel.GetTerrainHeight(0, 0) + 5, 0f);
-
             //Generate World
             var watch = new Stopwatch();
             watch.Start();
-            GenerateWorld(new ChunkCoord());
+            GenerateWorld(new ChunkCoord()); 
             watch.Stop();
+
+            //create player
+            _playerView = AssetManager.GetGameObject<PlayerView>(ResourcePath.PLAYER_PREFAB);
+            _playerView.transform.position = new Vector3(0.5f, WorldModel.GetTerrainHeight(new Vector3(0,0,0)) + 1, 0.5f);
 
             GENERATION_TIME_TOTAL = (float) watch.Elapsed.TotalSeconds;
 
@@ -62,7 +63,12 @@ namespace MindCraft.Controller.Fsm
             var dataCords = GetDataCoords(playerPosition, MapBoundsLookup.DataGeneration);
             var renderCords = GetRenderCoords(playerPosition, MapBoundsLookup.RenderGeneration);
             
+            var dataWatch = new Stopwatch();
+            dataWatch.Start();
             WorldModel.CreateChunkMaps(dataCords);
+            
+            dataWatch.Stop();
+            Debug.LogWarning($"<color=\"aqua\">GameAppState.GenerateWorld() : dataWatch.ElapsedMilliseconds: {dataWatch.ElapsedMilliseconds}</color>");
             WorldRenderer.RenderChunks(renderCords, dataCords);
             
             _lastPlayerCoords = playerPosition;

@@ -3,6 +3,7 @@ using Framewerk.Managers;
 using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
+using MindCraft.View.Chunk.Jobs;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;

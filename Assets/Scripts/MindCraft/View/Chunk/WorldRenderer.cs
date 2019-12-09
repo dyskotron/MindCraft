@@ -4,9 +4,11 @@ using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.Model;
+using MindCraft.View.Chunk.Jobs;
 using strange.framework.api;
 using Unity.Collections;
 using Unity.Jobs;
+using UnityEngine;
 
 namespace MindCraft.View.Chunk
 {
@@ -43,7 +45,12 @@ namespace MindCraft.View.Chunk
             var i = 0;
             foreach (var coords in dataCords)
             {
-                _lightLevelsMaps[coords] = new NativeArray<float>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
+                if(!_lightLevelsMaps.ContainsKey(coords))
+                    _lightLevelsMaps[coords] = new NativeArray<float>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
+                else
+                    Debug.LogWarning($"<color=\"aqua\">WorldRenderer.RenderChunks() : light levels at{dataCords} already exists!</color>");
+                
+                
                 var job = new CalculateLightRaysJob()
                           {
                               MapData = WorldModel.GetMapByChunkCoords(coords),
