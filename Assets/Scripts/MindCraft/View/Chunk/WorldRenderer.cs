@@ -54,7 +54,7 @@ namespace MindCraft.View.Chunk
                 var job = new CalculateLightRaysJob()
                           {
                               MapData = WorldModel.GetMapByChunkCoords(coords),
-                              TransparencyLookup = BlockDefs.TransparencyLookup,
+                              BlockDataLookup = BlockDefs.BlockDataLookup,
                               LightLevels = _lightLevelsMaps[coords]
                           };
 

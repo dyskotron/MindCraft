@@ -1,5 +1,6 @@
 using MindCraft.Common;
 using MindCraft.Data;
+using MindCraft.Data.Defs;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
 using Unity.Jobs;
@@ -12,7 +13,7 @@ namespace MindCraft.View.Chunk.Jobs
     {
         [ReadOnly] public NativeArray<byte> MapData;
         [ReadOnly] public NativeArray<float2> UvLookup;
-        [ReadOnly] public NativeArray<bool> TransparencyLookup;
+        [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
 
         [WriteOnly] public NativeList<float3> Vertices;
         [WriteOnly] public NativeList<int> Triangles;
@@ -35,7 +36,7 @@ namespace MindCraft.View.Chunk.Jobs
                         //we need x, y, z at this point for light
                         //no need to use more expensive ArrayHelper.ToCluster1D as we are going only trough middle chunk
                         var index = ArrayHelper.To1D(x, y, z) + VoxelLookups.MULTIMAP_CENTER_OFFSET;
-                        
+
                         var voxelId = MapData[index];
 
                         if (voxelId == BlockTypeByte.AIR)
@@ -54,7 +55,7 @@ namespace MindCraft.View.Chunk.Jobs
                             var nY = y + neighbourPos.y;
                             var nZ = z + neighbourPos.z;
 
-                            if (!GetTransparency(nX, nY, nZ))
+                            if (!RenderNeighbour(nX, nY, nZ))
                                 continue;
 
                             var neighbourId = ArrayHelper.ToCluster1D(nX, nY, nZ);
@@ -72,15 +73,15 @@ namespace MindCraft.View.Chunk.Jobs
 
                                     var uvId = ArrayHelper.To1D(voxelId, iF, iV, TextureLookup.MAX_BLOCKDEF_COUNT, TextureLookup.FACES_PER_VOXEL);
                                     Uvs.Add(UvLookup[uvId]);
-                                    
+
                                     //basic light level based on face direct neighbour
                                     var lightLevel = LightLevels[neighbourId];
-                                    
+
                                     // To disable smooth lighting just do:
                                     // Colors.Add(lightLevel) 
                                     // Triangles.Add(_currentVertexIndex + vertexIndex);
                                     // continue;
-                                    
+
                                     //compute light from vertex adjacent neighbours
 
                                     //so we're getting two neighbours /of vertex /specific for face 
@@ -119,33 +120,26 @@ namespace MindCraft.View.Chunk.Jobs
                 }
             }
         }
-        
-        private bool GetTransparency(int x, int y, int z)
+
+        private bool RenderNeighbour(int x, int y, int z)
         {
             if (y >= VoxelLookups.CHUNK_HEIGHT)
                 return true;
 
             if (y < 0)
                 return false;
-            
-            
+
             var xOffset = (x + VoxelLookups.CHUNK_SIZE) / VoxelLookups.CHUNK_SIZE;
             var zOffset = (z + VoxelLookups.CHUNK_SIZE) / VoxelLookups.CHUNK_SIZE;
-            
+
             //adjust x,z to be always within chunk voxel range
             x = (x + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
             z = (z + VoxelLookups.CHUNK_SIZE) % VoxelLookups.CHUNK_SIZE;
 
             var chunkAddress = (xOffset + zOffset * 3) * VoxelLookups.VOXELS_PER_CHUNK;
-            
-            //TODO: specific checks for each direction when using by face checks, don't test in rest of cases at all
-//            if (IsVoxelInChunk(x, y, z))
-//            {
-                var id = ArrayHelper.To1D(x, y, z);
-                return TransparencyLookup[MapData[id + chunkAddress]];
-//            }
 
-            return true;
+            var id = ArrayHelper.To1D(x, y, z);
+            return !BlockDataLookup[MapData[id + chunkAddress]].IsSolid;
         }
     }
 }

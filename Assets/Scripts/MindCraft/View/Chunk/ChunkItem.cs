@@ -75,7 +75,6 @@ namespace MindCraft.View.Chunk
             set { _gameObject.SetActive(value); }
         }
 
-
         #region Mesh Generation
 
         public void UpdateChunkMesh(NativeArray<byte> map, NativeArray<float> lights)
@@ -108,7 +107,7 @@ namespace MindCraft.View.Chunk
                           Colors = _colors,
                           LightLevels = _lights,
                           UvLookup = TextureLookup.WorldUvLookupNative,
-                          TransparencyLookup = BlockDefs.TransparencyLookup,
+                          BlockDataLookup = BlockDefs.BlockDataLookup,
                       };
 
             _jobHandle = _job.Schedule();
