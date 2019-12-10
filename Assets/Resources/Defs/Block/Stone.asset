@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Rock
   IsSolid: 1
+  LightModification: 0
   Hardness: 6
   FaceTextures: 0e0e0e0e0e0e

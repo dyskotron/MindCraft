@@ -15,6 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: ' Dirt With Snow'
   IsSolid: 1
-  IsTransparent: 0
+  LightModification: 0
   Hardness: 3
   FaceTextures: 1a1a0d271a1a

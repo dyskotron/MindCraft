@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: ' Stone With Sand'
   IsSolid: 1
+  LightModification: 0
   Hardness: 6
   FaceTextures: 00000c0e0000

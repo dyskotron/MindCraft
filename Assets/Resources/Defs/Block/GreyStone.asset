@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: GreyStone
   IsSolid: 1
+  LightModification: 0
   Hardness: 0
   FaceTextures: 151515151515

@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Dirt with Grass
   IsSolid: 1
+  LightModification: 0
   Hardness: 2
   FaceTextures: 181814271818

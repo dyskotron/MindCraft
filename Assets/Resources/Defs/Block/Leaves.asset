@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: 0
   Name: Wood
-  IsSolid: 1
-  IsTransparent: 1
+  IsSolid: 0
+  LightModification: -0.3
   Hardness: 1
   FaceTextures: 080808080808

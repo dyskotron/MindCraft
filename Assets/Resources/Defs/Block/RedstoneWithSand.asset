@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Redstone
   IsSolid: 1
+  LightModification: 0
   Hardness: 6
   FaceTextures: 0b0b090a0b0b

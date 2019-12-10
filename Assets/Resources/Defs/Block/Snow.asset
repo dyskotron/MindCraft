@@ -15,6 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Snow
   IsSolid: 1
-  IsTransparent: 0
+  LightModification: 0
   Hardness: 2
   FaceTextures: 0d0d0d0d0d0d

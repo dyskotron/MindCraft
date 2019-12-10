@@ -15,6 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Air
   IsSolid: 0
-  IsTransparent: 1
+  LightModification: 0
   Hardness: 0
   FaceTextures: 000000000000
