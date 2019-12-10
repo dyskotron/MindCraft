@@ -67,7 +67,7 @@ namespace MindCraft.View.Chunk.Jobs
                             //iterate triangles
                             for (int iV = 0; iV < ChunkView.TRIANGLE_INDICES_PER_FACE; iV++)
                             {
-                                var vertexIndex = VoxelLookups.indexToVertex[iV];
+                                var vertexIndex = VoxelLookups.IndexToVertex[iV];
 
                                 // each face needs just 4 vertices & UVs
                                 if (iV < ChunkView.VERTICES_PER_FACE)
@@ -146,11 +146,11 @@ namespace MindCraft.View.Chunk.Jobs
         }
         
         private void CalculateLightDiffusion()
-        {
+        {   
             //Enqueue lit voxels for processing
-            for (var x = -VoxelLookups.CHUNK_SIZE; x < 2 * VoxelLookups.CHUNK_SIZE; x++)
+            for (var x = VoxelLookups.LIGHTS_CLUSTER_MIN; x < VoxelLookups.LIGHTS_CLUSTER_MAX; x++)
             {
-                for (var z = -VoxelLookups.CHUNK_SIZE; z < 2 * VoxelLookups.CHUNK_SIZE; z++)
+                for (var z = VoxelLookups.LIGHTS_CLUSTER_MIN; z < VoxelLookups.LIGHTS_CLUSTER_MAX; z++)
                 {
                     for (var y = VoxelLookups.CHUNK_HEIGHT - 1; y >= 0; y--)
                     {
@@ -161,7 +161,7 @@ namespace MindCraft.View.Chunk.Jobs
                 }
             }
             
-            //iterate trough lit voxels and project light to neighbours
+            //Iterate trough lit voxels and project light to neighbours
             while (LitVoxels.Count > 0)
             {
                 var litVoxel = LitVoxels.Dequeue();
@@ -192,10 +192,10 @@ namespace MindCraft.View.Chunk.Jobs
         //TODO: change bounds so we dont go trough whole cluster but just improtant voxels around (border shuld be  maxlight / fallof)
         private bool CheckVoxelBounds(int neighbourX, int neighbourY, int neighbourZ)
         {
-            if (neighbourX < -VoxelLookups.CHUNK_SIZE || neighbourZ < -VoxelLookups.CHUNK_SIZE || neighbourY < 0)
+            if (neighbourX < VoxelLookups.LIGHTS_CLUSTER_MIN || neighbourZ < VoxelLookups.LIGHTS_CLUSTER_MIN || neighbourY < 0)
                 return false;
             
-            if (neighbourX >= 2 * VoxelLookups.CHUNK_SIZE || neighbourZ  >= 2 * VoxelLookups.CHUNK_SIZE || neighbourY  >=  VoxelLookups.CHUNK_HEIGHT)
+            if (neighbourX >= VoxelLookups.LIGHTS_CLUSTER_MAX || neighbourZ  >= VoxelLookups.LIGHTS_CLUSTER_MAX || neighbourY  >=  VoxelLookups.CHUNK_HEIGHT)
                 return false;
 
             return true;

@@ -11,12 +11,18 @@ namespace MindCraft.MapGeneration.Utils
         public const int VOXELS_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT;
         public const int VIEW_DISTANCE = 100;
         public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
-        public const float LIGHT_FALL_OFF = 0.3f;
+        public const float LIGHT_FALL_OFF = 0.2f;
         public const int MAX_OCTAVES = 10;
+        
+        //
+        public static int DIFFUSE_LIGHTS_MARGIN = 5; //CAN'T BE BIGGER THAN CHUNK_SIZE!
+        public static int LIGHTS_CLUSTER_MIN = - DIFFUSE_LIGHTS_MARGIN;
+        public static int LIGHTS_CLUSTER_MAX = CHUNK_SIZE + DIFFUSE_LIGHTS_MARGIN - 1;
+        
         
         //index of chunk in the center of concenated arrays we send to jobs that needs to know about neighbours
         //center chunk is what we care about, rest is just to get surrounding data
-        public static readonly int MULTIMAP_CENTER_OFFSET = 4 * VoxelLookups.VOXELS_PER_CHUNK;
+        public static readonly int MULTIMAP_CENTER_OFFSET = 4 * VOXELS_PER_CHUNK;
 
         //array of all local vertex coordinates for cube
         public static readonly Vector3Int[] Vertices =
@@ -63,8 +69,7 @@ namespace MindCraft.MapGeneration.Utils
             new int3(1,0,0), // Right
         };
 
-        public static readonly int[] indexToVertex = {0, 1, 2, 2, 1, 3};
-
+        public static readonly int[] IndexToVertex = {0, 1, 2, 2, 1, 3};
         
         public static readonly int2x4[] LightNeighbours =
         {

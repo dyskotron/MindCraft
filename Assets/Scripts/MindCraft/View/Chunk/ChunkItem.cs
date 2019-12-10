@@ -30,7 +30,7 @@ namespace MindCraft.View.Chunk
         private MeshFilter _meshFilter;
 
         //Chunk Generation
-        private int currentVertexIndex;
+        private int _currentVertexIndex;
 
         private ChunkCoord _coords;
 
@@ -40,7 +40,7 @@ namespace MindCraft.View.Chunk
         private NativeList<float> _colors;
 
         private NativeArray<byte> _map;
-       private NativeQueue<int3> _litVoxels;
+        private NativeQueue<int3> _litVoxels;
         private NativeArray<int> _debug;
 
         private JobHandle _jobHandle;
@@ -114,6 +114,7 @@ namespace MindCraft.View.Chunk
                       };
 
             _jobHandle = _job.Schedule();
+            //ProcessJobResult();
 
             CoroutineManager.RunCoroutine(CheckRenderJobCoroutine());
         }
@@ -156,7 +157,6 @@ namespace MindCraft.View.Chunk
         
         #endregion
 
-
         #region Native collection convesion helpers
 
         private Vector3[] ToV3Array(NativeList<float3> nl)
@@ -194,8 +194,6 @@ namespace MindCraft.View.Chunk
 
             return vectors;
         }
-
-        
 
         #endregion
     }

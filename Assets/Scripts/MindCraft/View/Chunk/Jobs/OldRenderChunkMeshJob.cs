@@ -67,7 +67,7 @@ namespace MindCraft.View.Chunk.Jobs
                             //iterate triangles
                             for (int iV = 0; iV < ChunkView.TRIANGLE_INDICES_PER_FACE; iV++)
                             {
-                                var vertexIndex = VoxelLookups.indexToVertex[iV];
+                                var vertexIndex = VoxelLookups.IndexToVertex[iV];
 
                                 // each face needs just 4 vertices & UVs
                                 if (iV < ChunkView.VERTICES_PER_FACE)
