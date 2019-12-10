@@ -23,8 +23,8 @@ namespace MindCraft.Common
         }
         
         // returns voxel position in 3 x 3 cluster array
-        // central chunk is 0 - VoxelLookups.CHUNK_SIZE;
-        // cluster range is - VoxelLookups.CHUNK_SIZE to 2 * VoxelLookups.CHUNK_SIZE
+        // central chunk is 0 -> VoxelLookups.CHUNK_SIZE;
+        // cluster range is -VoxelLookups.CHUNK_SIZE -> 2 * VoxelLookups.CHUNK_SIZE
         public static int ToCluster1D(int x, int y, int z, int xMax = VoxelLookups.CHUNK_SIZE, int yMax = VoxelLookups.CHUNK_HEIGHT)
         {
             //determine chunk  offset in cluster

@@ -100,14 +100,17 @@ namespace MindCraft.View.Chunk
 
             _job = new RenderChunkMeshJob()
                       {
+                          UvLookup = TextureLookup.WorldUvLookupNative,
+                          BlockDataLookup = BlockDefs.BlockDataLookup,
                           MapData = _map,
+                          
+                          LightLevels = _lights,
+                          LitVoxels = _litVoxels,
+                          
                           Vertices = _vertices,
                           Triangles = _triangles,
                           Uvs = _uvs,
                           Colors = _colors,
-                          LightLevels = _lights,
-                          UvLookup = TextureLookup.WorldUvLookupNative,
-                          BlockDataLookup = BlockDefs.BlockDataLookup,
                       };
 
             _jobHandle = _job.Schedule();

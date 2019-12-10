@@ -14,18 +14,21 @@ namespace MindCraft.View.Chunk.Jobs
         [ReadOnly] public NativeArray<byte> MapData;
         [ReadOnly] public NativeArray<float2> UvLookup;
         [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
+        
+        public NativeArray<float> LightLevels;
+        public NativeQueue<int3> LitVoxels;
 
         [WriteOnly] public NativeList<float3> Vertices;
         [WriteOnly] public NativeList<int> Triangles;
         [WriteOnly] public NativeList<float2> Uvs;
         [WriteOnly] public NativeList<float> Colors;
 
-        public NativeArray<float> LightLevels;
-
-        public int _currentVertexIndex;
+        private int _currentVertexIndex;
 
         public void Execute()
         {
+            CalculateLightDiffusion();
+            
             //for(var index = 0; index < MapData.Length; index++){
             for (var x = 0; x < VoxelLookups.CHUNK_SIZE; x++)
             {
@@ -55,7 +58,7 @@ namespace MindCraft.View.Chunk.Jobs
                             var nY = y + neighbourPos.y;
                             var nZ = z + neighbourPos.z;
 
-                            if (!RenderNeighbour(nX, nY, nZ))
+                            if (!ShouldRenderNeighbour(nX, nY, nZ))
                                 continue;
 
                             var neighbourId = ArrayHelper.ToCluster1D(nX, nY, nZ);
@@ -121,7 +124,7 @@ namespace MindCraft.View.Chunk.Jobs
             }
         }
 
-        private bool RenderNeighbour(int x, int y, int z)
+        private bool ShouldRenderNeighbour(int x, int y, int z)
         {
             if (y >= VoxelLookups.CHUNK_HEIGHT)
                 return true;
@@ -140,6 +143,62 @@ namespace MindCraft.View.Chunk.Jobs
 
             var id = ArrayHelper.To1D(x, y, z);
             return !BlockDataLookup[MapData[id + chunkAddress]].IsSolid;
+        }
+        
+        private void CalculateLightDiffusion()
+        {
+            //Enqueue lit voxels for processing
+            for (var x = -VoxelLookups.CHUNK_SIZE; x < 2 * VoxelLookups.CHUNK_SIZE; x++)
+            {
+                for (var z = -VoxelLookups.CHUNK_SIZE; z < 2 * VoxelLookups.CHUNK_SIZE; z++)
+                {
+                    for (var y = VoxelLookups.CHUNK_HEIGHT - 1; y >= 0; y--)
+                    {
+                        var index = ArrayHelper.ToCluster1D(x, y, z);
+                        if (LightLevels[index] > VoxelLookups.LIGHT_FALL_OFF)
+                            LitVoxels.Enqueue(new int3(x, y, z));
+                    }
+                }
+            }
+            
+            //iterate trough lit voxels and project light to neighbours
+            while (LitVoxels.Count > 0)
+            {
+                var litVoxel = LitVoxels.Dequeue();
+                var litVoxelId = ArrayHelper.ToCluster1D(litVoxel.x, litVoxel.y, litVoxel.z);
+                var neighbourLightValue = LightLevels[litVoxelId] - VoxelLookups.LIGHT_FALL_OFF;
+                
+                //iterate trough neighbours
+                for (int iF = 0; iF < ChunkView.FACES_PER_VOXEL; iF++)
+                {
+                    var neighbour = litVoxel + VoxelLookups.NeighboursInt3[iF];
+
+                    if (CheckVoxelBounds(neighbour.x, neighbour.y, neighbour.z))
+                    {
+                        var neighbourId = ArrayHelper.ToCluster1D(neighbour.x, neighbour.y, neighbour.z);
+                        var neighbourType = MapData[neighbourId];
+                        
+                        if(!BlockDataLookup[neighbourType].IsSolid && LightLevels[neighbourId] < neighbourLightValue)
+                        {
+                            LightLevels[neighbourId] = neighbourLightValue;
+                            if(neighbourLightValue > VoxelLookups.LIGHT_FALL_OFF)
+                                LitVoxels.Enqueue(neighbour);
+                        }
+                    }
+                }      
+            }   
+        }
+
+        //TODO: change bounds so we dont go trough whole cluster but just improtant voxels around (border shuld be  maxlight / fallof)
+        private bool CheckVoxelBounds(int neighbourX, int neighbourY, int neighbourZ)
+        {
+            if (neighbourX < -VoxelLookups.CHUNK_SIZE || neighbourZ < -VoxelLookups.CHUNK_SIZE || neighbourY < 0)
+                return false;
+            
+            if (neighbourX >= 2 * VoxelLookups.CHUNK_SIZE || neighbourZ  >= 2 * VoxelLookups.CHUNK_SIZE || neighbourY  >=  VoxelLookups.CHUNK_HEIGHT)
+                return false;
+
+            return true;
         }
     }
 }

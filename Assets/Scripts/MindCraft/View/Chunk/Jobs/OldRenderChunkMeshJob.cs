@@ -18,6 +18,7 @@ namespace MindCraft.View.Chunk.Jobs
         [WriteOnly] public NativeList<int> Triangles;
         [WriteOnly] public NativeList<float2> Uvs;
         [WriteOnly] public NativeList<float> Colors;
+        
         public NativeQueue<int3> LitVoxels;
 
         public NativeArray<float> LightLevels;

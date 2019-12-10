@@ -1,12 +1,9 @@
-using System;
 using MindCraft.Common;
-using MindCraft.Data;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace MindCraft.View.Chunk.Jobs
 {
@@ -15,7 +12,7 @@ namespace MindCraft.View.Chunk.Jobs
         [ReadOnly] public NativeArray<byte> MapData;
         [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
 
-        public NativeArray<float> LightLevels;
+        [WriteOnly] public NativeArray<float> LightLevels;
 
         public void Execute()
         {
