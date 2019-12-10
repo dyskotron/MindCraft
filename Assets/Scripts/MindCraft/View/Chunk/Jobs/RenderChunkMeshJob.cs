@@ -27,7 +27,8 @@ namespace MindCraft.View.Chunk.Jobs
 
         public void Execute()
         {
-            CalculateLightDiffusion();
+            //TODO: bring back diffuse lights after fixing performance
+            //CalculateLightDiffusion();
             
             //for(var index = 0; index < MapData.Length; index++){
             for (var x = 0; x < VoxelLookups.CHUNK_SIZE; x++)
@@ -110,7 +111,7 @@ namespace MindCraft.View.Chunk.Jobs
                                     lightLevel += LightLevels[ArrayHelper.ToCluster1D(lnXDiagonal, lnYDiagonal, lnZDiagonal)];
 
 
-                                    Colors.Add(lightLevel * 0.25f); //multiply instead of divide by 4 as that's faster
+                                    Colors.Add(math.max(lightLevel * 0.25f, VoxelLookups.LIGHT_FALL_OFF)); //multiply instead of divide by 4 as that's faster
                                 }
 
                                 //we still need 6 triangle vertices tho
@@ -148,6 +149,7 @@ namespace MindCraft.View.Chunk.Jobs
         private void CalculateLightDiffusion()
         {   
             //Enqueue lit voxels for processing
+            //TODO: parallel job filter or store litvoxels already in calculate light ray job
             for (var x = VoxelLookups.LIGHTS_CLUSTER_MIN; x < VoxelLookups.LIGHTS_CLUSTER_MAX; x++)
             {
                 for (var z = VoxelLookups.LIGHTS_CLUSTER_MIN; z < VoxelLookups.LIGHTS_CLUSTER_MAX; z++)
@@ -162,6 +164,7 @@ namespace MindCraft.View.Chunk.Jobs
             }
             
             //Iterate trough lit voxels and project light to neighbours
+            //TODO: find more optimal way se we dont need to reiterate everything to death in each chunk + neighbours
             while (LitVoxels.Count > 0)
             {
                 var litVoxel = LitVoxels.Dequeue();
@@ -189,7 +192,6 @@ namespace MindCraft.View.Chunk.Jobs
             }   
         }
 
-        //TODO: change bounds so we dont go trough whole cluster but just improtant voxels around (border shuld be  maxlight / fallof)
         private bool CheckVoxelBounds(int neighbourX, int neighbourY, int neighbourZ)
         {
             if (neighbourX < VoxelLookups.LIGHTS_CLUSTER_MIN || neighbourZ < VoxelLookups.LIGHTS_CLUSTER_MIN || neighbourY < 0)

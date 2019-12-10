@@ -63,8 +63,9 @@ namespace MindCraft.View.Chunk
             }
 
             JobHandle.CompleteAll(jobArray);
-
             jobArray.Dispose();
+            
+            //TODO: chain jobs 1)Lightrays 2)Diffuse lights 3)Mesh 
 
             // ============ Diffuse Lights + Render ============
             foreach (var coords in renderChunks)
