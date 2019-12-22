@@ -20,8 +20,6 @@ namespace MindCraft.Controller.Fsm
 {
     public class GameAppState : AppState<GameAppScreen>
     {
-        public static float GENERATION_TIME_TOTAL = 0;
-
         [Inject] public IUpdater Updater { get; set; }
         [Inject] public IAssetManager AssetManager { get; set; }
         [Inject] public ViewConfig ViewConfig { get; set; }
@@ -53,14 +51,8 @@ namespace MindCraft.Controller.Fsm
             
             var playerCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(initPosition);
             
-            //Generate World
-            var watch = new Stopwatch();
-            watch.Start();
             GenerateWorld(playerCoords);
-            watch.Stop();
-
-            GENERATION_TIME_TOTAL = (float) watch.Elapsed.TotalSeconds;
-
+            
             var camera = ViewConfig.Camera3d;
             camera.nearClipPlane = 0.01f;
             camera.farClipPlane = VoxelLookups.VIEW_DISTANCE;
@@ -76,10 +68,14 @@ namespace MindCraft.Controller.Fsm
             var dataWatch = new Stopwatch();
             dataWatch.Start();
             WorldModel.CreateChunkMaps(dataCords);
-
             dataWatch.Stop();
             Debug.LogWarning($"<color=\"aqua\">GameAppState.GenerateWorld() : dataWatch.ElapsedMilliseconds: {dataWatch.ElapsedMilliseconds}</color>");
+            
+            var renderChunksWatch = new Stopwatch();
+            renderChunksWatch.Start();
             WorldRenderer.RenderChunks(renderCords, dataCords);
+            renderChunksWatch.Stop();
+            Debug.LogWarning($"<color=\"aqua\">GameAppState.GenerateWorld() : renderChunksWatch.ElapsedMilliseconds: {renderChunksWatch.Elapsed.TotalSeconds}</color>");
 
             _lastPlayerCoords = playerPosition;
         }
@@ -109,7 +105,6 @@ namespace MindCraft.Controller.Fsm
         /// Temp shiat, move out from gamestate?
         /// </summary>
         private HashSet<ChunkCoord> _generatedData = new HashSet<ChunkCoord>();
-
         private HashSet<ChunkCoord> _renderedChunks = new HashSet<ChunkCoord>();
 
         private List<ChunkCoord> GetDataCoords(ChunkCoord cords, int2[] relativeCordsArray, bool remove = false)

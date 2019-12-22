@@ -10,16 +10,16 @@ namespace MindCraft.Data
         BlockDef GetDefinitionById(BlockTypeId id);
         BlockDef[] GetAllDefinitions();
 
-        NativeArray<bool> TransparencyLookup { get; }
+        NativeArray<BlockDefData> BlockDataLookup { get; }
     }
 
     public class BlockDefs : ScriptableObjectDefintions<BlockDef, BlockTypeId> , IBlockDefs, IDestroyable
     {
-        public NativeArray<bool> TransparencyLookup => _transparencyLookup;
+        public NativeArray<BlockDefData> BlockDataLookup => _blockDataLookup;
         
         protected override string Path => ResourcePath.BLOCK_DEFS;
         
-        private NativeArray<bool> _transparencyLookup;
+        private NativeArray<BlockDefData> _blockDataLookup;
 
         public override void PostConstruct()
         {
@@ -27,16 +27,16 @@ namespace MindCraft.Data
             
             var defs = GetAllDefinitions();
             
-            _transparencyLookup = new NativeArray<bool>(defs.Length, Allocator.Persistent);
+            _blockDataLookup = new NativeArray<BlockDefData>(defs.Length, Allocator.Persistent);
             foreach (var blockDef in defs)
             {
-                _transparencyLookup[(int) blockDef.Id] = blockDef.IsTransparent;
+                _blockDataLookup[(int) blockDef.Id] = blockDef.GetBlockData();
             }
         }
 
         public void Destroy()
         {
-            _transparencyLookup.Dispose();    
+            _blockDataLookup.Dispose();    
         }
     }
 }

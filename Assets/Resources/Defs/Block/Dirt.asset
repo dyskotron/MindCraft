@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Dirt
   IsSolid: 1
+  LightModification: 0
   Hardness: 3
   FaceTextures: 272727272727

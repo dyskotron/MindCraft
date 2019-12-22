@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77f7575b6286417a83fba486a2efa28e, type: 3}
   m_Name: None
   m_EditorClassIdentifier: 
+  Id: 0
   Name: None
-  IsSolid: 0
+  IsSolid: 1
+  LightModification: 0
   Hardness: 0
   FaceTextures: 000000000000

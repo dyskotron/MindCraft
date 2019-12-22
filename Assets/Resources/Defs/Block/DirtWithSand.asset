@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: 0
   Name: Dirt With Sand
   IsSolid: 1
+  LightModification: 0
   Hardness: 2
   FaceTextures: 19190c271919

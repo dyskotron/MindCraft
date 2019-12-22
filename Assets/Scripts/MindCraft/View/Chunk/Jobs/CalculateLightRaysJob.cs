@@ -1,18 +1,18 @@
 using MindCraft.Common;
-using MindCraft.Data;
+using MindCraft.Data.Defs;
 using MindCraft.MapGeneration.Utils;
 using Unity.Collections;
 using Unity.Jobs;
-using UnityEngine;
+using Unity.Mathematics;
 
 namespace MindCraft.View.Chunk.Jobs
 {
     public struct CalculateLightRaysJob : IJob
     {
         [ReadOnly] public NativeArray<byte> MapData;
-        [ReadOnly] public NativeArray<bool> TransparencyLookup;
+        [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
 
-        public NativeArray<float> LightLevels;
+        [WriteOnly] public NativeArray<float> LightLevels;
 
         public void Execute()
         {
@@ -31,9 +31,12 @@ namespace MindCraft.View.Chunk.Jobs
 
                         var voxelId = MapData[index];
 
-                        //basically air has transparency 1 so we're keeping last value
-                        if (voxelId != BlockTypeByte.AIR)
-                            lightLevel = Mathf.Min(TransparencyLookup[voxelId] ? 0.7f : 0.25f, lightLevel);
+                        var voxelData = BlockDataLookup[voxelId];
+
+                        if (voxelData.IsSolid)
+                            lightLevel = voxelData.LightModification;
+                        else
+                            lightLevel = math.max(lightLevel + voxelData.LightModification,  0);
 
                         LightLevels[index] = lightLevel;
                     }

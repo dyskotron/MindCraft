@@ -54,7 +54,7 @@ namespace MindCraft.View.Chunk
                 var job = new CalculateLightRaysJob()
                           {
                               MapData = WorldModel.GetMapByChunkCoords(coords),
-                              TransparencyLookup = BlockDefs.TransparencyLookup,
+                              BlockDataLookup = BlockDefs.BlockDataLookup,
                               LightLevels = _lightLevelsMaps[coords]
                           };
 
@@ -63,8 +63,9 @@ namespace MindCraft.View.Chunk
             }
 
             JobHandle.CompleteAll(jobArray);
-
             jobArray.Dispose();
+            
+            //TODO: chain jobs 1)Lightrays 2)Diffuse lights 3)Mesh 
 
             // ============ Diffuse Lights + Render ============
             foreach (var coords in renderChunks)
