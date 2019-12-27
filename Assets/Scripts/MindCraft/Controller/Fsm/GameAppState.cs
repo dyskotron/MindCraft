@@ -30,7 +30,7 @@ namespace MindCraft.Controller.Fsm
         [Inject] public ISaveLoadManager SaveLoadManager { get; set; }
 
         private PlayerView _playerView;
-        private ChunkCoord _lastPlayerCoords;
+        private int2 _lastPlayerCoords;
 
         protected override void Enter()
         {
@@ -55,12 +55,12 @@ namespace MindCraft.Controller.Fsm
             
             var camera = ViewConfig.Camera3d;
             camera.nearClipPlane = 0.01f;
-            camera.farClipPlane = VoxelLookups.VIEW_DISTANCE;
+            camera.farClipPlane = GeometryLookups.VIEW_DISTANCE;
 
             Updater.EveryFrame(UpdateView);
         }
 
-        private void GenerateWorld(ChunkCoord playerPosition)
+        private void GenerateWorld(int2 playerPosition)
         {
             var dataCords = GetDataCoords(playerPosition, MapBoundsLookup.DataGeneration);
             var renderCords = GetRenderCoords(playerPosition, MapBoundsLookup.RenderGeneration);
@@ -75,7 +75,7 @@ namespace MindCraft.Controller.Fsm
             renderChunksWatch.Start();
             WorldRenderer.RenderChunks(renderCords, dataCords);
             renderChunksWatch.Stop();
-            Debug.LogWarning($"<color=\"aqua\">GameAppState.GenerateWorld() : renderChunksWatch.ElapsedMilliseconds: {renderChunksWatch.Elapsed.TotalSeconds}</color>");
+            Debug.LogWarning($"<color=\"aqua\">GameAppState.GenerateWorld() : renderChunksWatch.ElapsedMilliseconds: {renderChunksWatch.ElapsedMilliseconds}</color>");
 
             _lastPlayerCoords = playerPosition;
         }
@@ -83,7 +83,7 @@ namespace MindCraft.Controller.Fsm
         private void UpdateView()
         {
             var newCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(_playerView.transform.position);
-            if (newCoords == _lastPlayerCoords)
+            if (newCoords.x == _lastPlayerCoords.x && newCoords.y == _lastPlayerCoords.y)
                 return;
 
             //Remove unused data + view
@@ -104,15 +104,15 @@ namespace MindCraft.Controller.Fsm
         /// <summary>
         /// Temp shiat, move out from gamestate?
         /// </summary>
-        private HashSet<ChunkCoord> _generatedData = new HashSet<ChunkCoord>();
-        private HashSet<ChunkCoord> _renderedChunks = new HashSet<ChunkCoord>();
+        private HashSet<int2> _generatedData = new HashSet<int2>();
+        private HashSet<int2> _renderedChunks = new HashSet<int2>();
 
-        private List<ChunkCoord> GetDataCoords(ChunkCoord cords, int2[] relativeCordsArray, bool remove = false)
+        private List<int2> GetDataCoords(int2 cords, int2[] relativeCordsArray, bool remove = false)
         {
-            var coordsList = new List<ChunkCoord>();
+            var coordsList = new List<int2>();
             foreach (var position in relativeCordsArray)
             {
-                var currentCoords = new ChunkCoord(cords.X + position.x, cords.Y + position.y);
+                var currentCoords = new int2(cords.x + position.x, cords.y + position.y);
                 if (_generatedData.Contains(currentCoords) == remove)
                 {
                     if (remove)
@@ -127,12 +127,12 @@ namespace MindCraft.Controller.Fsm
             return coordsList;
         }
 
-        private List<ChunkCoord> GetRenderCoords(ChunkCoord cords, int2[] relativeCordsArray, bool remove = false)
+        private List<int2> GetRenderCoords(int2 cords, int2[] relativeCordsArray, bool remove = false)
         {
-            var coordsList = new List<ChunkCoord>();
+            var coordsList = new List<int2>();
             foreach (var position in relativeCordsArray)
             {
-                var currentCoords = new ChunkCoord(cords.X + position.x, cords.Y + position.y);
+                var currentCoords = new int2(cords.x + position.x, cords.y + position.y);
                 if (_renderedChunks.Contains(currentCoords) == remove)
                 {
                     if (remove)

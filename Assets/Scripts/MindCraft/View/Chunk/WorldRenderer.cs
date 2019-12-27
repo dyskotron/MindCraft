@@ -8,14 +8,15 @@ using MindCraft.View.Chunk.Jobs;
 using strange.framework.api;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.View.Chunk
 {
     public interface IWorldRenderer
     {
-        void RenderChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords);
-        void RemoveChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords);
+        void RenderChunks(List<int2> renderChunks, List<int2> dataCords);
+        void RemoveChunks(List<int2> renderChunks, List<int2> dataCords);
     }
 
     public class WorldRenderer : IWorldRenderer, IDestroyable
@@ -24,8 +25,8 @@ namespace MindCraft.View.Chunk
         [Inject] public IWorldModel WorldModel { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
 
-        private Dictionary<ChunkCoord, ChunkView> _chunks = new Dictionary<ChunkCoord, ChunkView>();
-        private Dictionary<ChunkCoord, NativeArray<float>> _lightLevelsMaps = new Dictionary<ChunkCoord, NativeArray<float>>();
+        private Dictionary<int2, ChunkView> _chunks = new Dictionary<int2, ChunkView>();
+        private Dictionary<int2, NativeArray<float>> _lightLevelsMaps = new Dictionary<int2, NativeArray<float>>();
 
         private List<ChunkView> _chunkPool = new List<ChunkView>();
 
@@ -37,7 +38,7 @@ namespace MindCraft.View.Chunk
             }
         }
 
-        public void RenderChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords)
+        public void RenderChunks(List<int2> renderChunks, List<int2> dataCords)
         {
             // ============ Calculate Light Rays ============
             var jobArray = new NativeArray<JobHandle>(dataCords.Count, Allocator.Temp);
@@ -46,7 +47,7 @@ namespace MindCraft.View.Chunk
             foreach (var coords in dataCords)
             {
                 if(!_lightLevelsMaps.ContainsKey(coords))
-                    _lightLevelsMaps[coords] = new NativeArray<float>(VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
+                    _lightLevelsMaps[coords] = new NativeArray<float>(GeometryLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
                 else
                     Debug.LogWarning($"<color=\"aqua\">WorldRenderer.RenderChunks() : light levels at{dataCords} already exists!</color>");
                 
@@ -61,11 +62,9 @@ namespace MindCraft.View.Chunk
                 jobArray[i] = job.Schedule();
                 i++;
             }
-
+            
             JobHandle.CompleteAll(jobArray);
             jobArray.Dispose();
-            
-            //TODO: chain jobs 1)Lightrays 2)Diffuse lights 3)Mesh 
 
             // ============ Diffuse Lights + Render ============
             foreach (var coords in renderChunks)
@@ -80,16 +79,13 @@ namespace MindCraft.View.Chunk
                     _chunks[coords] = chunkView;
                     chunkView.Init(coords);
                 }
-
-                // process diffuse lights
-                // TODO
-
+                
                 //render all chunks within view distance
                 chunkView.UpdateChunkMesh(GetDataForChunkWithNeighbours(coords), GetLightsForChunkWithNeighbours(coords));
             }
         }
 
-        public void RemoveChunks(List<ChunkCoord> renderChunks, List<ChunkCoord> dataCords)
+        public void RemoveChunks(List<int2> renderChunks, List<int2> dataCords)
         {
             //TODO: pooling
             foreach (var coords in renderChunks)
@@ -107,32 +103,32 @@ namespace MindCraft.View.Chunk
 
         #region Data for jobs processing
 
-        private NativeArray<byte> GetDataForChunkWithNeighbours(ChunkCoord coords)
+        private NativeArray<byte> GetDataForChunkWithNeighbours(int2 coords)
         {
-            var multimap = new NativeArray<byte>(9 * VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
+            var multimap = new NativeArray<byte>(GeometryLookups.VOXELS_PER_CLUSTER, Allocator.Persistent);
             for (var x = 0; x < 3; x++)
             {
                 for (var y = 0; y < 3; y++)
                 {
-                    var offset = (x + y * 3) * VoxelLookups.VOXELS_PER_CHUNK;
-                    var map = WorldModel.GetMapByChunkCoords(coords + new ChunkCoord(x - 1, y - 1));
-                    multimap.Slice(offset, VoxelLookups.VOXELS_PER_CHUNK).CopyFrom(map);
+                    var offset = (x + y * 3) * GeometryLookups.VOXELS_PER_CHUNK;
+                    var map = WorldModel.GetMapByChunkCoords(coords + new int2(x - 1, y - 1));
+                multimap.Slice(offset, GeometryLookups.VOXELS_PER_CHUNK).CopyFrom(map);
                 }
             }
-
+            
             return multimap;
         }
 
-        private NativeArray<float> GetLightsForChunkWithNeighbours(ChunkCoord coords)
+        private NativeArray<float> GetLightsForChunkWithNeighbours(int2 coords)
         {
-            var multimap = new NativeArray<float>(9 * VoxelLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
+            var multimap = new NativeArray<float>(GeometryLookups.VOXELS_PER_CLUSTER, Allocator.Persistent);
             for (var x = 0; x < 3; x++)
             {
                 for (var y = 0; y < 3; y++)
                 {
-                    var offset = (x + y * 3) * VoxelLookups.VOXELS_PER_CHUNK;
-                    var map = _lightLevelsMaps[coords + new ChunkCoord(x - 1, y - 1)];
-                    multimap.Slice(offset, VoxelLookups.VOXELS_PER_CHUNK).CopyFrom(map);
+                    var offset = (x + y * 3) * GeometryLookups.VOXELS_PER_CHUNK;
+                    var map = _lightLevelsMaps[coords + new int2(x - 1, y - 1)];
+                multimap.Slice(offset, GeometryLookups.VOXELS_PER_CHUNK).CopyFrom(map);
                 }
             }
 

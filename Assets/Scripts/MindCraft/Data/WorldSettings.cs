@@ -3,6 +3,7 @@ using Framewerk.Managers;
 using MindCraft.Common;
 using MindCraft.Data.Defs;
 using MindCraft.MapGeneration;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.Data
@@ -14,7 +15,7 @@ namespace MindCraft.Data
         Material MineMaterial { get; }
         Material BuildMaterial { get; }
         Material WorldMaterial { get; }
-        Material GetMaterial(ChunkCoord coords);
+        Material GetMaterial(int2 coords);
 
         PlayerSettings PlayerSettings { get; }
     }
@@ -58,12 +59,12 @@ namespace MindCraft.Data
             Gravity = _settings.Gravity;
         }
 
-        public Material GetMaterial(ChunkCoord coords)
+        public Material GetMaterial(int2 coords)
         {
             if(!_settings.DebugChunksMaterialEnabled)
                 return _settings.WorldMaterial;
 
-            return (coords.X + coords.Y) % 2 == 0 ? _settings.WorldMaterial : _settings.DebugMaterial;
+            return (coords.x + coords.y) % 2 == 0 ? _settings.WorldMaterial : _settings.DebugMaterial;
         }
     }
 }

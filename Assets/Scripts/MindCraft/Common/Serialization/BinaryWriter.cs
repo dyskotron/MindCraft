@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.Common.Serialization
@@ -222,6 +223,12 @@ namespace MindCraft.Common.Serialization
         }
         
         // Position / Rotation
+        public void Write(int2 value)
+        {
+            Write(value.x);
+            Write(value.y);
+        }
+        
         public void Write(Vector3 value)
         {
             Write(value.x);

@@ -1,14 +1,17 @@
 using System.Collections;
 using Framewerk.Managers;
+using MindCraft.Common;
 using MindCraft.Data;
 using MindCraft.MapGeneration;
 using MindCraft.MapGeneration.Utils;
 using MindCraft.View.Chunk.Jobs;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Debug = UnityEngine.Debug;
 
 namespace MindCraft.View.Chunk
 {
@@ -17,35 +20,30 @@ namespace MindCraft.View.Chunk
         [Inject] public IWorldSettings WorldSettings { get; set; }
         [Inject] public ICoroutineManager CoroutineManager { get; set; }
         [Inject] public TextureLookup TextureLookup { get; set; }
+        [Inject] public GeometryLookups GeometryLookups { get; set; }
         [Inject] public IBlockDefs BlockDefs { get; set; }
-
-        public const int FACES_PER_VOXEL = 6;
-        public const int TRIANGLE_INDICES_PER_FACE = 6;
-        public const int VERTICES_PER_FACE = 4;
 
         public bool IsRendering { get; private set; }
 
+        //GameObject / components
         private GameObject _gameObject;
         private MeshRenderer _meshRenderer;
         private MeshFilter _meshFilter;
-
-        //Chunk Generation
-        private int _currentVertexIndex;
-
-        private ChunkCoord _coords;
-
+        
+        //Jobs input 
+        private NativeArray<byte> _map;
+        private NativeArray<float> _lights;
+        private NativeQueue<int3> _litVoxels;
+        
+        //Jobs output (mesh data)
         private NativeList<float3> _vertices;
+        private NativeList<float3> _normals;
         private NativeList<int> _triangles;
         private NativeList<float2> _uvs;
         private NativeList<float> _colors;
 
-        private NativeArray<byte> _map;
-        private NativeQueue<int3> _litVoxels;
-        private NativeArray<int> _debug;
-
+        private RenderChunkMeshJob _meshJob;
         private JobHandle _jobHandle;
-        private RenderChunkMeshJob _job;
-        private NativeArray<float> _lights;
 
         [PostConstruct]
         public void PostConstruct()
@@ -59,12 +57,10 @@ namespace MindCraft.View.Chunk
             _meshRenderer.receiveShadows = false;
         }
 
-        public void Init(ChunkCoord coords)
+        public void Init(int2 coords)
         {
-            _coords = coords;
-
-            _gameObject.name = $"Chunk({coords.X},{coords.Y})";
-            _gameObject.transform.position = new Vector3(coords.X * VoxelLookups.CHUNK_SIZE, 0, coords.Y * VoxelLookups.CHUNK_SIZE);
+            _gameObject.name = $"Chunk({coords.x},{coords.y})";
+            _gameObject.transform.position = new Vector3(coords.x * GeometryLookups.CHUNK_SIZE, 0, coords.y * GeometryLookups.CHUNK_SIZE);
 
             //Debug _meshRenderer.material = WorldSettings.GetMaterial(coords);
         }
@@ -87,34 +83,41 @@ namespace MindCraft.View.Chunk
 
             IsRendering = true;
 
-            _map = map;//new NativeHashMap<int2, NativeArray<byte>>(9, Allocator.Persistent);
+            _map = map;
             _lights = lights;
             
             _litVoxels = new NativeQueue<int3>(Allocator.Persistent);
             
             _vertices = new NativeList<float3>(Allocator.Persistent);
+            _normals = new NativeList<float3>(Allocator.Persistent);
             _triangles = new NativeList<int>(Allocator.Persistent);
             _uvs = new NativeList<float2>(Allocator.Persistent);
             _colors = new NativeList<float>(Allocator.Persistent);
-            _debug = new NativeArray<int>(1, Allocator.Persistent);
 
-            _job = new RenderChunkMeshJob()
+            _meshJob = new RenderChunkMeshJob
                       {
+                          MapData = _map,
+                          LightLevels = _lights,
                           UvLookup = TextureLookup.WorldUvLookupNative,
                           BlockDataLookup = BlockDefs.BlockDataLookup,
-                          MapData = _map,
                           
-                          LightLevels = _lights,
-                          LitVoxels = _litVoxels,
+                          Neighbours = GeometryLookups.Neighbours,
+                          LightNeighbours = GeometryLookups.LightNeighbours,
+                          IndexToVertex = GeometryLookups.IndexToVertex,
+                          VerticesLookup = GeometryLookups.VerticesLookup,
+                          TrianglesLookup = GeometryLookups.TrianglesLookup,
                           
                           Vertices = _vertices,
+                          Normals = _normals,
                           Triangles = _triangles,
                           Uvs = _uvs,
                           Colors = _colors,
                       };
 
-            _jobHandle = _job.Schedule();
-            //ProcessJobResult();
+            _jobHandle = _meshJob.Schedule();
+            
+            //Uncomment to finish job in same callstack
+            //ProcessJobResult(); return;
 
             CoroutineManager.RunCoroutine(CheckRenderJobCoroutine());
         }
@@ -134,12 +137,11 @@ namespace MindCraft.View.Chunk
             //process job result
             Mesh mesh = new Mesh();
             mesh.indexFormat = IndexFormat.UInt32;
-            mesh.vertices = ToV3Array(_vertices);
+            mesh.vertices = NativeArrayUtil.NativeFloat3ToManagedVector3(_vertices);
             mesh.triangles = _triangles.ToArray();
-            mesh.uv = ToV2Array(_uvs);
-            mesh.colors = ToColorArray(_colors);
-            mesh.RecalculateNormals();
-
+            mesh.uv = NativeArrayUtil.NativeFloat2ToManagedVector2(_uvs);
+            mesh.colors = NativeArrayUtil.NativeFloatToManagedColor(_colors);
+            mesh.normals = NativeArrayUtil.NativeFloat3ToManagedVector3(_normals);
             _meshFilter.mesh = mesh;
 
             //dispose
@@ -147,54 +149,14 @@ namespace MindCraft.View.Chunk
             _lights.Dispose();
             _litVoxels.Dispose();
             _vertices.Dispose();
+            _normals.Dispose();
             _triangles.Dispose();
             _uvs.Dispose();
             _colors.Dispose();
-            _debug.Dispose();
 
             IsRendering = false;
         }
         
-        #endregion
-
-        #region Native collection convesion helpers
-
-        private Vector3[] ToV3Array(NativeList<float3> nl)
-        {
-            var vectors = new Vector3[nl.Length];
-
-            for (var i = 0; i < nl.Length; i++)
-            {
-                vectors[i] = nl[i];
-            }
-
-            return vectors;
-        }
-
-        private Color[] ToColorArray(NativeList<float> nl)
-        {
-            var colors = new Color[nl.Length];
-
-            for (var i = 0; i < nl.Length; i++)
-            {
-                colors[i] = new Color(0, 0, 0, nl[i]);
-            }
-
-            return colors;
-        }
-
-        private Vector2[] ToV2Array(NativeList<float2> nl)
-        {
-            var vectors = new Vector2[nl.Length];
-
-            for (var i = 0; i < nl.Length; i++)
-            {
-                vectors[i] = nl[i];
-            }
-
-            return vectors;
-        }
-
         #endregion
     }
 }

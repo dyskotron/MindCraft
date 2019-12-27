@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using MindCraft.MapGeneration.Utils;
+using MindCraft.View.Chunk;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -9,6 +11,7 @@ namespace MindCraft.View
     public class BlockMarker
     {
         [Inject] public TextureLookup TextureLookup { get; set; }
+        [Inject] public GeometryLookups GeometryLookups { get; set; }
         
         public Transform Transform => _transform;
         public GameObject GameObject => _gameObject;
@@ -125,12 +128,13 @@ namespace MindCraft.View
                 //iterate triangles
                 for (int iV = 0; iV < TRIANGLE_VERTICES_PER_FACE; iV++)
                 {
-                    var vertexIndex = VoxelLookups.IndexToVertex[iV];
+                    var vertexIndex = GeometryLookups.IndexToVertex[iV];
 
                     // each face needs just 4 vertices & UVs
                     if (iV < VERTICES_PER_FACE)
                     {
-                        vertices.Add(  zeroOffset + _scale * (Vector3)VoxelLookups.Vertices[VoxelLookups.Triangles[iF, iV]]);
+                        var vertexLookupIndex = GeometryLookups.TrianglesLookup[iF * GeometryLookups.VERTICES_PER_FACE + iV];
+                        vertices.Add((float3) zeroOffset + GeometryLookups.VerticesLookup[vertexLookupIndex]);
                         uvs.Add(TextureLookup.WorldUvLookup[voxelId, iF, iV]);
                     }
 

@@ -17,11 +17,11 @@ namespace MindCraft.Tests.Iteration
 
         public void Run()
         {
-            for (var x = 0; x < VoxelLookups.CHUNK_SIZE; x++)
+            for (var x = 0; x < GeometryLookups.CHUNK_SIZE; x++)
             {
-                for (var y= 0; y < VoxelLookups.CHUNK_SIZE; y++)
+                for (var y= 0; y < GeometryLookups.CHUNK_SIZE; y++)
                 {
-                    for (var z = 0; z < VoxelLookups.CHUNK_SIZE; z++)
+                    for (var z = 0; z < GeometryLookups.CHUNK_SIZE; z++)
                     {
                         var i = ArrayHelper.To1D(x, y, z);
                     }

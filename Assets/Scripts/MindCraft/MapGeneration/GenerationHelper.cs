@@ -62,7 +62,7 @@ namespace MindCraft.MapGeneration
 
                 if (y > lode.MinHeight && y < lode.MaxHeight)
                 {
-                    var treshold = lodeTresholds[biome.LodesStartPos + i * VoxelLookups.CHUNK_HEIGHT + y];
+                    var treshold = lodeTresholds[biome.LodesStartPos + i * GeometryLookups.CHUNK_HEIGHT + y];
 
                     if (Noise.GetLodePresence(lode.Algorithm, x, y, z, lode.Offset, lode.Frequency, treshold))
                     {
@@ -151,8 +151,8 @@ namespace MindCraft.MapGeneration
         public static int GetTerrainHeight(int x, int y, BiomeDefData biomeDef, NativeArray<float2> offsets, NativeArray<int> terrainCurve)
         {
             var sampleNoise = Noise.GetHeight(x, y, biomeDef.Octaves, biomeDef.Lacunarity, biomeDef.Persistance, biomeDef.Frequency, offsets, biomeDef.Offset);
-            var heightFromNoise = Mathf.FloorToInt(VoxelLookups.CHUNK_HEIGHT * sampleNoise);
-            return math.clamp(terrainCurve[biomeDef.TerrainCurveStartPos + heightFromNoise], 0, VoxelLookups.CHUNK_HEIGHT - 1);
+            var heightFromNoise = Mathf.FloorToInt(GeometryLookups.CHUNK_HEIGHT * sampleNoise);
+            return math.clamp(terrainCurve[biomeDef.TerrainCurveStartPos + heightFromNoise], 0, GeometryLookups.CHUNK_HEIGHT - 1);
         }
     }
 }

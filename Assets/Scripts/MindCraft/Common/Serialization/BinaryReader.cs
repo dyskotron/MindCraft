@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace MindCraft.Common.Serialization
@@ -212,6 +213,14 @@ namespace MindCraft.Common.Serialization
         }
         
         // Position / Rotation.
+        public int2 ReadInt2()
+        {
+            var x = ReadInt();
+            var y = ReadInt();
+
+            return new int2(x, y);
+        }
+        
         public Vector3 ReadVector3()
         {
             var x = ReadFloat();

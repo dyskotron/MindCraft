@@ -23,10 +23,10 @@ namespace MindCraft.Model.Jobs
 
         public void Execute(int index)
         {
-            ArrayHelper.To3D(index, out int x, out int y, out int z);
+            ArrayHelper.To3DMap(index, out int x, out int y, out int z);
 
-            int index2d = x * VoxelLookups.CHUNK_SIZE + z;
-            Map[index] = GenerationHelper.GenerateVoxel(x + ChunkX * VoxelLookups.CHUNK_SIZE, y, z + ChunkY * VoxelLookups.CHUNK_SIZE, Heights[index2d], BiomeDefs[Biomes[index2d]], Lodes, LodeTresholds);
+            int index2d = x * GeometryLookups.CHUNK_SIZE + z;
+            Map[index] = GenerationHelper.GenerateVoxel(x + ChunkX * GeometryLookups.CHUNK_SIZE, y, z + ChunkY * GeometryLookups.CHUNK_SIZE, Heights[index2d], BiomeDefs[Biomes[index2d]], Lodes, LodeTresholds);
         }
     }
 }

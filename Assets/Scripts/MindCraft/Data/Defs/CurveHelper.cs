@@ -9,28 +9,28 @@ namespace MindCraft.Data.Defs
         public static NativeArray<int> SampleCurve(AnimationCurve curve, int range)
         {
             var terrainCurveSampled = new NativeArray<int>(range, Allocator.Persistent);
-            
+
             for (var i = 0; i < range; i++)
             {
-                terrainCurveSampled[i] = (int)(curve.Evaluate(i / (float)range) * range);
+                terrainCurveSampled[i] = (int) (curve.Evaluate(i / (float) range) * range);
             }
-            
-            return terrainCurveSampled; 
+
+            return terrainCurveSampled;
         }
-        
-        public static void SampleCurve(AnimationCurve curve, NativeArray<float> destination, int startPosition, int range = VoxelLookups.CHUNK_HEIGHT)
+
+        public static void SampleCurve(AnimationCurve curve, NativeArray<float> destination, int startPosition, int range = GeometryLookups.CHUNK_HEIGHT)
         {
             for (var i = 0; i < range; i++)
             {
-                destination[startPosition + i] = (curve.Evaluate(i / (float)range));
+                destination[startPosition + i] = (curve.Evaluate(i / (float) range));
             }
         }
-        
-        public static void SampleCurve(AnimationCurve curve, NativeArray<int> destination, int startPosition, int range = VoxelLookups.CHUNK_HEIGHT)
+
+        public static void SampleCurve(AnimationCurve curve, NativeArray<int> destination, int startPosition, int range = GeometryLookups.CHUNK_HEIGHT)
         {
             for (var i = 0; i < range; i++)
             {
-                destination[startPosition + i] = (int)(curve.Evaluate(i / (float)range) * range);
+                destination[startPosition + i] = (int) (curve.Evaluate(i / (float) range) * range);
             }
         }
     }

@@ -17,7 +17,7 @@ namespace MindCraft.Tests.Iteration
 
         public void Run()
         {
-            for (var i = 0; i < VoxelLookups.CHUNK_SIZE * VoxelLookups.CHUNK_SIZE * VoxelLookups.CHUNK_HEIGHT; i++)
+            for (var i = 0; i < GeometryLookups.CHUNK_SIZE * GeometryLookups.CHUNK_SIZE * GeometryLookups.CHUNK_HEIGHT; i++)
             {
                 ArrayHelper.To3DMap(i, out int x,out int y,out int z);   
             }
