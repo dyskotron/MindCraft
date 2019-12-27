@@ -42,6 +42,7 @@ namespace MindCraft.View.Chunk
         private NativeList<float2> _uvs;
         private NativeList<float> _colors;
 
+        private DiffuseLightsJob _diffuseLightsJob;
         private RenderChunkMeshJob _meshJob;
         private JobHandle _jobHandle;
 
@@ -94,6 +95,18 @@ namespace MindCraft.View.Chunk
             _uvs = new NativeList<float2>(Allocator.Persistent);
             _colors = new NativeList<float>(Allocator.Persistent);
 
+            _diffuseLightsJob = new DiffuseLightsJob
+                                {
+                                    BlockDataLookup = BlockDefs.BlockDataLookup,
+                                    MapData = _map,
+
+                                    Neighbours = GeometryLookups.Neighbours,
+                                    LightLevels = _lights,
+                                    LitVoxels = _litVoxels
+                                };
+
+            var diffuseJobHandle = _diffuseLightsJob.Schedule();
+
             _meshJob = new RenderChunkMeshJob
                       {
                           MapData = _map,
@@ -114,7 +127,7 @@ namespace MindCraft.View.Chunk
                           Colors = _colors,
                       };
 
-            _jobHandle = _meshJob.Schedule();
+            _jobHandle = _meshJob.Schedule(diffuseJobHandle);
             
             //Uncomment to finish job in same callstack
             //ProcessJobResult(); return;
