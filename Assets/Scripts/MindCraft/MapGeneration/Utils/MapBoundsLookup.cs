@@ -5,12 +5,16 @@ namespace MindCraft.MapGeneration.Utils
 {
     public static class MapBoundsLookup
     {
+        public static readonly int RenderChunksCount;
+        
         public static readonly int2[] ChunkRemove;
 
         public static readonly int2[] ChunkAdd;
 
         public static readonly int2[] RenderGeneration;
-
+        
+        public static readonly int DataChunksCount;
+        
         public static readonly int2[] MapDataRemove;
 
         public static readonly int2[] MapDataAdd;
@@ -49,6 +53,9 @@ namespace MindCraft.MapGeneration.Utils
                 ChunkAdd = GenerateRectRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS, RING_WIDTH);
                 ChunkRemove = GenerateRectRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, RING_WIDTH);
             }
+            
+            DataChunksCount = DataGeneration.Length;
+            RenderChunksCount = RenderGeneration.Length;
         }
 
         #region Radial bounds

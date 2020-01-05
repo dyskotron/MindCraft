@@ -27,6 +27,7 @@ namespace MindCraft
             Shader.SetGlobalFloat(MaxGlobalLightLevel, 1);
         }
         
+        //TODO: can be possibly removed as in 2019.3 OnApplicationQuit seems to work properly
         void OnDestroy()
         {
             #if UNITY_EDITOR

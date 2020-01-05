@@ -32,11 +32,23 @@ namespace MindCraft.Controller.Fsm
         private PlayerView _playerView;
         private int2 _lastPlayerCoords;
 
+        //TODO: Custom render pipeline
+        //TODO: Fix physics bug
+        //TODO: fix building block colliding with player
+        //TODO: water
+        //TODO: trees
+        //TODO: chunk size 16 x 16 x 256
+        //TODO: split all meshes to one long array per each side so it can be mesh instanced
+        //TODO: make alpha setting for shader per vertex so it can be only one shader
+        
+        
         protected override void Enter()
         {
             base.Enter();
 
             Random.InitState(WorldSettings.Seed);
+            
+            WorldRenderer.Init();
             
             //Create player
             _playerView = AssetManager.GetGameObject<PlayerView>(ResourcePath.PLAYER_PREFAB);
@@ -65,6 +77,8 @@ namespace MindCraft.Controller.Fsm
             var dataCords = GetDataCoords(playerPosition, MapBoundsLookup.DataGeneration);
             var renderCords = GetRenderCoords(playerPosition, MapBoundsLookup.RenderGeneration);
 
+            Debug.LogWarning($"<color=\"aqua\">GameAppState.GenerateWorld() : RenderGeneration.Length: {MapBoundsLookup.RenderGeneration.Length}</color>");
+
             var dataWatch = new Stopwatch();
             dataWatch.Start();
             WorldModel.CreateChunkMaps(dataCords);
@@ -87,16 +101,25 @@ namespace MindCraft.Controller.Fsm
                 return;
 
             //Remove unused data + view
+            var watch = new Stopwatch();
+            watch.Start();
+            
             var removeDataCords = GetDataCoords(newCoords, MapBoundsLookup.MapDataRemove, true);
             var removeRenderCords = GetRenderCoords(newCoords, MapBoundsLookup.ChunkRemove, true);
             WorldModel.RemoveData(removeDataCords);
             WorldRenderer.RemoveChunks(removeRenderCords, removeDataCords);
 
             //Create map data + queue chunk render for newly discovered chunks
+            
             var dataCords = GetDataCoords(newCoords, MapBoundsLookup.MapDataAdd);
             var renderCords = GetRenderCoords(newCoords, MapBoundsLookup.ChunkAdd);
             WorldModel.CreateChunkMaps(dataCords);
             WorldRenderer.RenderChunks(renderCords, dataCords);
+            
+            watch.Stop();
+            
+            Debug.LogWarning($"<color=\"aqua\">GameAppState.UpdateView() : watch.ElapsedMilliseconds: {watch.ElapsedMilliseconds}</color>");
+
 
             _lastPlayerCoords = newCoords;
         }

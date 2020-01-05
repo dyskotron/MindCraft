@@ -15,11 +15,10 @@ namespace MindCraft.View.Chunk.Jobs
     {
         [ReadOnly] public NativeArray<byte> MapData;
         [ReadOnly] public NativeArray<float> LightLevels;
-        
-        [ReadOnly] public NativeArray<float2> UvLookup;
-        [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
 
         //Lookups
+        [ReadOnly] public NativeArray<float2> UvLookup;
+        [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
         [ReadOnly] public NativeArray<int3> Neighbours;
         [ReadOnly] public NativeArray<int2x4> LightNeighbours;
         [ReadOnly] public NativeArray<int> IndexToVertex;
@@ -34,8 +33,44 @@ namespace MindCraft.View.Chunk.Jobs
 
         private int _currentVertexIndex;
 
+        public RenderChunkMeshJob(ComputeMeshData data,
+                                  NativeArray<float2> uvLookup,
+                                  NativeArray<BlockDefData> blockDataLookup, 
+                                  NativeArray<int3> neighbours, 
+                                  NativeArray<int2x4> lightNeighbours, 
+                                  NativeArray<int> indexToVertex, 
+                                  NativeArray<int3> verticesLookup, 
+                                  NativeArray<int> trianglesLookup)
+        {
+            _currentVertexIndex = 0;
+            
+            MapData = data.MapWithNeighbours;
+            LightLevels = data.LightMapWithNeighbours;
+
+            UvLookup = uvLookup;
+            BlockDataLookup = blockDataLookup;
+            Neighbours = neighbours;
+            LightNeighbours = lightNeighbours;
+            IndexToVertex = indexToVertex;
+            VerticesLookup = verticesLookup;
+            TrianglesLookup = trianglesLookup;
+
+            Vertices = data.Vertices;
+            Normals = data.Normals;
+            Triangles = data.Triangles;
+            Uvs = data.Uvs;
+            Colors = data.Colors;
+        }
+
         public void Execute()
         {
+            //TODO: DATA LOCALITY MESS
+            Vertices.Clear();
+            Normals.Clear();
+            Triangles.Clear();
+            Uvs.Clear();
+            Colors.Clear();
+
             //for(var index = 0; index < MapData.Length; index++){
             for (var x = 0; x < GeometryLookups.CHUNK_SIZE; x++)
             {

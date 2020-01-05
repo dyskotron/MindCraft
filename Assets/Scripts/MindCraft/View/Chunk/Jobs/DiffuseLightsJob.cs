@@ -14,9 +14,9 @@ namespace MindCraft.View.Chunk.Jobs
     public struct DiffuseLightsJob : IJob
     {
         [ReadOnly] public NativeArray<byte> MapData;
-        [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
 
         //Lookups
+        [ReadOnly] public NativeArray<BlockDefData> BlockDataLookup;
         [ReadOnly] public NativeArray<int3> Neighbours;
 
         public NativeArray<float> LightLevels;
@@ -24,8 +24,22 @@ namespace MindCraft.View.Chunk.Jobs
 
         private int _currentVertexIndex;
 
+        public DiffuseLightsJob(ComputeMeshData data, NativeArray<BlockDefData> blockDataLookup, NativeArray<int3> neighbours)
+        {
+            _currentVertexIndex = 0;
+            
+            BlockDataLookup = blockDataLookup;
+            MapData = data.MapWithNeighbours;
+
+            Neighbours = neighbours;
+            LightLevels = data.LightMapWithNeighbours;
+            LitVoxels = data.LitVoxels;
+        }
+
         public void Execute()
         {
+            LitVoxels.Clear();
+            
             //Enqueue lit voxels for processing
             //TODO: parallel job filter or store litvoxels already in calculate light ray job
             for (var x = GeometryLookups.LIGHTS_CLUSTER_MIN; x < GeometryLookups.LIGHTS_CLUSTER_MAX; x++)

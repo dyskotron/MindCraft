@@ -77,7 +77,6 @@ namespace MindCraft
             injectionBinder.Bind<TextureLookup>().To<TextureLookup>().ToSingleton();
 
             //View
-            injectionBinder.Bind<ChunkView>().To<ChunkView>();
             injectionBinder.Bind<BlockMarker>().To<BlockMarker>();
             
             injectionBinder.Bind<GameAppScreen>().To<GameAppScreen>();
