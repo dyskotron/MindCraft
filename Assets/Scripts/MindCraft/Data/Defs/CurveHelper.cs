@@ -18,7 +18,7 @@ namespace MindCraft.Data.Defs
             return terrainCurveSampled;
         }
 
-        public static void SampleCurve(AnimationCurve curve, NativeArray<float> destination, int startPosition, int range = GeometryLookups.CHUNK_HEIGHT)
+        public static void SampleCurve(AnimationCurve curve, NativeArray<float> destination, int startPosition, int range = GeometryConsts.CHUNK_HEIGHT)
         {
             for (var i = 0; i < range; i++)
             {
@@ -26,7 +26,7 @@ namespace MindCraft.Data.Defs
             }
         }
 
-        public static void SampleCurve(AnimationCurve curve, NativeArray<int> destination, int startPosition, int range = GeometryLookups.CHUNK_HEIGHT)
+        public static void SampleCurve(AnimationCurve curve, NativeArray<int> destination, int startPosition, int range = GeometryConsts.CHUNK_HEIGHT)
         {
             for (var i = 0; i < range; i++)
             {

@@ -29,9 +29,9 @@ namespace MindCraft.View.Chunk
 
         public ComputeMeshData()
         {
-            MapWithNeighbours = new NativeArray<byte>(GeometryLookups.VOXELS_PER_CLUSTER, Allocator.Persistent);
-            LightMapWithNeighbours = new NativeArray<float>(GeometryLookups.VOXELS_PER_CLUSTER, Allocator.Persistent);
-            LightLevelMap = new NativeArray<float>(GeometryLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
+            MapWithNeighbours = new NativeArray<byte>(GeometryConsts.VOXELS_PER_CLUSTER, Allocator.Persistent);
+            LightMapWithNeighbours = new NativeArray<float>(GeometryConsts.VOXELS_PER_CLUSTER, Allocator.Persistent);
+            LightLevelMap = new NativeArray<float>(GeometryConsts.VOXELS_PER_CHUNK, Allocator.Persistent);
             LitVoxels = new NativeQueue<int3>(Allocator.Persistent);
 
             Vertices = new NativeList<float3>(Allocator.Persistent);

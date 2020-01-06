@@ -42,14 +42,14 @@ namespace MindCraft.View.Chunk.Jobs
             
             //Enqueue lit voxels for processing
             //TODO: parallel job filter or store litvoxels already in calculate light ray job
-            for (var x = GeometryLookups.LIGHTS_CLUSTER_MIN; x < GeometryLookups.LIGHTS_CLUSTER_MAX; x++)
+            for (var x = GeometryConsts.LIGHTS_CLUSTER_MIN; x < GeometryConsts.LIGHTS_CLUSTER_MAX; x++)
             {
-                for (var z = GeometryLookups.LIGHTS_CLUSTER_MIN; z < GeometryLookups.LIGHTS_CLUSTER_MAX; z++)
+                for (var z = GeometryConsts.LIGHTS_CLUSTER_MIN; z < GeometryConsts.LIGHTS_CLUSTER_MAX; z++)
                 {
-                    for (var y = GeometryLookups.CHUNK_HEIGHT - 1; y >= 0; y--)
+                    for (var y = GeometryConsts.CHUNK_HEIGHT - 1; y >= 0; y--)
                     {
                         var index = ArrayHelper.ToCluster1D(x, y, z);
-                        if (LightLevels[index] > GeometryLookups.LIGHT_FALL_OFF)
+                        if (LightLevels[index] > GeometryConsts.LIGHT_FALL_OFF)
                             LitVoxels.Enqueue(new int3(x, y, z));
                     }
                 }
@@ -60,10 +60,10 @@ namespace MindCraft.View.Chunk.Jobs
             {
                 var litVoxel = LitVoxels.Dequeue();
                 var litVoxelId = ArrayHelper.ToCluster1D(litVoxel.x, litVoxel.y, litVoxel.z);
-                var neighbourLightValue = LightLevels[litVoxelId] - GeometryLookups.LIGHT_FALL_OFF;
+                var neighbourLightValue = LightLevels[litVoxelId] - GeometryConsts.LIGHT_FALL_OFF;
 
                 //iterate trough neighbours
-                for (int iF = 0; iF < GeometryLookups.FACES_PER_VOXEL; iF++)
+                for (int iF = 0; iF < GeometryConsts.FACES_PER_VOXEL; iF++)
                 {
                     var neighbour = litVoxel + Neighbours[iF];
 
@@ -75,7 +75,7 @@ namespace MindCraft.View.Chunk.Jobs
                         if (!BlockDataLookup[neighbourType].IsSolid && LightLevels[neighbourId] < neighbourLightValue)
                         {
                             LightLevels[neighbourId] = neighbourLightValue;
-                            if (neighbourLightValue > GeometryLookups.LIGHT_FALL_OFF)
+                            if (neighbourLightValue > GeometryConsts.LIGHT_FALL_OFF)
                                 LitVoxels.Enqueue(neighbour);
                         }
                     }
@@ -85,10 +85,10 @@ namespace MindCraft.View.Chunk.Jobs
 
         private bool CheckVoxelBounds(int neighbourX, int neighbourY, int neighbourZ)
         {
-            if (neighbourX < GeometryLookups.LIGHTS_CLUSTER_MIN || neighbourZ < GeometryLookups.LIGHTS_CLUSTER_MIN || neighbourY < 0)
+            if (neighbourX < GeometryConsts.LIGHTS_CLUSTER_MIN || neighbourZ < GeometryConsts.LIGHTS_CLUSTER_MIN || neighbourY < 0)
                 return false;
 
-            if (neighbourX >= GeometryLookups.LIGHTS_CLUSTER_MAX || neighbourZ >= GeometryLookups.LIGHTS_CLUSTER_MAX || neighbourY >= GeometryLookups.CHUNK_HEIGHT)
+            if (neighbourX >= GeometryConsts.LIGHTS_CLUSTER_MAX || neighbourZ >= GeometryConsts.LIGHTS_CLUSTER_MAX || neighbourY >= GeometryConsts.CHUNK_HEIGHT)
                 return false;
 
             return true;

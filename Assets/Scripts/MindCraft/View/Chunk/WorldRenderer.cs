@@ -306,9 +306,9 @@ namespace MindCraft.View.Chunk
             {
                 for (var y = 0; y < 3; y++)
                 {
-                    var offset = (x + y * 3) * GeometryLookups.VOXELS_PER_CHUNK;
+                    var offset = (x + y * 3) * GeometryConsts.VOXELS_PER_CHUNK;
                     var map = WorldModel.GetMapByChunkCoords(coords + new int2(x - 1, y - 1));
-                    multimap.Slice(offset, GeometryLookups.VOXELS_PER_CHUNK).CopyFrom(map);
+                    multimap.Slice(offset, GeometryConsts.VOXELS_PER_CHUNK).CopyFrom(map);
                 }
             }
         }
@@ -320,10 +320,10 @@ namespace MindCraft.View.Chunk
             {
                 for (var y = 0; y < 3; y++)
                 {
-                    var offset = (x + y * 3) * GeometryLookups.VOXELS_PER_CHUNK;
+                    var offset = (x + y * 3) * GeometryConsts.VOXELS_PER_CHUNK;
                     var id = _dataIdByCoords[coords + new int2(x - 1, y - 1)];
                     var map = _computeData[id].LightLevelMap;
-                    multimap.Slice(offset, GeometryLookups.VOXELS_PER_CHUNK).CopyFrom(map);
+                    multimap.Slice(offset, GeometryConsts.VOXELS_PER_CHUNK).CopyFrom(map);
                 }
             }
         }

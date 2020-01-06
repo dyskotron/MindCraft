@@ -40,12 +40,12 @@ namespace MindCraft.Data.Defs
         {
             //populate lodes array
             _lodes = new NativeArray<LodeDefData>(lodeDefs.Length, Allocator.Persistent);
-            _lodeTresholds = new NativeArray<float>(lodeDefs.Length * GeometryLookups.CHUNK_HEIGHT, Allocator.Persistent);
+            _lodeTresholds = new NativeArray<float>(lodeDefs.Length * GeometryConsts.CHUNK_HEIGHT, Allocator.Persistent);
             
             for (var i = 0; i < lodeDefs.Length; i++)
             {
                 _lodes[i] = new LodeDefData(lodeDefs[i]);
-                CurveHelper.SampleCurve(lodeDefs[i].ThresholdByY, _lodeTresholds, i * GeometryLookups.CHUNK_HEIGHT);
+                CurveHelper.SampleCurve(lodeDefs[i].ThresholdByY, _lodeTresholds, i * GeometryConsts.CHUNK_HEIGHT);
             }
         }
 
@@ -88,7 +88,7 @@ namespace MindCraft.Data.Defs
             TopBlock = (byte)def.TopBlock;
             MiddleBlock = (byte)def.MiddleBlock;
             BottomBlock = (byte)def.BottomBlock;
-            TerrainCurveStartPos = (int) def.Id * GeometryLookups.CHUNK_HEIGHT;
+            TerrainCurveStartPos = (int) def.Id * GeometryConsts.CHUNK_HEIGHT;
             
             LodesStartPos = lodeStartPos;
             LodesCount = def.lodeDefs.Length;

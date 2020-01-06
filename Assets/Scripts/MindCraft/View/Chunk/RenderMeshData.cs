@@ -34,7 +34,7 @@ namespace MindCraft.View.Chunk
         {
             Coords = coords;
             
-            var position = new Vector3(coords.x * GeometryLookups.CHUNK_SIZE, 0, coords.y * GeometryLookups.CHUNK_SIZE);
+            var position = new Vector3(coords.x * GeometryConsts.CHUNK_SIZE, 0, coords.y * GeometryConsts.CHUNK_SIZE);
             _gameObject.transform.position = position;
         }
     }

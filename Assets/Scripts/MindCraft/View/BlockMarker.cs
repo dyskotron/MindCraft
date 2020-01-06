@@ -133,7 +133,7 @@ namespace MindCraft.View
                     // each face needs just 4 vertices & UVs
                     if (iV < VERTICES_PER_FACE)
                     {
-                        var vertexLookupIndex = GeometryLookups.TrianglesLookup[iF * GeometryLookups.VERTICES_PER_FACE + iV];
+                        var vertexLookupIndex = GeometryLookups.TrianglesLookup[iF * GeometryConsts.VERTICES_PER_FACE + iV];
                         vertices.Add((float3) zeroOffset + GeometryLookups.VerticesLookup[vertexLookupIndex]);
                         uvs.Add(TextureLookup.WorldUvLookup[voxelId, iF, iV]);
                     }

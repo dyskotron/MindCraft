@@ -20,13 +20,13 @@ namespace MindCraft.View.Chunk.Jobs
         {
             float lightLevel = 1f;
 
-            for (var x = 0; x < GeometryLookups.CHUNK_SIZE; x++)
+            for (var x = 0; x < GeometryConsts.CHUNK_SIZE; x++)
             {
-                for (var z = 0; z < GeometryLookups.CHUNK_SIZE; z++)
+                for (var z = 0; z < GeometryConsts.CHUNK_SIZE; z++)
                 {
                     lightLevel = 1f;
 
-                    for (var y = GeometryLookups.CHUNK_HEIGHT - 1; y >= 0; y--)
+                    for (var y = GeometryConsts.CHUNK_HEIGHT - 1; y >= 0; y--)
                     {
                         var index = ArrayHelper.To1DMap(x, y, z);
                         LightLevels[index] = lightLevel;

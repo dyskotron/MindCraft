@@ -26,10 +26,10 @@ namespace MindCraft.Model.Jobs
             //ArrayHelper.To3D(index, out int x, out int y, out int z);
 
             //int index2d = x * GeometryLookups.CHUNK_SIZE + z;
-            int x = Mathf.FloorToInt( index / (float)GeometryLookups.CHUNK_SIZE);
-            int z = index % GeometryLookups.CHUNK_SIZE;
+            int x = Mathf.FloorToInt( index / (float)GeometryConsts.CHUNK_SIZE);
+            int z = index % GeometryConsts.CHUNK_SIZE;
             
-            Biomes[index] = GenerationHelper.GetBiomeForColumn(x + ChunkX * GeometryLookups.CHUNK_SIZE, z + ChunkY * GeometryLookups.CHUNK_SIZE, BiomeDefs, Offsets, TerrainCurves, out int terrainHeight);
+            Biomes[index] = GenerationHelper.GetBiomeForColumn(x + ChunkX * GeometryConsts.CHUNK_SIZE, z + ChunkY * GeometryConsts.CHUNK_SIZE, BiomeDefs, Offsets, TerrainCurves, out int terrainHeight);
             Heights[index] = terrainHeight;
         }
     }

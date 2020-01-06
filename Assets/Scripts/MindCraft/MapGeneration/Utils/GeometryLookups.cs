@@ -7,32 +7,6 @@ namespace MindCraft.MapGeneration.Utils
 {
     public partial class GeometryLookups : IDestroyable
     {
-        public const int FACES_PER_VOXEL = 6;
-        public const int TRIANGLE_INDICES_PER_FACE = 6;
-        public const int VERTICES_PER_FACE = 4;
-        
-        public const int MAX_OCTAVES = 10;
-        
-        public const int CHUNK_SIZE = 8; 
-        public const int CHUNK_SIZE_POW2 = CHUNK_SIZE * CHUNK_SIZE; 
-        public const int CHUNK_HEIGHT = 128;
-        public const int VOXELS_PER_CHUNK = CHUNK_SIZE * CHUNK_SIZE * CHUNK_HEIGHT;
-        public const int VOXELS_PER_CLUSTER = VOXELS_PER_CHUNK * 9;
-        public const int VIEW_DISTANCE = 100;
-        public static readonly int VIEW_DISTANCE_IN_CHUNKS = Mathf.CeilToInt(VIEW_DISTANCE / (float)CHUNK_SIZE);
-        
-        public const float LIGHT_FALL_OFF = 0.2f;
-        public const float MIN_LIGHT = 0.15f;
-        
-        //
-        public const int DIFFUSE_LIGHTS_MARGIN = 5; //CAN'T BE BIGGER THAN CHUNK_SIZE!
-        public const int LIGHTS_CLUSTER_MIN = - DIFFUSE_LIGHTS_MARGIN;
-        public const int LIGHTS_CLUSTER_MAX = CHUNK_SIZE + DIFFUSE_LIGHTS_MARGIN - 1;
-        
-        //index of chunk in the center of concenated arrays we send to jobs that needs to know about neighbours
-        //center chunk is what we care about, rest is just to get surrounding data
-        public const int MULTIMAP_CENTER_OFFSET = 4 * VOXELS_PER_CHUNK;
-        
         //relative coordinates of all voxel's neighbours.
         public NativeArray<int3> Neighbours { get; private set; }
 

@@ -35,23 +35,23 @@ namespace MindCraft.MapGeneration.Utils
         {
             if (USE_RADIAL_BOUNDS)
             {
-                DataGeneration = GenerateCircle(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
-                MapDataAdd = GenerateRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, 2);
-                MapDataRemove = GenerateRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, 2);
+                DataGeneration = GenerateCircle(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
+                MapDataAdd = GenerateRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, 2);
+                MapDataRemove = GenerateRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, 2);
 
-                RenderGeneration = GenerateCircle(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS);
-                ChunkAdd = GenerateRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS, 2);
-                ChunkRemove = GenerateRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, 2);
+                RenderGeneration = GenerateCircle(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS);
+                ChunkAdd = GenerateRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS, 2);
+                ChunkRemove = GenerateRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, 2);
             }
             else
             {
-                DataGeneration = GenerateRect(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
-                MapDataAdd = GenerateRectRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, RING_WIDTH);
-                MapDataRemove = GenerateRectRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, RING_WIDTH);
+                DataGeneration = GenerateRect(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD);
+                MapDataAdd = GenerateRectRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD, RING_WIDTH);
+                MapDataRemove = GenerateRectRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + MAP_DATA_LOOKAHEAD + REMOVE_RING_OFFSET, RING_WIDTH);
 
-                RenderGeneration = GenerateRect(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS);
-                ChunkAdd = GenerateRectRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS, RING_WIDTH);
-                ChunkRemove = GenerateRectRing(GeometryLookups.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, RING_WIDTH);
+                RenderGeneration = GenerateRect(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS);
+                ChunkAdd = GenerateRectRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS, RING_WIDTH);
+                ChunkRemove = GenerateRectRing(GeometryConsts.VIEW_DISTANCE_IN_CHUNKS + REMOVE_RING_OFFSET, RING_WIDTH);
             }
             
             DataChunksCount = DataGeneration.Length;

@@ -49,10 +49,10 @@ namespace MindCraft.Data
 
             //TODO: count lode array size properly!
             const int MAX_LODES_PER_DEF = 20;
-            const int MAX_THRESHOLD_PER_DEF = MAX_LODES_PER_DEF * GeometryLookups.CHUNK_HEIGHT;
+            const int MAX_THRESHOLD_PER_DEF = MAX_LODES_PER_DEF * GeometryConsts.CHUNK_HEIGHT;
 
             _biomeDefData = new NativeArray<BiomeDefData>(defs.Length, Allocator.Persistent);
-            _terrainCurvesSampled = new NativeArray<int>(defs.Length * GeometryLookups.CHUNK_HEIGHT, Allocator.Persistent);
+            _terrainCurvesSampled = new NativeArray<int>(defs.Length * GeometryConsts.CHUNK_HEIGHT, Allocator.Persistent);
             _lodes = new NativeArray<LodeDefData>(defs.Length * MAX_LODES_PER_DEF, Allocator.Persistent);
             _lodeThresholds = new NativeArray<float>(defs.Length * MAX_THRESHOLD_PER_DEF, Allocator.Persistent);
 
@@ -66,14 +66,14 @@ namespace MindCraft.Data
                 _biomeDefData[i] = new BiomeDefData(def, lodeIndex);
 
                 ////////// TERRAIN CURVES //////////
-                CurveHelper.SampleCurve(def.TerrainCurve, _terrainCurvesSampled, i * GeometryLookups.CHUNK_HEIGHT);
+                CurveHelper.SampleCurve(def.TerrainCurve, _terrainCurvesSampled, i * GeometryConsts.CHUNK_HEIGHT);
 
                 ////////////// LODES //////////////
                 foreach (var lodeDef in def.lodeDefs)
                 {
                     _lodes[lodeIndex] = new LodeDefData(lodeDef);
                     
-                    CurveHelper.SampleCurve(lodeDef.ThresholdByY, _lodeThresholds,lodeIndex * GeometryLookups.CHUNK_HEIGHT);
+                    CurveHelper.SampleCurve(lodeDef.ThresholdByY, _lodeThresholds,lodeIndex * GeometryConsts.CHUNK_HEIGHT);
                     
                     lodeIndex++;
                 }

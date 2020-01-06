@@ -68,9 +68,9 @@ namespace MindCraft.Model
             //generate octave offsets
             var random = new Random();
             random.InitState(928349238); // TODO fill with seed 
-            _offsets = new NativeArray<float2>(GeometryLookups.MAX_OCTAVES, Allocator.Persistent);
+            _offsets = new NativeArray<float2>(GeometryConsts.MAX_OCTAVES, Allocator.Persistent);
             _offsets[0] = 0;
-            for (var i = 1; i < GeometryLookups.MAX_OCTAVES; i++)
+            for (var i = 1; i < GeometryConsts.MAX_OCTAVES; i++)
             {
                 _offsets[i] = random.NextFloat2(-1f, 1f);
             }
@@ -127,7 +127,7 @@ namespace MindCraft.Model
             //update voxel in user player modifications map
             //so that data can persist when we clean distant chunks from memory and can be used to save / load game
             if (!_playerModifiedMaps.ContainsKey(coords))
-                _playerModifiedMaps[coords] = new byte[GeometryLookups.CHUNK_SIZE, GeometryLookups.CHUNK_HEIGHT, GeometryLookups.CHUNK_SIZE];
+                _playerModifiedMaps[coords] = new byte[GeometryConsts.CHUNK_SIZE, GeometryConsts.CHUNK_HEIGHT, GeometryConsts.CHUNK_SIZE];
 
             _playerModifiedMaps[coords][x, y, z] = voxelType;
 
@@ -138,7 +138,7 @@ namespace MindCraft.Model
 
             if (x <= 0)
                 updateCoords.Add(coords + ChunkCoord.Left);
-            else if (x >= GeometryLookups.CHUNK_SIZE - 1)
+            else if (x >= GeometryConsts.CHUNK_SIZE - 1)
                 updateCoords.Add(coords + ChunkCoord.Right);
 
             if (z <= 0)
@@ -147,16 +147,16 @@ namespace MindCraft.Model
 
                 if (x <= 0)
                     updateCoords.Add(coords + ChunkCoord.LeftBack);
-                else if (x >= GeometryLookups.CHUNK_SIZE - 1)
+                else if (x >= GeometryConsts.CHUNK_SIZE - 1)
                     updateCoords.Add(coords + ChunkCoord.RightBack);
             }
-            else if (z >= GeometryLookups.CHUNK_SIZE - 1)
+            else if (z >= GeometryConsts.CHUNK_SIZE - 1)
             {
                 updateCoords.Add(coords + ChunkCoord.Front);
 
                 if (x <= 0)
                     updateCoords.Add(coords + ChunkCoord.LeftFront);
-                else if (x >= GeometryLookups.CHUNK_SIZE - 1)
+                else if (x >= GeometryConsts.CHUNK_SIZE - 1)
                     updateCoords.Add(coords + ChunkCoord.RightFront);
             }
 
@@ -179,9 +179,9 @@ namespace MindCraft.Model
 
             for (var i = 0; i < coordsList.Count; i++)
             {
-                results[i] = new NativeArray<byte>(GeometryLookups.VOXELS_PER_CHUNK, Allocator.Persistent);
-                biomes[i] = new NativeArray<byte>(GeometryLookups.CHUNK_SIZE_POW2, Allocator.Persistent);
-                heights[i] = new NativeArray<int>(GeometryLookups.CHUNK_SIZE_POW2, Allocator.Persistent);
+                results[i] = new NativeArray<byte>(GeometryConsts.VOXELS_PER_CHUNK, Allocator.Persistent);
+                biomes[i] = new NativeArray<byte>(GeometryConsts.CHUNK_SIZE_POW2, Allocator.Persistent);
+                heights[i] = new NativeArray<int>(GeometryConsts.CHUNK_SIZE_POW2, Allocator.Persistent);
 
                 var biomeAndHeightJob = new GetBiomeAndHeightJob()
                                         {
@@ -194,7 +194,7 @@ namespace MindCraft.Model
                                             Heights = heights[i]
                                         };
 
-                var handle = biomeAndHeightJob.Schedule(GeometryLookups.CHUNK_SIZE_POW2, 64);
+                var handle = biomeAndHeightJob.Schedule(GeometryConsts.CHUNK_SIZE_POW2, 64);
 
                 var generateDataJob = new GenerateChunkDataJob()
                                       {
@@ -208,7 +208,7 @@ namespace MindCraft.Model
                                           Heights = heights[i]
                                       };
 
-                generateJobArray[i] = generateDataJob.Schedule(GeometryLookups.VOXELS_PER_CHUNK, 64, handle);
+                generateJobArray[i] = generateDataJob.Schedule(GeometryConsts.VOXELS_PER_CHUNK, 64, handle);
             }
 
             JobHandle.CompleteAll(generateJobArray);
@@ -221,11 +221,11 @@ namespace MindCraft.Model
                 if (_playerModifiedMaps.ContainsKey(coords))
                 {
                     var map = _playerModifiedMaps[coords];
-                    for (var iX = 0; iX < GeometryLookups.CHUNK_SIZE; iX++)
+                    for (var iX = 0; iX < GeometryConsts.CHUNK_SIZE; iX++)
                     {
-                        for (var iY = 0; iY < GeometryLookups.CHUNK_HEIGHT; iY++)
+                        for (var iY = 0; iY < GeometryConsts.CHUNK_HEIGHT; iY++)
                         {
-                            for (var iZ = 0; iZ < GeometryLookups.CHUNK_SIZE; iZ++)
+                            for (var iZ = 0; iZ < GeometryConsts.CHUNK_SIZE; iZ++)
                             {
                                 var blockId = map[iX, iY, iZ];
                                 if (blockId != BlockTypeByte.NONE)
@@ -272,7 +272,7 @@ namespace MindCraft.Model
         {
             // ======== STATIC RULES ========
 
-            if (y < 0 || y >= GeometryLookups.CHUNK_HEIGHT)
+            if (y < 0 || y >= GeometryConsts.CHUNK_HEIGHT)
                 return BlockTypeByte.AIR;
 
             if (y == 0)
@@ -283,7 +283,7 @@ namespace MindCraft.Model
             var coords = WorldModelHelper.GetChunkCoordsFromWorldXy(x, z);
             var map = GetMapByChunkCoords(coords);
 
-            var index = ArrayHelper.To1DMap(x - coords.x * GeometryLookups.CHUNK_SIZE, y, z - coords.y * GeometryLookups.CHUNK_SIZE);
+            var index = ArrayHelper.To1DMap(x - coords.x * GeometryConsts.CHUNK_SIZE, y, z - coords.y * GeometryConsts.CHUNK_SIZE);
 
             return map[index];
         }
@@ -294,7 +294,7 @@ namespace MindCraft.Model
             WorldModelHelper.GetLocalXyzFromWorldPosition(position, out int x, out int y, out int z);
             var coords = WorldModelHelper.GetChunkCoordsFromWorldPosition(position);
 
-            return _heights[coords][x * GeometryLookups.CHUNK_SIZE + z];
+            return _heights[coords][x * GeometryConsts.CHUNK_SIZE + z];
         }
 
         #endregion
@@ -327,7 +327,7 @@ namespace MindCraft.Model
                 var coords = reader.ReadInt2();
                 var dictLength = reader.ReadInt();
 
-                var map = new byte[GeometryLookups.CHUNK_SIZE, GeometryLookups.CHUNK_HEIGHT, GeometryLookups.CHUNK_SIZE];
+                var map = new byte[GeometryConsts.CHUNK_SIZE, GeometryConsts.CHUNK_HEIGHT, GeometryConsts.CHUNK_SIZE];
 
                 for (var iDict = 0; iDict < dictLength; iDict++)
                 {
@@ -345,7 +345,7 @@ namespace MindCraft.Model
         {
             var dict = new Dictionary<int, byte>();
 
-            var length = GeometryLookups.CHUNK_HEIGHT * GeometryLookups.CHUNK_SIZE * GeometryLookups.CHUNK_SIZE;
+            var length = GeometryConsts.CHUNK_HEIGHT * GeometryConsts.CHUNK_SIZE * GeometryConsts.CHUNK_SIZE;
 
             for (int i = 0; i < length; i++)
             {

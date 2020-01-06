@@ -25,8 +25,8 @@ namespace MindCraft.Model.Jobs
         {
             ArrayHelper.To3DMap(index, out int x, out int y, out int z);
 
-            int index2d = x * GeometryLookups.CHUNK_SIZE + z;
-            Map[index] = GenerationHelper.GenerateVoxel(x + ChunkX * GeometryLookups.CHUNK_SIZE, y, z + ChunkY * GeometryLookups.CHUNK_SIZE, Heights[index2d], BiomeDefs[Biomes[index2d]], Lodes, LodeTresholds);
+            int index2d = x * GeometryConsts.CHUNK_SIZE + z;
+            Map[index] = GenerationHelper.GenerateVoxel(x + ChunkX * GeometryConsts.CHUNK_SIZE, y, z + ChunkY * GeometryConsts.CHUNK_SIZE, Heights[index2d], BiomeDefs[Biomes[index2d]], Lodes, LodeTresholds);
         }
     }
 }

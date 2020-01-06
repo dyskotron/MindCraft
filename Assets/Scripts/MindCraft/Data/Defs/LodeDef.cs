@@ -25,10 +25,10 @@ namespace MindCraft.Data.Defs
         [Range(0.1f,50f)]
         public float Frequency;
         
-        [Range(0,GeometryLookups.CHUNK_HEIGHT)]
+        [Range(0,GeometryConsts.CHUNK_HEIGHT)]
         public int MinHeight;
         
-        [Range(0,GeometryLookups.CHUNK_HEIGHT)]
+        [Range(0,GeometryConsts.CHUNK_HEIGHT)]
         public int MaxHeight;
 
         public AnimationCurve ThresholdByY;

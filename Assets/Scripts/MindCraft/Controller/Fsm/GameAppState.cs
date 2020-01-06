@@ -32,15 +32,15 @@ namespace MindCraft.Controller.Fsm
         private PlayerView _playerView;
         private int2 _lastPlayerCoords;
 
-        //TODO: Custom render pipeline
-        //TODO: Fix physics bug
-        //TODO: fix building block colliding with player
-        //TODO: water
-        //TODO: trees
         //TODO: chunk size 16 x 16 x 256
-        //TODO: split all meshes to one long array per each side so it can be mesh instanced
-        //TODO: make alpha setting for shader per vertex so it can be only one shader
-        
+        //TODO: trees
+        //TODO: water
+        //TODO: fix building block colliding with player
+        //TODO: Fix physics bug
+        //TODO: Custom render pipeline
+        //TODO: separate mesh for solid and transparent voxels
+        //TODO: split all meshes to one long array per each side so it can be mesh instanced?
+        //TODO: make alpha setting for shader per vertex so it can be only one shader?
         
         protected override void Enter()
         {
@@ -53,12 +53,13 @@ namespace MindCraft.Controller.Fsm
             //Create player
             _playerView = AssetManager.GetGameObject<PlayerView>(ResourcePath.PLAYER_PREFAB);
 
-            Vector3 initPosition; 
+            Vector3 initPosition;
             if (SaveLoadManager.LoadedGame.IsLoaded)
                 initPosition = SaveLoadManager.LoadedGame.InitPosition;
             else
                 initPosition = new Vector3(0.5f, WorldModel.GetTerrainHeight(new Vector3(0, 0, 0)) + 1, 0.5f);
             
+            initPosition.y = GeometryConsts.CHUNK_HEIGHT - 5;
             _playerView.transform.position = initPosition;
             
             var playerCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(initPosition);
@@ -67,7 +68,7 @@ namespace MindCraft.Controller.Fsm
             
             var camera = ViewConfig.Camera3d;
             camera.nearClipPlane = 0.01f;
-            camera.farClipPlane = GeometryLookups.VIEW_DISTANCE;
+            camera.farClipPlane = GeometryConsts.VIEW_DISTANCE;
 
             Updater.EveryFrame(UpdateView);
         }

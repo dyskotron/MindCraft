@@ -72,15 +72,15 @@ namespace MindCraft.View.Chunk.Jobs
             Colors.Clear();
 
             //for(var index = 0; index < MapData.Length; index++){
-            for (var x = 0; x < GeometryLookups.CHUNK_SIZE; x++)
+            for (var x = 0; x < GeometryConsts.CHUNK_SIZE; x++)
             {
-                for (var z = 0; z < GeometryLookups.CHUNK_SIZE; z++)
+                for (var z = 0; z < GeometryConsts.CHUNK_SIZE; z++)
                 {
-                    for (var y = GeometryLookups.CHUNK_HEIGHT - 1; y >= 0; y--)
+                    for (var y = GeometryConsts.CHUNK_HEIGHT - 1; y >= 0; y--)
                     {
                         //we need x, y, z at this point for light
                         //no need to use more expensive ArrayHelper.ToCluster1D as we are going only trough middle chunk
-                        var index = ArrayHelper.To1DMap(x, y, z) + GeometryLookups.MULTIMAP_CENTER_OFFSET;
+                        var index = ArrayHelper.To1DMap(x, y, z) + GeometryConsts.MULTIMAP_CENTER_OFFSET;
 
                         var voxelId = MapData[index];
 
@@ -90,7 +90,7 @@ namespace MindCraft.View.Chunk.Jobs
                         var position = new int3(x, y, z);
 
                         //iterate faces
-                        for (int iF = 0; iF < GeometryLookups.FACES_PER_VOXEL; iF++)
+                        for (int iF = 0; iF < GeometryConsts.FACES_PER_VOXEL; iF++)
                         {
                             //check neighbours
                             var neighbourPosRelative = Neighbours[iF];
@@ -104,14 +104,14 @@ namespace MindCraft.View.Chunk.Jobs
                             var neighbourId = ArrayHelper.ToCluster1D(neighbourPosAbsolute.x, neighbourPosAbsolute.y, neighbourPosAbsolute.z);
 
                             //iterate triangles
-                            for (int iV = 0; iV < GeometryLookups.TRIANGLE_INDICES_PER_FACE; iV++)
+                            for (int iV = 0; iV < GeometryConsts.TRIANGLE_INDICES_PER_FACE; iV++)
                             {
                                 var vertexIndex = IndexToVertex[iV];
 
                                 // each face needs just 4 vertices & UVs
-                                if (iV < GeometryLookups.VERTICES_PER_FACE)
+                                if (iV < GeometryConsts.VERTICES_PER_FACE)
                                 {
-                                    var vertexLookupIndex = TrianglesLookup[iF * GeometryLookups.VERTICES_PER_FACE + iV];
+                                    var vertexLookupIndex = TrianglesLookup[iF * GeometryConsts.VERTICES_PER_FACE + iV];
                                     Vertices.Add(position + VerticesLookup[vertexLookupIndex]);
 
                                     Normals.Add(neighbourPosRelative);
@@ -141,14 +141,14 @@ namespace MindCraft.View.Chunk.Jobs
                                     var diagonalAbs = neighbourPosAbsolute + diagonal;
                                     lightLevel += LightLevels[ArrayHelper.ToCluster1D(diagonalAbs.x, diagonalAbs.y, diagonalAbs.z)];
 
-                                    Colors.Add(math.max(lightLevel * 0.25f, GeometryLookups.MIN_LIGHT)); //multiply instead of divide by 4 as that's faster
+                                    Colors.Add(math.max(lightLevel * 0.25f, GeometryConsts.MIN_LIGHT)); //multiply instead of divide by 4 as that's faster
                                 }
 
                                 //we still need 6 triangle vertices tho
                                 Triangles.Add(_currentVertexIndex + vertexIndex);
                             }
 
-                            _currentVertexIndex += GeometryLookups.VERTICES_PER_FACE;
+                            _currentVertexIndex += GeometryConsts.VERTICES_PER_FACE;
                         }
                     }
                 }
@@ -157,20 +157,20 @@ namespace MindCraft.View.Chunk.Jobs
 
         private bool ShouldRenderNeighbour(int x, int y, int z)
         {
-            if (y >= GeometryLookups.CHUNK_HEIGHT)
+            if (y >= GeometryConsts.CHUNK_HEIGHT)
                 return true;
 
             if (y < 0)
                 return false;
 
-            var xOffset = (x + GeometryLookups.CHUNK_SIZE) >> 3; // -> / GeometryLookups.CHUNK_SIZE
-            var zOffset = (z + GeometryLookups.CHUNK_SIZE) >> 3; // -> / GeometryLookups.CHUNK_SIZE
+            var xOffset = (x + GeometryConsts.CHUNK_SIZE) >> GeometryConsts.CHUNK_SIZE_LOG2; // -> / GeometryLookups.CHUNK_SIZE
+            var zOffset = (z + GeometryConsts.CHUNK_SIZE) >> GeometryConsts.CHUNK_SIZE_LOG2; // -> / GeometryLookups.CHUNK_SIZE
 
             //adjust x,z to be always within chunk voxel range
-            x = (x + GeometryLookups.CHUNK_SIZE) & 7; // -> % GeometryLookups.CHUNK_SIZE
-            z = (z + GeometryLookups.CHUNK_SIZE) & 7; // -> % GeometryLookups.CHUNK_SIZE
+            x = (x + GeometryConsts.CHUNK_SIZE) & GeometryConsts.MODULO_BY_CHUNK_SIZE; // -> % GeometryLookups.CHUNK_SIZE
+            z = (z + GeometryConsts.CHUNK_SIZE) & GeometryConsts.MODULO_BY_CHUNK_SIZE; // -> % GeometryLookups.CHUNK_SIZE
 
-            var chunkAddress = (xOffset + zOffset * 3) << 13; //-> * GeometryLookups.VOXELS_PER_CHUNK
+            var chunkAddress = (xOffset + zOffset * 3) << GeometryConsts.VOXELS_PER_CHUNK_LOG2; //-> * GeometryLookups.VOXELS_PER_CHUNK
 
             var id = ArrayHelper.To1DMap(x, y, z);
             return !BlockDataLookup[MapData[id + chunkAddress]].IsSolid;
