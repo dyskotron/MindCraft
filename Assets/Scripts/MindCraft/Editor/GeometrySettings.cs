@@ -1,38 +1,7 @@
-﻿//Author: APMIX
-//Put this in Assets/Editor Folder
-
-using System.IO;
+﻿using System.IO;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
-
-public class GeometrySettingsWindow : EditorWindow
-{
-    private int _chunkSize = GeometryConsts.CHUNK_SIZE;
-    private int _chunkHeight = GeometryConsts.CHUNK_HEIGHT;
-    private int _viewDistance = GeometryConsts.VIEW_DISTANCE;
-
-    [MenuItem("MindCraft/Geometry Settings")]
-    static void Init()
-    {
-        GeometrySettingsWindow window = (GeometrySettingsWindow)GetWindow(typeof(GeometrySettingsWindow));
-        window.Show();
-    }
-
-    void OnGUI()
-    {
-        GUILayout.Label("Geometry settings", EditorStyles.boldLabel);
-        
-        _chunkSize = int.Parse(EditorGUILayout.TextField("Chunk width", _chunkSize.ToString()));
-        _chunkHeight = int.Parse(EditorGUILayout.TextField("Chunk height", _chunkHeight.ToString()));
-        _viewDistance = int.Parse(EditorGUILayout.TextField("View distance", _viewDistance.ToString()));
-        
-        if (GUILayout.Button("Update"))
-        {
-            GeometrySettings.RegenerateGeometryConsts(_chunkSize, _chunkHeight, _viewDistance);
-        }
-    }
-}
 
 public class GeometrySettings
 {
@@ -43,24 +12,25 @@ public class GeometrySettings
 
         var chunkSizePow2 = chunkSize * chunkSize;
         var voxelsPerChunk = chunkSizePow2 * chunkHeight;
-        var viewDistanceInChunks = Mathf.CeilToInt(viewDistance / (float)chunkSize);
+        var viewDistanceInChunks = Mathf.CeilToInt(viewDistance / (float) chunkSize);
 
         //CAN'T BE BIGGER THAN CHUNK_SIZE! -
         //TODO: calculate automatically from light params and chunk size
         var diffuseLightsMargin = 5;
         var lightClusterMin = -diffuseLightsMargin;
         var lightClusterMax = chunkSize + diffuseLightsMargin - 1;
-        
+
         //Bitwise stuff
-        var chunkSizeLog2 = (int)math.log2(chunkSize);
-        var voxelsPerChunkLog2 = (int)math.log2(voxelsPerChunk);
+        var chunkSizeLog2 = (int) math.log2(chunkSize);
+        var voxelsPerChunkLog2 = (int) math.log2(voxelsPerChunk);
+        var sizeTimesHeightLog2 = (int) math.log2(chunkSize * chunkHeight);
         var moduloByChunkSize = chunkSize - 1;
         var moduloBySizeTimesHeight = chunkSize * chunkHeight - 1;
-        
-    //index of chunk in the center of concenated arrays we send to jobs that needs to know about neighbours
-    //center chunk is what we care about, rest is just to get surrounding data
-    var multimapCenterOffset = 4 * voxelsPerChunk;
-        
+
+        //index of chunk in the center of concenated arrays we send to jobs that needs to know about neighbours
+        //center chunk is what we care about, rest is just to get surrounding data
+        var multimapCenterOffset = 4 * voxelsPerChunk;
+
 
         using (StreamWriter outfile = new StreamWriter(copyPath))
         {
@@ -85,7 +55,6 @@ public class GeometrySettings
             outfile.WriteLine("    public const float LIGHT_FALL_OFF = 0.2f;");
             outfile.WriteLine("    public const float MIN_LIGHT = 0.15f;");
             outfile.WriteLine("    ");
-            outfile.WriteLine($"    public const int DIFFUSE_LIGHTS_MARGIN = {diffuseLightsMargin};");
             outfile.WriteLine($"    public const int LIGHTS_CLUSTER_MIN = {lightClusterMin};");
             outfile.WriteLine($"    public const int LIGHTS_CLUSTER_MAX = {lightClusterMax};");
             outfile.WriteLine("    ");
@@ -94,6 +63,7 @@ public class GeometrySettings
             outfile.WriteLine("    // Helper consts for bitwise operations");
             outfile.WriteLine($"    public const int CHUNK_SIZE_LOG2 = {chunkSizeLog2}; ");
             outfile.WriteLine($"    public const int VOXELS_PER_CHUNK_LOG2 = {voxelsPerChunkLog2}; ");
+            outfile.WriteLine($"    public const int SIZE_TIMES_HEIGHT_LOG2 = {sizeTimesHeightLog2}; ");
             outfile.WriteLine($"    public const int MODULO_BY_CHUNK_SIZE = {moduloByChunkSize}; ");
             outfile.WriteLine($"    public const int MODULO_BY_SIZE_TIMES_HEIGHT = {moduloBySizeTimesHeight}; ");
             outfile.WriteLine("    ");
@@ -103,4 +73,3 @@ public class GeometrySettings
         AssetDatabase.Refresh();
     }
 }
-

@@ -20,7 +20,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: -0.00084373145
-      value: 0.37905765
+      value: 0.20305309
       inSlope: 0.00049013365
       outSlope: 0.00049013365
       tangentMode: 0
@@ -29,7 +29,7 @@ MonoBehaviour:
       outWeight: 0.1681751
     - serializedVersion: 3
       time: 0.2663002
-      value: 0.41729173
+      value: 0.23174508
       inSlope: 0.010815117
       outSlope: 0.21066342
       tangentMode: 1
@@ -38,16 +38,16 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 0.5992582
-      value: 0.5014663
-      inSlope: 0.06987235
-      outSlope: 2.6358957
+      value: 0.29491204
+      inSlope: 0.40097868
+      outSlope: 0.93877524
       tangentMode: 1
       weightedMode: 0
-      inWeight: 0.07554794
-      outWeight: 0.068323985
+      inWeight: 0.14991494
+      outWeight: 0.14707686
     - serializedVersion: 3
       time: 0.90398836
-      value: 0.9966869
+      value: 0.66654015
       inSlope: 2.914905
       outSlope: 2.914905
       tangentMode: 0
@@ -68,7 +68,7 @@ MonoBehaviour:
   BottomBlock: 7
   lodeDefs:
   - {fileID: 11400000, guid: 76ecf24b21e8340ba8437b2e0e20005c, type: 2}
-  - {fileID: 11400000, guid: f2a276be0752846e1951e64d98a79fe7, type: 2}
-  - {fileID: 11400000, guid: ad42e2c0e5e7a44788112772951103c4, type: 2}
+  - {fileID: 11400000, guid: 66f9de1ba0b954762b00218434c04104, type: 2}
+  - {fileID: 11400000, guid: 23c211e5b803f40c2b1368f4fedbba3d, type: 2}
   - {fileID: 11400000, guid: 3fd00dd592eb746b58f707fe14eb63ba, type: 2}
   - {fileID: 11400000, guid: 98012633c031847e4b724f5080842fda, type: 2}

@@ -332,7 +332,7 @@ namespace MindCraft.Model
                 for (var iDict = 0; iDict < dictLength; iDict++)
                 {
                     var id = reader.ReadInt();
-                    ArrayHelper.To3D(id, out int x, out int y, out int z);
+                    ArrayHelper.To3DMap(id, out int x, out int y, out int z);
                     var blockType = reader.ReadByte();
                     map[x, y, z] = blockType;
                 }
@@ -349,7 +349,7 @@ namespace MindCraft.Model
 
             for (int i = 0; i < length; i++)
             {
-                ArrayHelper.To3D(i, out int x, out int y, out int z);
+                ArrayHelper.To3DMap(i, out int x, out int y, out int z);
 
                 var blockId = changes[x, y, z];
 

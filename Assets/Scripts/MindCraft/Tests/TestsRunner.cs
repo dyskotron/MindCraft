@@ -1,10 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using MindCraft.MapGeneration.Utils;
+﻿using System.Diagnostics;
 using MindCraft.Tests;
-using MindCraft.Tests.Iteration;
-using MindCraft.Tests.TestBounds;
-using Unity.Mathematics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -15,10 +10,7 @@ public class TestsRunner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        RunTest(new TestTo3dDBasic());
-        RunTest(new TestTo3dBitwise());
-        RunTest(new TestTo1dBasic());
-        RunTest(new TestTo1dBitwise());
+        
     }
 
     private void RunTest(IMindCraftTest test)

@@ -32,9 +32,9 @@ namespace MindCraft.Controller.Fsm
         private PlayerView _playerView;
         private int2 _lastPlayerCoords;
 
-        //TODO: chunk size 16 x 16 x 256
         //TODO: trees
         //TODO: water
+        //TODO: rivers: https://www.reddit.com/r/proceduralgeneration/comments/3twed7/early_infinite_perlin_terrain/
         //TODO: fix building block colliding with player
         //TODO: Fix physics bug
         //TODO: Custom render pipeline
@@ -59,7 +59,6 @@ namespace MindCraft.Controller.Fsm
             else
                 initPosition = new Vector3(0.5f, WorldModel.GetTerrainHeight(new Vector3(0, 0, 0)) + 1, 0.5f);
             
-            initPosition.y = GeometryConsts.CHUNK_HEIGHT - 5;
             _playerView.transform.position = initPosition;
             
             var playerCoords = WorldModelHelper.GetChunkCoordsFromWorldPosition(initPosition);

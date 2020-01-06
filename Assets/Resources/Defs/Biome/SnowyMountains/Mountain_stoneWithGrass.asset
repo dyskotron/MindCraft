@@ -15,8 +15,8 @@ MonoBehaviour:
   BlockId: 7
   BlockMask: 1
   Frequency: 14.7
-  MinHeight: 45
-  MaxHeight: 128
+  MinHeight: 50
+  MaxHeight: 256
   ThresholdByY:
     serializedVersion: 2
     m_Curve:
@@ -30,8 +30,8 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0
     - serializedVersion: 3
-      time: 0.49998474
-      value: 0.40235585
+      time: 0.2626294
+      value: 0.41656408
       inSlope: -4.4538717
       outSlope: -4.4538717
       tangentMode: 0
@@ -39,8 +39,8 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.061190315
     - serializedVersion: 3
-      time: 0.55041385
-      value: -0.011095941
+      time: 0.4602039
+      value: -0.0022458434
       inSlope: -3.773412
       outSlope: -3.773412
       tangentMode: 1
